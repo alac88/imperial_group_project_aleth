@@ -23,6 +23,8 @@ list(APPEND CMAKE_MODULE_PATH ${ETH_CMAKE_DIR})
 set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG Release)
 set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release)
 
+set(HUNTER_ROOT /vol/project/2019/530/g1953010/.hunter)
+#set(HUNTER_ROOT ${CMAKE_CURRENT_BINARY_DIR}/.hunter)
 set(HUNTER_CONFIGURATION_TYPES Release CACHE STRING "Hunter configuration types")
 set(HUNTER_JOBS_NUMBER 4 CACHE STRING "Hunter jobs number")
 set(HUNTER_CACHE_SERVERS "https://github.com/ethereum/hunter-cache" CACHE STRING "Hunter cache servers")
@@ -38,6 +40,7 @@ endif()
 option(HUNTER_RUN_UPLOAD "Upload binaries to the cache server" ${run_upload})
 
 include(HunterGate)
+
 HunterGate(
     URL "https://github.com/ruslo/hunter/archive/v0.23.211.tar.gz"
     SHA1 "c022f0c2480e835a6bafdd734035ec2071b51897"
