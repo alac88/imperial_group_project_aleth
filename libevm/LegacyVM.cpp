@@ -189,9 +189,14 @@ void LegacyVM::logGasMem()
 
 void LegacyVM::fetchInstruction()
 {
+    cout << "fetchInstr\n";
     m_OP = Instruction(m_code[m_PC]);
+    // Uncomment this line to direct to the target case
+    // m_OP = Instruction(Instruction::CALL); // hardcode the instruction to call
     const InstructionMetric& metric = c_metrics[static_cast<size_t>(m_OP)];
     adjustStack(metric.args, metric.ret);
+    // Uncomment this line if m_OP is hardcoded
+    // adjustStack(0, 0); // hardcode: add to stack to prevent badStack
 
     // FEES...
     m_runGas = toInt63(m_schedule->tierStepGas[static_cast<unsigned>(metric.gasPriceTier)]);
@@ -238,6 +243,7 @@ owning_bytes_ref LegacyVM::exec(u256& _io_gas, ExtVMFace& _ext, OnOpFunc const& 
 //
 void LegacyVM::interpretCases()
 {
+    cout << "LegacyVM: interpretCases() called\n";
     INIT_CASES
     DO_CASES
     {
@@ -272,6 +278,7 @@ void LegacyVM::interpretCases()
         CASE(CALL)
         CASE(CALLCODE)
         {
+            cout << "case: CALL\n";
             ON_OP();
             if (m_OP == Instruction::DELEGATECALL && !m_schedule->haveDelegateCall)
                 throwBadInstruction();
@@ -346,9 +353,14 @@ void LegacyVM::interpretCases()
 
         CASE(STOP)
         {
+            cout << "case: STOP\n";
             ON_OP();
             updateIOGas();
             m_bounce = 0;
+            cout << "PC: " << m_PC << "\n io gas: " << m_io_gas;
+            cout << "\n runGas: " << m_runGas << "\n SP: " << m_SP;
+            cout << "\n returnDataSize: " << m_returnData.size() << "\n output size: " << m_output.size() << endl;
+            cout << "depth: " << m_ext->depth << endl;
         }
         BREAK
 
