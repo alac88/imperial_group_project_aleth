@@ -2,6 +2,7 @@
 // Copyright 2016-2019 Aleth Authors.
 // Licensed under the GNU General Public License, Version 3.
 #include "LegacyVM.h"
+#include "ethploit\Executiontrace.h"
 
 using namespace std;
 using namespace dev;
@@ -165,7 +166,11 @@ void LegacyVM::caseCall()
     bytesRef output;
     if (caseCallSetup(callParams.get(), output))
     {
+        
+        ExecutionTrace execTrace(m_OP, callParams, m_PC, m_SP, m_SPP);
         CallResult result = m_ext->call(*callParams);
+        setReturningPC(m_PC);
+
         result.output.copyTo(output);
 
         // Here we have 2 options:
