@@ -124,6 +124,8 @@ add_subdirectory(libevm)
 add_subdirectory(libethereum)
 add_subdirectory(libethashseal)
 
+add_subdirectory(libethploit)
+
 add_subdirectory(libwebthree)
 add_subdirectory(libweb3jsonrpc)
 
