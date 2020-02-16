@@ -2,7 +2,9 @@
 // Copyright 2016-2019 Aleth Authors.
 // Licensed under the GNU General Public License, Version 3.
 #include "LegacyVM.h"
-#include "ethploit\Executiontrace.h"
+#include "Executiontrace.h"
+
+// #include "ethploit/Executiontrace.h"
 
 using namespace std;
 using namespace dev;
@@ -167,9 +169,10 @@ void LegacyVM::caseCall()
     if (caseCallSetup(callParams.get(), output))
     {
         
-        ExecutionTrace execTrace(m_OP, callParams, m_PC, m_SP, m_SPP);
+        ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->gas, m_PC, m_SP, m_SPP);
         CallResult result = m_ext->call(*callParams);
-        setReturningPC(m_PC);
+        execTrace.setReturningPC(m_PC);
+        execTrace.print();
 
         result.output.copyTo(output);
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 // #include <intx/intx.hpp>
 
 // #include <evmc/evmc.h>
@@ -25,7 +26,7 @@ struct ExecutionTrace
      * int const ret;
      * Tier const gasPriceTier
      */     
-    InstructionInfo instructionInfo;
+    Instruction instruction;
 
     /**
      * contains
@@ -39,7 +40,10 @@ struct ExecutionTrace
      * bool staticCall 
      * OnOpFunc onOp
      */
-    CallParameters callParams;
+    // CallParameters callParams;
+    Address senderAddress;
+    Address receiveAddress;
+    u256 gas;
 
     uint64_t m_PC;  // program counter
     uint64_t m_PC_post = 0; // returning program counter for delegate call
@@ -47,15 +51,19 @@ struct ExecutionTrace
     u256* m_SPP;    // stack pointer
 
 
-    ExecutionTrace(Instruction _inst,
-                    CallParameters _callParams,
+    ExecutionTrace(Instruction _instruction,
+                    Address _senderAddress,
+                    Address _receiveAddres,
+                    u256 gas,
                     uint64_t _m_PC, 
                     u256* _m_SP,
                     u256* _m_SPP);
 
-    setReturningPC(uint64_t _m_PC);
+    void setReturningPC(uint64_t _m_PC);
 
-}
+    void print();
+
+};
 
 
 
