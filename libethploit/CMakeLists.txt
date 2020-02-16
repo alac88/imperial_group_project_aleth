@@ -1,7 +1,7 @@
 add_library(
     ethploit
-    Executiontrace.cpp
-    Executiontrace.h
+    ExecutionTrace.cpp
+    ExecutionTrace.h
 )
 
 target_link_libraries(

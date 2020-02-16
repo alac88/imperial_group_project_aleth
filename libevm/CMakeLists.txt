@@ -10,9 +10,6 @@ set(sources
     VMFace.h
     VMFactory.cpp VMFactory.h
 )
-# Executiontrace.cpp 
-# Executiontrace.h
-
 
 add_library(evm ${sources})
 
