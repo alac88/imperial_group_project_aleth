@@ -2,9 +2,9 @@
 // Copyright 2016-2019 Aleth Authors.
 // Licensed under the GNU General Public License, Version 3.
 #include "LegacyVM.h"
-#include "Executiontrace.h"
+// #include "Executiontrace.h"
 
-// #include "ethploit/Executiontrace.h"
+#include "ethploit/Executiontrace.h"
 
 using namespace std;
 using namespace dev;

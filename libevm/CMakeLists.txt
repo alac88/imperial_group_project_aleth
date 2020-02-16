@@ -9,14 +9,16 @@ set(sources
     LegacyVMOpt.cpp
     VMFace.h
     VMFactory.cpp VMFactory.h
-    Executiontrace.cpp Executiontrace.h
 )
+# Executiontrace.cpp 
+# Executiontrace.h
+
 
 add_library(evm ${sources})
 
 target_link_libraries(
     evm
-    PUBLIC ethcore devcore evmc::evmc
+    PUBLIC ethcore devcore evmc::evmc ethploit
     PRIVATE aleth-interpreter aleth-buildinfo jsoncpp_lib_static Boost::program_options evmc::loader
 )
 
