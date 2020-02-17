@@ -21,6 +21,7 @@ BOOST_AUTO_TEST_SUITE(ExecutionTraceTestSuite)
 
   BOOST_AUTO_TEST_CASE(constructor_test)
   {
+    BOOST_TEST_MESSAGE("Constructor test: ");
     // Check if the values are stored in ExecutionTrace attributes 
     BOOST_TEST(int(execTrace.instruction) == int(Instruction::CALL)); // TODO: perform better check here
     BOOST_TEST(execTrace.senderAddress == sender);
@@ -33,15 +34,17 @@ BOOST_AUTO_TEST_SUITE(ExecutionTraceTestSuite)
 
   BOOST_AUTO_TEST_CASE(setReturningPC_test)
   {
-    // initial m_PC_post == 0
+    BOOST_TEST_MESSAGE("Method test - setReturningPC(): ");
+    BOOST_TEST_MESSAGE("m_PC_post is default to 0.");
     BOOST_TEST(execTrace.m_PC_post == 0);
     uint64_t returning_PC = 8;
     execTrace.setReturningPC(returning_PC);
-    BOOST_TEST(execTrace.m_PC_post == 8);
+    BOOST_TEST(execTrace.m_PC_post == returning_PC);
   }
 
   BOOST_AUTO_TEST_CASE(print_test) 
   {
+    BOOST_TEST_MESSAGE("Method test - print(): ");
     ostringstream buffer;
 
     // Save cout's buffer here
