@@ -1,3 +1,9 @@
+# sequence (clean up coverage folder -> compile -> execute test -> run coverage test -> generate coverage report):
+# make 
+# ./executiontrace-test
+# make gcov
+# make lcov
+
 cmake_minimum_required(VERSION 3.5)
 project(executiontrace-test)
 enable_testing()
@@ -11,26 +17,34 @@ message("-- Object files will be output to: ${OBJECT_DIR}")
 
 # indicates the location of the boost installation tree.
 # hard-coded for our simple example.
-set(BOOST_INCLUDE_DIRS /vol/project/2019/530/g1953010/.hunter/_Base/c022f0c/af070fb/93b97cb/Install/include)
+set(BOOST_INCLUDE_DIRS ${BOOST_ROOT}/include)
 
 # creates the executable
 add_executable(executiontrace-test ExecutionTraceTest.cpp)
 
 # Create the gcov target. Run coverage tests with 'make gcov'
 add_custom_target(gcov
-    COMMAND mkdir -p coverage
-    COMMAND ${CMAKE_MAKE_PROGRAM} test
+    COMMAND mkdir coverage
+    COMMAND ./executiontrace-test
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 add_custom_command(TARGET gcov
     COMMAND echo "=================== GCOV ===================="
-    COMMAND gcov -a ${CMAKE_SOURCE_DIR}/libethploittest/*.cpp -o ${OBJECT_DIR}
+    COMMAND gcov -abcfu ${CMAKE_SOURCE_DIR}/libethploittest/ExecutionTraceTest.cpp -o ${OBJECT_DIR}
     | grep -A 5 "ExecutionTraceTest.cpp" > CoverageSummary.tmp
     COMMAND cat CoverageSummary.tmp
     COMMAND echo "-- Coverage files have been output to ${CMAKE_CURRENT_BINARY_DIR}/coverage"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/coverage
 )
 add_dependencies(gcov executiontrace-test)
+
+# Create the lcov target. Create html coverage report with 'make lcov'
+add_custom_target(lcov
+    COMMAND lcov -c -d . -o coverage.info
+    COMMAND lcov --remove coverage.info '/usr/include/*' ${BOOST_INCLUDE_DIRS}'/*' ${CMAKE_SOURCE_DIR}'/libdevcore/*' ${CMAKE_SOURCE_DIR}'/libethcore/*' -o coverage_filtered.info
+    COMMAND genhtml coverage_filtered.info --output-directory out
+    WORKING_DIRECTORY ${OBJECT_DIR}
+)
 
 # Make sure to clean up the coverage folder
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES coverage)
