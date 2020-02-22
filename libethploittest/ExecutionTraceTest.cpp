@@ -11,7 +11,8 @@ BOOST_AUTO_TEST_SUITE(ExecutionTraceTestSuite)
   Address sender ("1122334455667788991011121314151617181920");
   Address receiver ("1122334455667788991011121314151617181921");
   u256 gas = 10;
-  uint64_t m_PC = 8;
+  uint64_t m_PC = 6;
+  uint64_t returning_PC = 8;
   u256 SP = 1;
   u256 SPP = 2;
   u256* m_SP = &SP;
@@ -39,7 +40,6 @@ BOOST_AUTO_TEST_SUITE(ExecutionTraceTestSuite)
     BOOST_TEST_MESSAGE("Method test - setReturningPC(): ");
     BOOST_TEST_MESSAGE("m_PC_post should be initialised to 0.");
     BOOST_TEST(execTrace.m_PC_post == 0);
-    uint64_t returning_PC = 8;
     execTrace.setReturningPC(returning_PC);
     BOOST_TEST_MESSAGE("m_PC_post's value is set to returning_PC.");
     BOOST_TEST(execTrace.m_PC_post == returning_PC);
@@ -61,6 +61,7 @@ BOOST_AUTO_TEST_SUITE(ExecutionTraceTestSuite)
     // When done redirect cout to its old self
     cout.rdbuf(cout_buff);
 
-    BOOST_TEST(buffer.str().length() > 0);
+    string expected_string = "CALL\n";
+    BOOST_REQUIRE_EQUAL(buffer.str(), expected_string);
   }
 BOOST_AUTO_TEST_SUITE_END()
