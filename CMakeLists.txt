@@ -3,7 +3,7 @@
 # Licensed under the GNU General Public License, Version 3. See the LICENSE file.
 
 cmake_minimum_required(VERSION 3.9.3)
-
+enable_testing()
 if (NOT EXISTS ${CMAKE_SOURCE_DIR}/evmc/.git OR NOT EXISTS ${CMAKE_SOURCE_DIR}/cmake/cable/.git)
     message(FATAL_ERROR "Git submodules not initialized, execute:\n  git submodule update --init")
 endif()
@@ -22,6 +22,9 @@ list(APPEND CMAKE_MODULE_PATH ${ETH_CMAKE_DIR})
 # Map current configuration to configurations of imported targets.
 set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG Release)
 set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "-g -Wall -fprofile-arcs -ftest-coverage")
+set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 
 set(HUNTER_ROOT /vol/project/2019/530/g1953010/.hunter)
 #set(HUNTER_ROOT ${CMAKE_CURRENT_BINARY_DIR}/.hunter)
