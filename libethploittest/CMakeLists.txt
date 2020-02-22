@@ -8,8 +8,8 @@ cmake_minimum_required(VERSION 3.5)
 project(executiontrace-test)
 enable_testing()
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "-g -Wall -fprofile-arcs -ftest-coverage")
 set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 
 set(OBJECT_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/executiontrace-test.dir)
@@ -41,7 +41,7 @@ add_dependencies(gcov executiontrace-test)
 # Create the lcov target. Create html coverage report with 'make lcov'
 add_custom_target(lcov
     COMMAND lcov -c -d . -o coverage.info
-    COMMAND lcov --remove coverage.info '/usr/include/*' ${BOOST_INCLUDE_DIRS}'/*' ${CMAKE_SOURCE_DIR}'/libdevcore/*' ${CMAKE_SOURCE_DIR}'/libethcore/*' -o coverage_filtered.info
+    COMMAND lcov -e coverage.info ${CMAKE_SOURCE_DIR}'/libethploittest/*' -o coverage_filtered.info
     COMMAND genhtml coverage_filtered.info --output-directory out
     WORKING_DIRECTORY ${OBJECT_DIR}
 )
