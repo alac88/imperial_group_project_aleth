@@ -305,11 +305,9 @@ int main(int argc, char** argv)
 
     executive.initialize(t);
     if (!code.empty()) {
-        cout << "executive.call()\n";
         executive.call(contractDestination, sender, value, gasPrice, &data, gas);
     }
     else {
-        cout << "executive.create()\n";
         executive.create(sender, value, gasPrice, gas, &data, origin);
     }
 

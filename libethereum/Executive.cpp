@@ -218,7 +218,6 @@ bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address co
             m_ext = make_shared<ExtVM>(m_s, m_envInfo, m_sealEngine, _p.receiveAddress,
                 _p.senderAddress, _origin, _p.apparentValue, _gasPrice, _p.data, &c, codeHash,
                 version, m_depth, false, _p.staticCall);
-            cout << "call: m_ext initialised\n";
         }
     }
 
@@ -297,12 +296,10 @@ bool Executive::executeCreate(Address const& _sender, u256 const& _endowment, u2
     m_s.clearStorage(m_newAddress);
 
     // Schedule _init execution if not empty.
-    // if (!_init.empty()) {
-    if (true) {
+    if (!_init.empty()) {
         m_ext = make_shared<ExtVM>(m_s, m_envInfo, m_sealEngine, m_newAddress, _sender, _origin,
             _endowment, _gasPrice, bytesConstRef(), _init, sha3(_init), _version, m_depth, true,
             false);
-        cout << "executeCreate: m_ext initialised\n";
     }
     else
         // code stays empty, but we set the version
@@ -333,7 +330,6 @@ OnOpFunc Executive::simpleTrace()
 
 bool Executive::go(OnOpFunc const& _onOp)
 {
-    cout << "Executive::go() called\n";
     if (m_ext)
     {
 #if ETH_TIMED_EXECUTIONS
@@ -341,12 +337,10 @@ bool Executive::go(OnOpFunc const& _onOp)
 #endif
         try
         {
-            cout << "go: m_ext is true\n";
             // Create VM instance. Force Interpreter if tracing requested.
             auto vm = VMFactory::create();
             if (m_isCreation)
             {
-                cout << "go: m_isCreation is true, exec() called\n";
                 auto out = vm->exec(m_gas, *m_ext, _onOp);
                 if (m_res)
                 {
@@ -376,10 +370,8 @@ bool Executive::go(OnOpFunc const& _onOp)
                     m_res->output = out.toVector(); // copy output to execution result
                 m_s.setCode(m_ext->myAddress, out.toVector(), m_ext->version);
             }
-            else {
-                cout << "go: m_isCreation is false, exec() called\n";
+            else
                 m_output = vm->exec(m_gas, *m_ext, _onOp);
-            }
         }
         catch (RevertInstruction& _e)
         {

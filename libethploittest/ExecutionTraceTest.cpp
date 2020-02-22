@@ -30,15 +30,18 @@ BOOST_AUTO_TEST_SUITE(ExecutionTraceTestSuite)
     BOOST_TEST(execTrace.m_PC == m_PC);
     BOOST_TEST(*(execTrace.m_SP) == *m_SP);
     BOOST_TEST(*(execTrace.m_SPP) == *m_SPP);
+    BOOST_TEST(execTrace.m_PC_post == 0);
+
   }
 
   BOOST_AUTO_TEST_CASE(setReturningPC_test)
   {
     BOOST_TEST_MESSAGE("Method test - setReturningPC(): ");
-    BOOST_TEST_MESSAGE("m_PC_post is default to 0.");
+    BOOST_TEST_MESSAGE("m_PC_post should be initialised to 0.");
     BOOST_TEST(execTrace.m_PC_post == 0);
     uint64_t returning_PC = 8;
     execTrace.setReturningPC(returning_PC);
+    BOOST_TEST_MESSAGE("m_PC_post's value is set to returning_PC.");
     BOOST_TEST(execTrace.m_PC_post == returning_PC);
   }
 
