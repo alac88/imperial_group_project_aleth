@@ -32,13 +32,12 @@ void ExecutionTrace::print() {
     InstructionInfo info = instructionInfo(instruction);
     std::cout << info.name << std::endl;
     // std::cout << instruction << std::endl;
-    std::cout << senderAddress << std::endl;
-    std::cout << receiveAddress << std::endl;
-    std::cout << gas << std::endl;
-    std::cout << m_PC << std::endl;
-    std::cout << m_PC_post << std::endl;
-    std::cout << m_SP << std::endl;
-    std::cout << m_SPP << std::endl;
+    // std::cout << senderAddress << std::endl;
+    // std::cout << receiveAddress << std::endl;
+    // std::cout << gas << std::endl;
+    // std::cout << m_PC << std::endl;
+    // std::cout << m_SP << std::endl;
+    // std::cout << m_SPP << std::endl;
 
 }
 
