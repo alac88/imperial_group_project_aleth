@@ -13,9 +13,9 @@ ExecutionTrace::ExecutionTrace(Instruction _instruction,
                                 u256* _m_SP,
                                 u256* _m_SPP)
 {
-    instruction = _instruction;
-    senderAddress = _senderAddress;
-    receiveAddress = _receiveAddress;
+    instruction = instructionInfo(_instruction).name;
+    senderAddress = _senderAddress.hex();
+    receiveAddress = _receiveAddress.hex();
     gas = _gas;
     m_PC = _m_PC;
     m_SP = _m_SP;
@@ -28,17 +28,7 @@ void ExecutionTrace::setReturningPC(uint64_t _m_PC)
 }
 
 void ExecutionTrace::print() {
-
-    InstructionInfo info = instructionInfo(instruction);
-    std::cout << info.name << std::endl;
-    // std::cout << instruction << std::endl;
-    // std::cout << senderAddress << std::endl;
-    // std::cout << receiveAddress << std::endl;
-    // std::cout << gas << std::endl;
-    // std::cout << m_PC << std::endl;
-    // std::cout << m_SP << std::endl;
-    // std::cout << m_SPP << std::endl;
-
+    std::cout << instruction << std::endl;
 }
 
 }

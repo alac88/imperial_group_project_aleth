@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <memory>
 // #include <intx/intx.hpp>
 
@@ -20,13 +21,15 @@ struct ExecutionTrace
 {
 
     /**
-     * contains:
+     * get access to:
      * char const* const name;
      * int const args; 
      * int const ret;
      * Tier const gasPriceTier
      */     
-    Instruction instruction;
+    // Instruction instruction;
+    
+    std::string instruction;
 
     /**
      * contains
@@ -41,15 +44,17 @@ struct ExecutionTrace
      * OnOpFunc onOp
      */
     // CallParameters callParams;
-    Address senderAddress;
-    Address receiveAddress;
+    // Address senderAddress;
+    // Address receiveAddress;
+
+    std::string senderAddress;
+    std::string receiveAddress;
     u256 gas;
 
     uint64_t m_PC;  // program counter
     uint64_t m_PC_post = 0; // returning program counter for delegate call
     u256* m_SP;    // stack pointer
     u256* m_SPP;    // stack pointer
-
 
     ExecutionTrace(Instruction _instruction,
                     Address _senderAddress,
