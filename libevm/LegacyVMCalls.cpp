@@ -167,7 +167,7 @@ void LegacyVM::caseCall()
     if (caseCallSetup(callParams.get(), output))
     {
         
-        ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->gas, m_PC, m_SP, m_SPP);
+        ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer, callParams->gas, m_PC, m_SP, m_SPP);
         CallResult result = m_ext->call(*callParams);
         execTrace.setReturningPC(m_PC);
         execTrace.print();

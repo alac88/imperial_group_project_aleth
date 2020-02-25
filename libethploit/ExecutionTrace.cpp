@@ -1,5 +1,5 @@
 #include "ExecutionTrace.h"
-
+#include "libevmanalyser/evm_analyser.h"
 namespace dev 
 {
     namespace eth 
@@ -8,14 +8,16 @@ namespace dev
         ExecutionTrace::ExecutionTrace(Instruction _instruction, 
                                         Address _senderAddress,
                                         Address _receiveAddress,
+                                        u256 _valueTransfer,
                                         u256 _gas,
                                         uint64_t _m_PC, 
                                         u256* _m_SP,
                                         u256* _m_SPP)
         {
-            instruction = _instruction;
-            senderAddress = _senderAddress;
-            receiveAddress = _receiveAddress;
+            instruction = instructionInfo(_instruction).name;
+            senderAddress = _senderAddress.hex();
+            receiveAddress = _receiveAddress.hex();
+            valueTransfer = _valueTransfer;
             gas = _gas;
             m_PC = _m_PC;
             m_SP = _m_SP;
@@ -28,9 +30,9 @@ namespace dev
         }
 
         void ExecutionTrace::print() {
-
-            InstructionInfo info = instructionInfo(instruction);
-            std::cout << info.name << std::endl;
+            std::cout << instruction << std::endl;
+            Evm_analyser * analyser = Evm_analyser::get_instance();
+            // std::cout << analyser->populate_execution_trace(this) << std::endl;
             // std::cout << instruction << std::endl;
             // std::cout << senderAddress << std::endl;
             // std::cout << receiveAddress << std::endl;
