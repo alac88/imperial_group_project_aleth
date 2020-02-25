@@ -37,8 +37,7 @@ add_dependencies(gcov executiontrace-test)
 # Create the lcov target. Create html coverage report with 'make lcov'
 add_custom_target(lcov
     COMMAND lcov -c -d . -o coverage.info --rc lcov_branch_coverage=1
-    COMMAND lcov -e coverage.info ${CMAKE_SOURCE_DIR}'/libethploit/*' -o coverage_filtered.info
-    COMMAND genhtml coverage_filtered.info --branch-coverage --output-directory out 
+    COMMAND genhtml coverage.info --branch-coverage --output-directory out 
     WORKING_DIRECTORY ${OBJECT_DIR}
 )
 
