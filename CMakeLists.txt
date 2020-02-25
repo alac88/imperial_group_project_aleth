@@ -25,7 +25,6 @@ set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-g -Wall -fprofile-arcs -ftest-coverage")
 set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
-add_compile_options(-Wno-error=unused-parameter -Wno-error=unused-variable)
 
 set(HUNTER_ROOT /vol/project/2019/530/g1953010/.hunter)
 #set(HUNTER_ROOT ${CMAKE_CURRENT_BINARY_DIR}/.hunter)

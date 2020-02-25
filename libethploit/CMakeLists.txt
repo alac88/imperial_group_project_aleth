@@ -8,7 +8,6 @@ target_link_libraries(
     ethploit
     evm
     devcore
-    evmanalyser
 )
 add_compile_options(-Wno-error=unused-parameter -Wno-error=unused-variable)
 
