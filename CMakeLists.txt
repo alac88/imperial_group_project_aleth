@@ -161,3 +161,8 @@ set(CPACK_PACKAGE_FILE_NAME ${PROJECT_NAME})
 set(CPACK_PACKAGE_CHECKSUM SHA256)
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY FALSE)
 include(CPack)
+
+set(EVM_ANALYSER on)
+if (EVM_ANALYSER)
+    add_subdirectory(libevmanalyser)
+endif()
