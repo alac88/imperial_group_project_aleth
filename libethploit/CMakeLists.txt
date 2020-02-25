@@ -9,7 +9,6 @@ target_link_libraries(
     evm
     devcore
 )
-add_compile_options(-Wno-error=unused-parameter -Wno-error=unused-variable)
 
 # sequence (clean up coverage folder -> run coverage test -> generate coverage report):
 # make scrub (if this is not the first run of gcov)
