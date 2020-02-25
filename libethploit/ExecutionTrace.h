@@ -49,6 +49,7 @@ struct ExecutionTrace
 
     std::string senderAddress;
     std::string receiveAddress;
+    u256 valueTransfer;
     u256 gas;
 
     uint64_t m_PC;  // program counter
@@ -59,7 +60,8 @@ struct ExecutionTrace
     ExecutionTrace(Instruction _instruction,
                     Address _senderAddress,
                     Address _receiveAddres,
-                    u256 gas,
+                    u256 _valueTransfer,
+                    u256 _gas,
                     uint64_t _m_PC, 
                     u256* _m_SP,
                     u256* _m_SPP);
