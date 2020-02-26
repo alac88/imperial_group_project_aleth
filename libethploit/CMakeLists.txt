@@ -10,6 +10,7 @@ target_link_libraries(
     ethploit
     evm
     devcore
+    evmanalyser
 )
 
 # sequence (clean up coverage folder -> run coverage test -> generate coverage report):

@@ -1,4 +1,6 @@
 #include "ExecutionTrace.h"
+#include "libevmanalyser/evm_analyser.h"
+
 namespace dev 
 {
     namespace eth 
@@ -29,7 +31,13 @@ namespace dev
         }
 
         void ExecutionTrace::print() {
-            std::cout << instruction << std::endl;
+            std::cout << "ExecutionTrace::print() " << instruction << std::endl;
+            Evm_analyser* analyser = Evm_analyser::get_instance();
+            if(analyser->populate_execution_trace(this)) {
+                std::cout << "ExecutionTrace::print() populated\n";
+            } else {
+                std::cout << "ExecutionTrace::print() failed\n";
+            }
         }
 
     }
