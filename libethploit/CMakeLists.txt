@@ -1,3 +1,5 @@
+add_compile_options(-Wno-error=unused-but-set-variable -Wno-error=unused-parameter -Wno-error=unused-variable)
+
 add_library(
     ethploit
     ExecutionTrace.cpp
