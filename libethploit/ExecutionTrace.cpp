@@ -30,14 +30,7 @@ namespace dev
 
         void ExecutionTrace::print() {
             std::cout << instruction << std::endl;
-            // std::cout << instruction << std::endl;
-            // std::cout << senderAddress << std::endl;
-            // std::cout << receiveAddress << std::endl;
-            // std::cout << gas << std::endl;
-            // std::cout << m_PC << std::endl;
-            // std::cout << m_SP << std::endl;
-            // std::cout << m_SPP << std::endl;
-
         }
+
     }
-} // LCOV_EXCL_LINE
+}// LCOV_EXCL_LINE
