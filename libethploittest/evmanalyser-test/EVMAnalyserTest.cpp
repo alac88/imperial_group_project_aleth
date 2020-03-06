@@ -4,8 +4,8 @@
 #include "EVMAnalyser.h"
 
 // Mock class of ExecutionTrace
-MOCK_BASE_CLASS(mock_execution_trace, dev::eth::ExecutionTrace) {
-    mock_execution_trace(std::string _instruction,
+MOCK_BASE_CLASS(ExecutionTraceMock, dev::eth::ExecutionTrace) {
+    ExecutionTraceMock(std::string _instruction,
                          std::string _senderAddr, 
                          std::string _receiverAddr, 
                          int _valueTransfer, 
@@ -42,8 +42,8 @@ struct F {
         BOOST_TEST_MESSAGE("teardown fixture"); 
     }
 
-    void add_call1() {
-        mock_execution_trace et("CALL",
+    void addCall1() {
+        ExecutionTraceMock et("CALL",
                                 "0x60",
                                 "0x70",
                                 5,
@@ -52,8 +52,8 @@ struct F {
         analyser->populateExecutionTrace(&et);          
     }
 
-    void add_call2() {
-        mock_execution_trace et("CALL",
+    void addCall2() {
+        ExecutionTraceMock et("CALL",
                                 "0x70",
                                 "0x60",
                                 5,
@@ -77,13 +77,13 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
     }
 
     BOOST_AUTO_TEST_CASE(populate_a_given_trace) {
-        add_call1();
+        addCall1();
 
         BOOST_TEST(analyser->getRelationSize("direct_call") == 1);
     }
 
     BOOST_AUTO_TEST_CASE(populate_a_unrecognised_given_trace) {
-         mock_execution_trace et("WRONG_CALL",
+         ExecutionTraceMock et("WRONG_CALL",
                                  "0x70",
                                  "0x60",
                                  5,
@@ -94,73 +94,73 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
     }
 
     BOOST_AUTO_TEST_CASE(query_a_reentrancy) {
-        add_call1();
-        add_call2();
+        addCall1();
+        addCall2();
 
         BOOST_TEST(analyser->queryExpoilt("reentrancy"));        
     }
 
     BOOST_AUTO_TEST_CASE(query_multiple_reentrancy) {
-        mock_execution_trace et1("CALL", "0x60", "0x70", 5, 10);
+        ExecutionTraceMock et1("CALL", "0x60", "0x70", 5, 10);
         analyser->populateExecutionTrace(&et1);
 
-        mock_execution_trace et2("CALL", "0x70", "0x80", 5, 10);
+        ExecutionTraceMock et2("CALL", "0x70", "0x80", 5, 10);
         analyser->populateExecutionTrace(&et2);
         
-        mock_execution_trace et3("CALL", "0x80", "0x90", 5, 10);
+        ExecutionTraceMock et3("CALL", "0x80", "0x90", 5, 10);
         analyser->populateExecutionTrace(&et3);
         
-        mock_execution_trace et4("CALL", "0x90", "0x100", 5, 10);
+        ExecutionTraceMock et4("CALL", "0x90", "0x100", 5, 10);
         analyser->populateExecutionTrace(&et4);
         
-        mock_execution_trace et5("CALL", "0x90", "0x100", 5, 10);
+        ExecutionTraceMock et5("CALL", "0x90", "0x100", 5, 10);
         analyser->populateExecutionTrace(&et5);
 
-        mock_execution_trace et6("CALL", "0x100", "0x110", 5, 10);
+        ExecutionTraceMock et6("CALL", "0x100", "0x110", 5, 10);
         analyser->populateExecutionTrace(&et6);
      
-        mock_execution_trace et7("CALL", "0x110", "0x120", 5, 10);
+        ExecutionTraceMock et7("CALL", "0x110", "0x120", 5, 10);
         analyser->populateExecutionTrace(&et7);
 
-        mock_execution_trace et8("CALL", "0x120", "0x130", 5, 10);
+        ExecutionTraceMock et8("CALL", "0x120", "0x130", 5, 10);
         analyser->populateExecutionTrace(&et8);
      
-        mock_execution_trace et9("CALL", "0x130", "0x140", 5, 10);
+        ExecutionTraceMock et9("CALL", "0x130", "0x140", 5, 10);
         analyser->populateExecutionTrace(&et9);
      
-        mock_execution_trace et10("CALL", "0x140", "0x150", 5, 10);
+        ExecutionTraceMock et10("CALL", "0x140", "0x150", 5, 10);
         analyser->populateExecutionTrace(&et10);
      
-        mock_execution_trace et11("CALL", "0x150", "0x160", 5, 10);
+        ExecutionTraceMock et11("CALL", "0x150", "0x160", 5, 10);
         analyser->populateExecutionTrace(&et11);
      
-        mock_execution_trace et12("CALL", "0x160", "0x170", 5, 10);
+        ExecutionTraceMock et12("CALL", "0x160", "0x170", 5, 10);
         analyser->populateExecutionTrace(&et12);
      
-        mock_execution_trace et13("CALL", "0x170", "0x180", 5, 10);
+        ExecutionTraceMock et13("CALL", "0x170", "0x180", 5, 10);
         analyser->populateExecutionTrace(&et13);
      
-        mock_execution_trace et14("CALL", "0x180", "0x60", 5, 10);
+        ExecutionTraceMock et14("CALL", "0x180", "0x60", 5, 10);
         analyser->populateExecutionTrace(&et14);
 
         BOOST_TEST(analyser->queryExpoilt("reentrancy"));        
     }
 
     BOOST_AUTO_TEST_CASE(not_allow_wrong_exploit_name) {
-        add_call1();
-        add_call2();
+        addCall1();
+        addCall2();
 
         BOOST_TEST(analyser->queryExpoilt("wrong_reentrancy") == false);        
     }
 
     BOOST_AUTO_TEST_CASE(report_no_exploit) {
-        add_call2();
+        addCall2();
 
         BOOST_TEST(analyser->queryExpoilt("reentrancy") == false);        
     }
 
     BOOST_AUTO_TEST_CASE(clean_all_execution_trace) {
-        add_call1();
+        addCall1();
 
         analyser->cleanExecutionTrace(); 
 

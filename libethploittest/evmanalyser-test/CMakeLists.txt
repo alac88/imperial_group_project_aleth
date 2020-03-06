@@ -26,7 +26,7 @@ set(BOOST_INCLUDE_DIRS ${BOOST_ROOT}/include)
 
 # creates the executable
 add_executable(libevmanalyser_test 
-    libevmanalyser_test.cpp
+    EVMAnalyserTest.cpp
 )
 
 # indicates the include paths
