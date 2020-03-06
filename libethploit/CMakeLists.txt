@@ -1,16 +1,98 @@
+cmake_minimum_required(VERSION 3.9)
+
+###############################################################################
+## For compiling the evm_analyser alone
+###############################################################################
+set(BOOST_INCLUDE_DIRS ${BOOST_ROOT}/include)
+
+###############################################################################
+## Compile libevmanalyser
+###############################################################################
+include_directories(
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${BOOST_INCLUDE_DIRS}
+)
+add_definitions(-D__EMBEDDED_SOUFFLE__)
+# add_definitions(-DEVMANALYSER_TEST)
+add_compile_options(
+    -Wno-error=unused-but-set-variable 
+    -Wno-error=unused-parameter 
+    -Wno-error=unused-variable 
+    -Wno-error=unknown-warning-option
+)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
+set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
+add_library(evmanalyser 
+    STATIC 
+    evm_analyser.cpp
+    evm_analyser.h
+)
+target_link_libraries(evmanalyser
+    ethploit
+)
+
+###############################################################################
+## Create the gcov target. Run coverage tests with 'make gcov'
+###############################################################################
+set(OBJECT_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/evmanalyser.dir)
+message("-- Object files will be output to: ${OBJECT_DIR}")
+add_custom_target(evmanalyser_gcov
+    COMMAND mkdir coverage
+    COMMAND test/libevmanalyser_test/libevmanalyser_test --log_level=all
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
+add_custom_command(TARGET evmanalyser_gcov
+    COMMAND echo "=================== GCOV ===================="
+    COMMAND gcov -abcfu ${CMAKE_SOURCE_DIR}/evm_analyser.cpp -o ${OBJECT_DIR}
+    | grep -A 5 "evm_analyser.cpp" > CoverageSummary.tmp
+    COMMAND cat CoverageSummary.tmp
+    COMMAND echo "-- Coverage files have been output to ${CMAKE_CURRENT_BINARY_DIR}/coverage"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/coverage
+)
+# add_dependencies(evmanalyser_gcov libevmanalyser_test)
+# Make sure to clean up the coverage folder
+set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES coverage)
+
+###############################################################################
+## Create the lcov target. Create html coverage report with 'make lcov'
+###############################################################################
+add_custom_target(evmanalyser_lcov
+    COMMAND lcov -c -d --rc lcov_branch_coverage=1 . -o coverage.info 
+    COMMAND lcov -e coverage.info ${CMAKE_SOURCE_DIR}'/evm_analyser.cpp' --rc lcov_branch_coverage=1 -o coverage_filtered.info
+    COMMAND genhtml --rc genhtml_branch_coverage=1 coverage_filtered.info --output-directory ../../out
+    WORKING_DIRECTORY ${OBJECT_DIR}
+)
+
+###############################################################################
+## Create the gcov-clean target. This cleans the build as well as generated 
+## .gcda and .gcno files.
+###############################################################################
+add_custom_target(evmanalyser_scrub
+    COMMAND ${CMAKE_MAKE_PROGRAM} clean
+    COMMAND rm -f ${OBJECT_DIR}/*.gcno
+    COMMAND rm -f ${OBJECT_DIR}/*.gcda
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
+# add_dependencies(evmanalyser_scrub
+#     libevmanalyser_test_scrub
+# )
+
+
+###############################################################################
+## The original CMakeLists for libethploit
+###############################################################################
 add_compile_options(-Wno-error=unused-but-set-variable -Wno-error=unused-parameter -Wno-error=unused-variable)
 
-add_library(
-    ethploit
+add_library(ethploit
     ExecutionTrace.cpp
     ExecutionTrace.h
 )
 
-target_link_libraries(
-    ethploit
+target_link_libraries(ethploit
     evm
     devcore
-    evmanalyser
 )
 
 # sequence (clean up coverage folder -> run coverage test -> generate coverage report):
