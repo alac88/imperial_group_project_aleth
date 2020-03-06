@@ -25,14 +25,16 @@ set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
 set(BOOST_INCLUDE_DIRS ${BOOST_ROOT}/include)
 
 # creates the executable
-add_executable(libevmanalyser_test libevmanalyser_test.cpp)
+add_executable(libevmanalyser_test 
+    libevmanalyser_test.cpp
+)
 
 # indicates the include paths
 target_include_directories(libevmanalyser_test 
   PRIVATE 
-    ${BOOST_INCLUDE_DIRS}  
-    ${CMAKE_CURRENT_SOURCE_DIR}/../..
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../libsouffle
+    ${BOOST_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../libethploit
 )
 
 target_link_libraries(libevmanalyser_test

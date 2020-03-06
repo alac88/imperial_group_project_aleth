@@ -34,13 +34,20 @@ target_link_libraries(evmanalyser
 )
 
 ###############################################################################
+## Compile libevmanalyser_test
+###############################################################################
+add_subdirectory(../libethploittest/evmanalyser-test
+    ${CMAKE_CURRENT_BINARY_DIR}/../libethploittest/evmanalyser-test
+)
+
+###############################################################################
 ## Create the gcov target. Run coverage tests with 'make gcov'
 ###############################################################################
 set(OBJECT_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/evmanalyser.dir)
 message("-- Object files will be output to: ${OBJECT_DIR}")
 add_custom_target(evmanalyser_gcov
     COMMAND mkdir coverage
-    COMMAND test/libevmanalyser_test/libevmanalyser_test --log_level=all
+    COMMAND ../libethploittest/evmanalyser-test/libevmanalyser_test --log_level=all
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 add_custom_command(TARGET evmanalyser_gcov
@@ -51,7 +58,7 @@ add_custom_command(TARGET evmanalyser_gcov
     COMMAND echo "-- Coverage files have been output to ${CMAKE_CURRENT_BINARY_DIR}/coverage"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/coverage
 )
-# add_dependencies(evmanalyser_gcov libevmanalyser_test)
+add_dependencies(evmanalyser_gcov libevmanalyser_test)
 # Make sure to clean up the coverage folder
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES coverage)
 
@@ -61,7 +68,7 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES coverage)
 add_custom_target(evmanalyser_lcov
     COMMAND lcov -c -d --rc lcov_branch_coverage=1 . -o coverage.info 
     COMMAND lcov -e coverage.info ${CMAKE_SOURCE_DIR}'/evm_analyser.cpp' --rc lcov_branch_coverage=1 -o coverage_filtered.info
-    COMMAND genhtml --rc genhtml_branch_coverage=1 coverage_filtered.info --output-directory ../../out
+    COMMAND genhtml --rc genhtml_branch_coverage=1 coverage_filtered.info --output-directory out
     WORKING_DIRECTORY ${OBJECT_DIR}
 )
 
@@ -75,9 +82,9 @@ add_custom_target(evmanalyser_scrub
     COMMAND rm -f ${OBJECT_DIR}/*.gcda
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
-# add_dependencies(evmanalyser_scrub
-#     libevmanalyser_test_scrub
-# )
+add_dependencies(evmanalyser_scrub
+    libevmanalyser_test_scrub
+)
 
 
 ###############################################################################
