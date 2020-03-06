@@ -26,8 +26,8 @@ set(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
 set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
 add_library(evmanalyser 
     STATIC 
-    evm_analyser.cpp
-    evm_analyser.h
+    EVMAnalyser.cpp
+    EVMAnalyser.h
 )
 target_link_libraries(evmanalyser
     ethploit
@@ -52,8 +52,8 @@ add_custom_target(evmanalyser_gcov
 )
 add_custom_command(TARGET evmanalyser_gcov
     COMMAND echo "=================== GCOV ===================="
-    COMMAND gcov -abcfu ${CMAKE_SOURCE_DIR}/evm_analyser.cpp -o ${OBJECT_DIR}
-    | grep -A 5 "evm_analyser.cpp" > CoverageSummary.tmp
+    COMMAND gcov -abcfu ${CMAKE_SOURCE_DIR}/EVMAnalyser.cpp -o ${OBJECT_DIR}
+    | grep -A 5 "EVMAnalyser.cpp" > CoverageSummary.tmp
     COMMAND cat CoverageSummary.tmp
     COMMAND echo "-- Coverage files have been output to ${CMAKE_CURRENT_BINARY_DIR}/coverage"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/coverage
@@ -67,7 +67,7 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES coverage)
 ###############################################################################
 add_custom_target(evmanalyser_lcov
     COMMAND lcov -c -d --rc lcov_branch_coverage=1 . -o coverage.info 
-    COMMAND lcov -e coverage.info ${CMAKE_SOURCE_DIR}'/evm_analyser.cpp' --rc lcov_branch_coverage=1 -o coverage_filtered.info
+    COMMAND lcov -e coverage.info ${CMAKE_SOURCE_DIR}'/EVMAnalyser.cpp' --rc lcov_branch_coverage=1 -o coverage_filtered.info
     COMMAND genhtml --rc genhtml_branch_coverage=1 coverage_filtered.info --output-directory out
     WORKING_DIRECTORY ${OBJECT_DIR}
 )

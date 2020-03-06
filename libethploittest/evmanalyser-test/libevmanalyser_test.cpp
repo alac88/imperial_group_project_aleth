@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE libevmanalyser_test
 #include "boost/test/included/unit_test.hpp"
 #include "turtle/mock.hpp"
-#include "evm_analyser.h"
+#include "EVMAnalyser.h"
 
 // Mock class of ExecutionTrace
 MOCK_BASE_CLASS(mock_execution_trace, dev::eth::ExecutionTrace) {
@@ -33,12 +33,12 @@ MOCK_BASE_CLASS(mock_execution_trace, dev::eth::ExecutionTrace) {
 struct F {
     F() {
         // static factory_Sf_reentrancy __factory_Sf_reentrancy_instance;
-        analyser = Evm_analyser_test::get_instance();
+        analyser = EVMAnalyserTest::getInstance();
         BOOST_TEST_MESSAGE("setup fixture");
     }
 
     ~F() {
-        analyser->clean_execution_trace();
+        analyser->cleanExecutionTrace();
         BOOST_TEST_MESSAGE("teardown fixture"); 
     }
 
@@ -49,7 +49,7 @@ struct F {
                                 5,
                                 10);
 
-        analyser->populate_execution_trace(&et);          
+        analyser->populateExecutionTrace(&et);          
     }
 
     void add_call2() {
@@ -59,10 +59,10 @@ struct F {
                                 5,
                                 10);
 
-        analyser->populate_execution_trace(&et);
+        analyser->populateExecutionTrace(&et);
     }
 
-    Evm_analyser_test* analyser; 
+    EVMAnalyserTest* analyser; 
 };
 
 // Test cases
@@ -73,13 +73,13 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
     }
 
     BOOST_AUTO_TEST_CASE(the_libevmanalyser_has_no_execution_trace_just_after_being_constructed) {
-        BOOST_TEST(analyser->get_relation_size("reentrancy") == 0);
+        BOOST_TEST(analyser->getRelationSize("reentrancy") == 0);
     }
 
     BOOST_AUTO_TEST_CASE(populate_a_given_trace) {
         add_call1();
 
-        BOOST_TEST(analyser->get_relation_size("direct_call") == 1);
+        BOOST_TEST(analyser->getRelationSize("direct_call") == 1);
     }
 
     BOOST_AUTO_TEST_CASE(populate_a_unrecognised_given_trace) {
@@ -89,81 +89,81 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
                                  5,
                                  10);
 
-        BOOST_TEST(analyser->populate_execution_trace(&et) == false);
-        BOOST_TEST(analyser->get_relation_size("direct_call") == 0);
+        BOOST_TEST(analyser->populateExecutionTrace(&et) == false);
+        BOOST_TEST(analyser->getRelationSize("direct_call") == 0);
     }
 
     BOOST_AUTO_TEST_CASE(query_a_reentrancy) {
         add_call1();
         add_call2();
 
-        BOOST_TEST(analyser->query_expoilt("reentrancy"));        
+        BOOST_TEST(analyser->queryExpoilt("reentrancy"));        
     }
 
     BOOST_AUTO_TEST_CASE(query_multiple_reentrancy) {
         mock_execution_trace et1("CALL", "0x60", "0x70", 5, 10);
-        analyser->populate_execution_trace(&et1);
+        analyser->populateExecutionTrace(&et1);
 
         mock_execution_trace et2("CALL", "0x70", "0x80", 5, 10);
-        analyser->populate_execution_trace(&et2);
+        analyser->populateExecutionTrace(&et2);
         
         mock_execution_trace et3("CALL", "0x80", "0x90", 5, 10);
-        analyser->populate_execution_trace(&et3);
+        analyser->populateExecutionTrace(&et3);
         
         mock_execution_trace et4("CALL", "0x90", "0x100", 5, 10);
-        analyser->populate_execution_trace(&et4);
+        analyser->populateExecutionTrace(&et4);
         
         mock_execution_trace et5("CALL", "0x90", "0x100", 5, 10);
-        analyser->populate_execution_trace(&et5);
+        analyser->populateExecutionTrace(&et5);
 
         mock_execution_trace et6("CALL", "0x100", "0x110", 5, 10);
-        analyser->populate_execution_trace(&et6);
+        analyser->populateExecutionTrace(&et6);
      
         mock_execution_trace et7("CALL", "0x110", "0x120", 5, 10);
-        analyser->populate_execution_trace(&et7);
+        analyser->populateExecutionTrace(&et7);
 
         mock_execution_trace et8("CALL", "0x120", "0x130", 5, 10);
-        analyser->populate_execution_trace(&et8);
+        analyser->populateExecutionTrace(&et8);
      
         mock_execution_trace et9("CALL", "0x130", "0x140", 5, 10);
-        analyser->populate_execution_trace(&et9);
+        analyser->populateExecutionTrace(&et9);
      
         mock_execution_trace et10("CALL", "0x140", "0x150", 5, 10);
-        analyser->populate_execution_trace(&et10);
+        analyser->populateExecutionTrace(&et10);
      
         mock_execution_trace et11("CALL", "0x150", "0x160", 5, 10);
-        analyser->populate_execution_trace(&et11);
+        analyser->populateExecutionTrace(&et11);
      
         mock_execution_trace et12("CALL", "0x160", "0x170", 5, 10);
-        analyser->populate_execution_trace(&et12);
+        analyser->populateExecutionTrace(&et12);
      
         mock_execution_trace et13("CALL", "0x170", "0x180", 5, 10);
-        analyser->populate_execution_trace(&et13);
+        analyser->populateExecutionTrace(&et13);
      
         mock_execution_trace et14("CALL", "0x180", "0x60", 5, 10);
-        analyser->populate_execution_trace(&et14);
+        analyser->populateExecutionTrace(&et14);
 
-        BOOST_TEST(analyser->query_expoilt("reentrancy"));        
+        BOOST_TEST(analyser->queryExpoilt("reentrancy"));        
     }
 
     BOOST_AUTO_TEST_CASE(not_allow_wrong_exploit_name) {
         add_call1();
         add_call2();
 
-        BOOST_TEST(analyser->query_expoilt("wrong_reentrancy") == false);        
+        BOOST_TEST(analyser->queryExpoilt("wrong_reentrancy") == false);        
     }
 
     BOOST_AUTO_TEST_CASE(report_no_exploit) {
         add_call2();
 
-        BOOST_TEST(analyser->query_expoilt("reentrancy") == false);        
+        BOOST_TEST(analyser->queryExpoilt("reentrancy") == false);        
     }
 
     BOOST_AUTO_TEST_CASE(clean_all_execution_trace) {
         add_call1();
 
-        analyser->clean_execution_trace(); 
+        analyser->cleanExecutionTrace(); 
 
-        BOOST_TEST(analyser->get_relation_size("direct_call") == 0);
+        BOOST_TEST(analyser->getRelationSize("direct_call") == 0);
     }
 BOOST_AUTO_TEST_SUITE_END()

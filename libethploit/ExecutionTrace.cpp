@@ -1,5 +1,5 @@
 #include "ExecutionTrace.h"
-#include "libevmanalyser/evm_analyser.h"
+// #include "libevmanalyser/EVMAnalyser.h"
 
 namespace dev 
 {
@@ -32,12 +32,12 @@ namespace dev
 
         void ExecutionTrace::print() {
             std::cout << "ExecutionTrace::print() " << instruction << std::endl;
-            Evm_analyser* analyser = Evm_analyser::get_instance();
-            if(analyser->populate_execution_trace(this)) {
-                std::cout << "ExecutionTrace::print() populated\n";
-            } else {
-                std::cout << "ExecutionTrace::print() failed\n";
-            }
+            // EVMAnalyser* analyser = EVMAnalyser::getInstance();
+            // if(analyser->populateExecutionTrace(this)) {
+                // std::cout << "ExecutionTrace::print() populated\n";
+            // } else {
+                // std::cout << "ExecutionTrace::print() failed\n";
+            // }
         }
 
     }
