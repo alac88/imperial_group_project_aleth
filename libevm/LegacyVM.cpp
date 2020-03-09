@@ -192,7 +192,6 @@ void LegacyVM::fetchInstruction()
     m_OP = Instruction(m_code[m_PC]);
     const InstructionMetric& metric = c_metrics[static_cast<size_t>(m_OP)];
     adjustStack(metric.args, metric.ret);
-
     // FEES...
     m_runGas = toInt63(m_schedule->tierStepGas[static_cast<unsigned>(metric.gasPriceTier)]);
     m_newMemSize = m_mem.size();
@@ -280,6 +279,11 @@ void LegacyVM::interpretCases()
             if (m_OP == Instruction::CALL && m_ext->staticCall && m_SP[2] != 0)
                 throwDisallowedStateChange();
             m_bounce = &LegacyVM::caseCall;
+            // cout << "PC: " << m_PC << "\n io gas: " << m_io_gas;
+            // cout << "\n runGas: " << m_runGas << "\n SP: " << m_SP;
+            // cout << "\n returnDataSize: " << m_returnData.size() << "\n output size: " << m_output.size() << endl;
+            // cout << "depth: " << m_ext->depth << endl;
+
         }
         BREAK
 

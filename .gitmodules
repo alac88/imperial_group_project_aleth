@@ -10,6 +10,3 @@
 [submodule "scripts/dopple"]
 	path = scripts/dopple
 	url = https://github.com/ethereum/dopple
-[submodule "libevmanalyser"]
-	path = libevmanalyser
-	url = https://github.com/Au-ChiKin/evm-analyser.git
