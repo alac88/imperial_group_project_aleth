@@ -1,5 +1,4 @@
 #include "ExecutionTrace.h"
-// #include "libevmanalyser/EVMAnalyser.h"
 
 namespace dev 
 {

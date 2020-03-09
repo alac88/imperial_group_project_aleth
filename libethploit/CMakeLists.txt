@@ -18,8 +18,8 @@ add_definitions(-D__EMBEDDED_SOUFFLE__)
 add_compile_options(
     -Wno-error=unused-but-set-variable 
     -Wno-error=unused-parameter 
-    -Wno-error=unused-variable 
-    -Wno-error=unknown-warning-option
+    -Wno-error=unused-variable
+    -Wno-error=deprecated-declarations 
 )
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
@@ -38,6 +38,13 @@ target_link_libraries(evmanalyser
 ###############################################################################
 add_subdirectory(../libethploittest/evmanalyser-test
     ${CMAKE_CURRENT_BINARY_DIR}/../libethploittest/evmanalyser-test
+)
+
+###############################################################################
+## Compile executiontrace-test
+###############################################################################
+add_subdirectory(../libethploittest/executiontrace-test
+    ${CMAKE_CURRENT_BINARY_DIR}/../libethploittest/executiontrace-test
 )
 
 ###############################################################################
@@ -90,7 +97,6 @@ add_dependencies(evmanalyser_scrub
 ###############################################################################
 ## The original CMakeLists for libethploit
 ###############################################################################
-add_compile_options(-Wno-error=unused-but-set-variable -Wno-error=unused-parameter -Wno-error=unused-variable)
 
 add_library(ethploit
     ExecutionTrace.cpp
@@ -113,7 +119,7 @@ message("-- Object files will be output to: ${OBJECT_DIR}")
 # Create the gcov target. Run coverage tests with 'make gcov'
 add_custom_target(gcov
     COMMAND mkdir coverage
-    COMMAND ../libethploittest/executiontrace-test
+    COMMAND ../libethploittest/executiontrace-test/executiontrace-test
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 add_custom_command(TARGET gcov

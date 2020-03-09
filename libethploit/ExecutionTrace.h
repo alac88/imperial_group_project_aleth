@@ -57,7 +57,7 @@ struct ExecutionTrace
     u256* m_SP;    // stack pointer
     u256* m_SPP;    // stack pointer
 
-    ExecutionTrace() {}; // Add a default constructor for the convinience of test
+    ExecutionTrace() {}; // Add a default constructor for the convenience of test
     ExecutionTrace(Instruction _instruction,
                     Address _senderAddress,
                     Address _receiveAddres,

@@ -10,16 +10,6 @@ cmake_minimum_required(VERSION 3.5)
 project(libevmanalyser_test)
 enable_testing()
 
-###############################################################################
-## Boost test configurations
-###############################################################################
-add_definitions(-D__EMBEDDED_SOUFFLE__)
-add_compile_options(-Wno-error=unused-parameter -Wno-error=unused-variable)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
-set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
-
-
 # indicates the location of the boost installation tree.
 # hard-coded for our simple example.
 set(BOOST_INCLUDE_DIRS ${BOOST_ROOT}/include)
