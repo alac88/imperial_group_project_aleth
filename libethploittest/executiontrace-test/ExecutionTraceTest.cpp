@@ -7,7 +7,7 @@ using namespace dev;
 using namespace dev::eth;
 
 BOOST_AUTO_TEST_SUITE(ExecutionTraceTestSuite)
-  Instruction instr (Instruction::CALL);
+  Instruction instr = Instruction::CALL;
   Address sender ("1122334455667788991011121314151617181920");
   Address receiver ("1122334455667788991011121314151617181921");
   u256 gas = 10;
@@ -19,15 +19,16 @@ BOOST_AUTO_TEST_SUITE(ExecutionTraceTestSuite)
   u256* m_SP = &SP;
   u256* m_SPP = &SPP;
 
-  // ExecutionTrace execTrace (instr, sender, receiver, valueTransfer, gas, m_PC, m_SP, m_SPP);
+  ExecutionTrace execTrace (instr, sender, receiver, valueTransfer, gas, m_PC, m_SP, m_SPP);
 
   // BOOST_AUTO_TEST_CASE(constructor_test)
   // {
   //   BOOST_TEST_MESSAGE("Constructor test: ");
   //   // Check if the values are stored in ExecutionTrace attributes 
-  //   BOOST_TEST(int(execTrace.instruction) == int(Instruction::CALL)); // TODO: perform better check here
-  //   BOOST_TEST(execTrace.senderAddress == sender);
-  //   BOOST_TEST(execTrace.receiveAddress == receiver);
+  //   BOOST_TEST(execTrace.instruction == "CALL"); // TODO: perform better check here
+  //   BOOST_TEST(execTrace.senderAddress == sender.hex());
+  //   BOOST_TEST(execTrace.receiveAddress == receiver.hex());
+  //   BOOST_TEST(execTrace.valueTransfer == valueTransfer);
   //   BOOST_TEST(execTrace.gas == gas);
   //   BOOST_TEST(execTrace.m_PC == m_PC);
   //   BOOST_TEST(*(execTrace.m_SP) == *m_SP);
@@ -46,19 +47,21 @@ BOOST_AUTO_TEST_SUITE(ExecutionTraceTestSuite)
   //   BOOST_TEST(execTrace.m_PC_post == returning_PC);
   // }
 
-  BOOST_AUTO_TEST_CASE(print_test) 
-  {
-    ostringstream buffer;
+  // BOOST_AUTO_TEST_CASE(print_test) 
+  // {
+  //   ostringstream buffer;
 
-    // Save cout's buffer here
-    auto cout_buff = cout.rdbuf();
+  //   // Save cout's buffer here
+  //   auto cout_buff = cout.rdbuf();
 
-    // Redirect cout to buffer
-    cout.rdbuf(buffer.rdbuf());
+  //   // Redirect cout to buffer
+  //   cout.rdbuf(buffer.rdbuf());
+    
+  //   execTrace.print();
+    
+  //   // When done redirect cout to its old self
+  //   cout.rdbuf(cout_buff);
 
-    // When done redirect cout to its old self
-    cout.rdbuf(cout_buff);
-
-    // BOOST_TEST(buffer.str() == string("CALL"));
-  }
+  //   BOOST_TEST(buffer.str() == string("CALL"));
+  // }
 BOOST_AUTO_TEST_SUITE_END()
