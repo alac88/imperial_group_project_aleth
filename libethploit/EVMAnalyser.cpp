@@ -1,7 +1,6 @@
 #include "EVMAnalyser.h"
 
 #include "locked_ether/locked_ether.cpp"
-#include "souffle/SouffleInterface.h"
 #ifndef EVMANALYSER_TEST
     #include "reentrancy/reentrancy.cpp"
 #endif

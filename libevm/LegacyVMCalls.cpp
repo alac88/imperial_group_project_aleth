@@ -3,6 +3,7 @@
 // Licensed under the GNU General Public License, Version 3.
 #include "LegacyVM.h"
 #include "libethploit/ExecutionTrace.h"
+#include "libethploit/EVMAnalyser.h"
 
 using namespace std;
 using namespace dev;
@@ -170,8 +171,15 @@ void LegacyVM::caseCall()
         ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer, callParams->gas, m_PC, m_SP, m_SPP);
         CallResult result = m_ext->call(*callParams);
         execTrace.setReturningPC(m_PC);
-        execTrace.print();
+        // execTrace.print();
 
+        EVMAnalyser* analyser = EVMAnalyser::getInstance();
+        if(analyser->populateExecutionTrace(&execTrace)) {
+            std::cout << "Analyser populated\n";
+        } else {
+            std::cout << "Analyser population failed\n";
+        }
+        analyser->queryExpoilt("reentrancy");
         result.output.copyTo(output);
 
         // Here we have 2 options:

@@ -102,7 +102,12 @@ add_library(ethploit
     ExecutionTrace.cpp
     ExecutionTrace.h
 )
-
+add_compile_options(
+    -Wno-error=unused-but-set-variable 
+    -Wno-error=unused-parameter 
+    -Wno-error=unused-variable
+    -Wno-error=deprecated-declarations 
+)
 target_link_libraries(ethploit
     evm
     devcore
