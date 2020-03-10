@@ -1,3 +1,9 @@
+add_compile_options(
+    -Wno-error=unused-but-set-variable 
+    -Wno-error=unused-parameter 
+    -Wno-error=unused-variable
+    -Wno-error=deprecated-declarations 
+)
 
 set(sources
     EVMC.cpp EVMC.h
@@ -15,7 +21,7 @@ add_library(evm ${sources})
 
 target_link_libraries(
     evm
-    PUBLIC ethcore devcore evmc::evmc ethploit
+    PUBLIC ethcore devcore evmc::evmc ethploit evmanalyser
     PRIVATE aleth-interpreter aleth-buildinfo jsoncpp_lib_static Boost::program_options evmc::loader
 )
 
