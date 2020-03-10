@@ -41,7 +41,7 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
     return true;
 }
 
-bool EVMAnalyser::queryExpoilt(std::string exploitName) {
+bool EVMAnalyser::queryExploit(std::string exploitName) {
     if (souffle::Relation *rel = prog->getRelation(exploitName)) {
         if (rel->size() != 0) {
             // if (exploitName == "reentrancy") {

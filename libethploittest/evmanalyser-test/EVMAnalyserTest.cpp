@@ -97,7 +97,7 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         addCall1();
         addCall2();
 
-        BOOST_TEST(analyser->queryExpoilt("reentrancy"));        
+        BOOST_TEST(analyser->queryExploit("reentrancy"));        
     }
 
     BOOST_AUTO_TEST_CASE(query_multiple_reentrancy) {
@@ -143,20 +143,20 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         ExecutionTraceMock et14("CALL", "0x180", "0x60", 5, 10);
         analyser->populateExecutionTrace(&et14);
 
-        BOOST_TEST(analyser->queryExpoilt("reentrancy"));        
+        BOOST_TEST(analyser->queryExploit("reentrancy"));        
     }
 
     BOOST_AUTO_TEST_CASE(not_allow_wrong_exploit_name) {
         addCall1();
         addCall2();
 
-        BOOST_TEST(analyser->queryExpoilt("wrong_reentrancy") == false);        
+        BOOST_TEST(analyser->queryExploit("wrong_reentrancy") == false);        
     }
 
     BOOST_AUTO_TEST_CASE(report_no_exploit) {
         addCall2();
 
-        BOOST_TEST(analyser->queryExpoilt("reentrancy") == false);        
+        BOOST_TEST(analyser->queryExploit("reentrancy") == false);        
     }
 
     BOOST_AUTO_TEST_CASE(clean_all_execution_trace) {
