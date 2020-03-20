@@ -1,4 +1,4 @@
-// Aleth: Ethereum C++ client, tools and libraries.
+                                // Aleth: Ethereum C++ client, tools and libraries.
 // Copyright 2014-2019 Aleth Authors.
 // Licensed under the GNU General Public License, Version 3.
 
@@ -339,6 +339,11 @@ bool Executive::go(OnOpFunc const& _onOp)
         {
             // Create VM instance. Force Interpreter if tracing requested.
             auto vm = VMFactory::create();
+
+            // Signal transaction start
+            std::cout << "I am starting" << std::endl;
+            std::cout << "Gas start " << m_gas << std::endl;
+
             if (m_isCreation)
             {
                 auto out = vm->exec(m_gas, *m_ext, _onOp);
@@ -410,6 +415,10 @@ bool Executive::go(OnOpFunc const& _onOp)
             // Another solution would be to reject this transaction, but that also
             // has drawbacks. Essentially, the amount of ram has to be increased here.
         }
+
+        // Signal transaction end
+        std::cout << "I am ending" << std::endl;
+        std::cout << "gas after " << m_gas << std::endl;
 
         if (m_res && m_output)
             // Copy full output:
