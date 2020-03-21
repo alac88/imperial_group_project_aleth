@@ -213,12 +213,22 @@ owning_bytes_ref LegacyVM::exec(u256& _io_gas, ExtVMFace& _ext, OnOpFunc const& 
     m_onFail = &LegacyVM::onOperation; // this results in operations that fail being logged twice in the trace
     m_PC = 0;
 
+    std::cout << "exec starting for: " << m_ext->myAddress << std::endl;
+    std::cout << "Gas start " << m_io_gas << std::endl;
     try
     {
+
         // trampoline to minimize depth of call stack when calling out
         m_bounce = &LegacyVM::initEntry;
-        do
+        do {
+            if (m_OP == Instruction::CALL || m_OP == Instruction::DELEGATECALL) {
+                std::cout << "m_OP: " << instructionInfo(m_OP).name << std::endl;   
+                std::cout << "Caller address: " << m_ext->caller << " if DELEGATECALL: " << m_ext->myAddress << std::endl;
+                std::cout << "Receiver address: " << m_ext->myAddress << " if CALL/STATICCALL: " << asAddress(m_SP[1]) << std::endl;
+                std::cout << "Steps: " << m_nSteps << std::endl;
+            }
             (this->*m_bounce)();
+        }
         while (m_bounce);
 
     }
@@ -229,6 +239,11 @@ owning_bytes_ref LegacyVM::exec(u256& _io_gas, ExtVMFace& _ext, OnOpFunc const& 
     }
 
     *m_io_gas_p = m_io_gas;
+    std::cout << "exec ending for: " << m_ext->myAddress << std::endl;
+    std::cout << "gas after " << m_io_gas << std::endl;
+    std::cout << "Steps after: " << m_nSteps << std::endl;
+
+
     return std::move(m_output);
 }
 

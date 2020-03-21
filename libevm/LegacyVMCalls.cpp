@@ -171,7 +171,7 @@ void LegacyVM::caseCall()
         ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer, callParams->gas, m_PC, m_SP, m_SPP);
         CallResult result = m_ext->call(*callParams);
         execTrace.setReturningPC(m_PC);
-        // execTrace.print();
+        execTrace.print();
 
         EVMAnalyser* analyser = EVMAnalyser::getInstance();
         if(analyser->populateExecutionTrace(&execTrace)) {
