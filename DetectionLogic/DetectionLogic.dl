@@ -56,5 +56,5 @@ reentrancy(2, A1, A2, P, P2) :- call(2, A1, A2, P), call(1, A2, A1, P2), A1 != A
 .decl locked_ether(a1:EthAddress, g1:gas)
 .output locked_ether
 
-locked_ether(A1, G1) :- call_entry(G1, A1), call_exit(G2), G1+1=G2.
+locked_ether(A1, G1) :- call_entry(G1, A1), call_exit(G2), G1=G2.
 
