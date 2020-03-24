@@ -85,6 +85,11 @@ void Executive::initialize(Transaction const& _transaction)
 {
     m_t = _transaction;
     m_baseGasRequired = m_t.baseGasRequired(m_sealEngine.evmSchedule(m_envInfo.number()));
+
+    // signal init
+    std::cout << "starting @" << m_t.from().hex() << std::endl;
+    std::cout << m_t.gas() << std::endl;
+
     try
     {
         m_sealEngine.verifyTransaction(ImportRequirements::Everything, m_t, m_envInfo.header(), m_envInfo.gasUsed());
@@ -341,8 +346,8 @@ bool Executive::go(OnOpFunc const& _onOp)
             auto vm = VMFactory::create();
 
             // Signal transaction start
-            std::cout << "I am starting" << std::endl;
-            std::cout << "Gas start " << m_gas << std::endl;
+            // std::cout << "I am starting" << std::endl;
+            // std::cout << "Gas start " << m_gas << std::endl;
 
             if (m_isCreation)
             {
@@ -417,8 +422,8 @@ bool Executive::go(OnOpFunc const& _onOp)
         }
 
         // Signal transaction end
-        std::cout << "I am ending" << std::endl;
-        std::cout << "gas after " << m_gas << std::endl;
+        // std::cout << "I am ending" << std::endl;
+        // std::cout << "gas after " << m_gas << std::endl;
 
         if (m_res && m_output)
             // Copy full output:
@@ -451,6 +456,10 @@ bool Executive::finalize()
 
         u256 feesEarned = (m_t.gas() - m_gas) * m_t.gasPrice();
         m_s.addBalance(m_envInfo.author(), feesEarned);
+
+        // signal finalisation
+        std::cout << "ending @" << m_t.from().hex() << std::endl;
+        std::cout << "gas now " << m_gas << " hence used " << gasUsed() << std::endl;
     }
 
     // Selfdestructs...
