@@ -4,7 +4,7 @@
 #ifndef EVMANALYSER_TEST
     #include "locked_ether/locked_ether.cpp"
     #include "reentrancy/reentrancy.cpp"
-    #include "exploits.cpp"
+    #include "DetectionLogic.cpp"
 #endif
 #include <iostream>
 
