@@ -12,15 +12,21 @@ class EVMAnalyser {
   protected:
     souffle::SouffleProgram *prog;
     souffle::Relation *relDirectCall;
+    souffle::Relation *relCallEntry;
+    souffle::Relation *relCallExit;
     souffle::Relation *queReentrancy;
   public:
     static EVMAnalyser* getInstance();
 
     bool populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace);
 
-    bool queryExploit(std::string exploitName);
+    bool queryExpoilt(std::string exploitName);
 
     void cleanExecutionTrace();
+
+    void transactionBegins(int gas, std::string callerAddress);
+
+    void transactionEnds(int gas);
 };
 
 /**
