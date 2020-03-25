@@ -85,6 +85,12 @@ void Executive::initialize(Transaction const& _transaction)
 {
     m_t = _transaction;
     m_baseGasRequired = m_t.baseGasRequired(m_sealEngine.evmSchedule(m_envInfo.number()));
+
+    // signal init
+    std::cout << "starting @ " << m_t.from().hex() << " ";
+    std::cout << "sending to " << m_t.to().hex() << std::endl;
+    std::cout << m_t.gas() << std::endl;
+
     try
     {
         m_sealEngine.verifyTransaction(ImportRequirements::Everything, m_t, m_envInfo.header(), m_envInfo.gasUsed());
@@ -132,6 +138,8 @@ void Executive::initialize(Transaction const& _transaction)
         }
         m_gasCost = (u256)gasCost;  // Convert back to 256-bit, safe now.
     }
+
+
 }
 
 bool Executive::execute()
@@ -341,8 +349,8 @@ bool Executive::go(OnOpFunc const& _onOp)
             auto vm = VMFactory::create();
 
             // Signal transaction start
-            std::cout << "I am starting" << std::endl;
-            std::cout << "Gas start " << m_gas << std::endl;
+            // std::cout << "I am starting" << std::endl;
+            // std::cout << "Gas start " << m_gas << std::endl;
 
             if (m_isCreation)
             {
@@ -417,8 +425,8 @@ bool Executive::go(OnOpFunc const& _onOp)
         }
 
         // Signal transaction end
-        std::cout << "I am ending" << std::endl;
-        std::cout << "gas after " << m_gas << std::endl;
+        // std::cout << "I am ending" << std::endl;
+        // std::cout << "gas after " << m_gas << std::endl;
 
         if (m_res && m_output)
             // Copy full output:
@@ -443,6 +451,11 @@ bool Executive::finalize()
         assert(m_ext->sub.refunds >= 0);
         int64_t maxRefund = (static_cast<int64_t>(m_t.gas()) - static_cast<int64_t>(m_gas)) / 2;
         m_gas += min(maxRefund, m_ext->sub.refunds);
+
+        std::cout << "myAdd " << m_ext->myAddress.hex() << " ";
+        std::cout << "caller " << m_ext->caller.hex() << " ";
+        std::cout << "origin " << m_ext->origin.hex() << std::endl;
+
     }
 
     if (m_t)
@@ -451,6 +464,10 @@ bool Executive::finalize()
 
         u256 feesEarned = (m_t.gas() - m_gas) * m_t.gasPrice();
         m_s.addBalance(m_envInfo.author(), feesEarned);
+
+        // signal finalisation
+        std::cout << "finishing @" << m_t.from().hex() << std::endl;
+        std::cout << "gas now " << m_gas << " hence used " << gasUsed() << std::endl;
     }
 
     // Selfdestructs...

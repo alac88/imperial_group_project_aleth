@@ -170,17 +170,23 @@ void LegacyVM::caseCall()
         
         ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer, callParams->gas, m_PC, m_SP, m_SPP);
         CallResult result = m_ext->call(*callParams);
-        execTrace.setReturningPC(m_PC);
+
+        std::cout << instructionInfo(m_OP).name << " ";
+        std::cout << "Sender " << callParams.get()->senderAddress << " ";
+        std::cout << "Receive Address" << callParams.get()->receiveAddress << std::endl;
+
+
+        // execTrace.setReturningPC(m_PC);
         // execTrace.print();
 
-        EVMAnalyser* analyser = EVMAnalyser::getInstance();
-        if(analyser->populateExecutionTrace(&execTrace)) {
-            std::cout << "Analyser populated\n";
-        } else {
-            std::cout << "Analyser population failed\n";
-        }
-        analyser->queryExploit("reentrancy");
-        result.output.copyTo(output);
+        // EVMAnalyser* analyser = EVMAnalyser::getInstance();
+        // if(analyser->populateExecutionTrace(&execTrace)) {
+        //     std::cout << "Analyser populated\n";
+        // } else {
+        //     std::cout << "Analyser population failed\n";
+        // }
+        // analyser->queryExploit("reentrancy");
+        // result.output.copyTo(output);
 
         // Here we have 2 options:
         // 1. Keep the whole returned memory buffer (owning_bytes_ref):
