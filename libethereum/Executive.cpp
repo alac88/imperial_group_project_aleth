@@ -87,7 +87,8 @@ void Executive::initialize(Transaction const& _transaction)
     m_baseGasRequired = m_t.baseGasRequired(m_sealEngine.evmSchedule(m_envInfo.number()));
 
     // signal init
-    std::cout << "starting @" << m_t.from().hex() << std::endl;
+    std::cout << "starting @ " << m_t.from().hex() << " ";
+    std::cout << "sending to " << m_t.to().hex() << std::endl;
     std::cout << m_t.gas() << std::endl;
 
     try
@@ -137,6 +138,8 @@ void Executive::initialize(Transaction const& _transaction)
         }
         m_gasCost = (u256)gasCost;  // Convert back to 256-bit, safe now.
     }
+
+
 }
 
 bool Executive::execute()
@@ -448,6 +451,11 @@ bool Executive::finalize()
         assert(m_ext->sub.refunds >= 0);
         int64_t maxRefund = (static_cast<int64_t>(m_t.gas()) - static_cast<int64_t>(m_gas)) / 2;
         m_gas += min(maxRefund, m_ext->sub.refunds);
+
+        std::cout << "myAdd " << m_ext->myAddress.hex() << " ";
+        std::cout << "caller " << m_ext->caller.hex() << " ";
+        std::cout << "origin " << m_ext->origin.hex() << std::endl;
+
     }
 
     if (m_t)
@@ -458,7 +466,7 @@ bool Executive::finalize()
         m_s.addBalance(m_envInfo.author(), feesEarned);
 
         // signal finalisation
-        std::cout << "ending @" << m_t.from().hex() << std::endl;
+        std::cout << "finishing @" << m_t.from().hex() << std::endl;
         std::cout << "gas now " << m_gas << " hence used " << gasUsed() << std::endl;
     }
 
