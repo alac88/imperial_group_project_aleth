@@ -20,7 +20,7 @@ class EVMAnalyser {
 
     bool populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace);
 
-    bool queryExpoilt(std::string exploitName);
+    bool queryExploit(std::string exploitName);
 
     void cleanExecutionTrace();
 

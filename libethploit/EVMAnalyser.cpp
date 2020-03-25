@@ -4,7 +4,7 @@
 #ifndef EVMANALYSER_TEST
     #include "locked_ether/locked_ether.cpp"
     #include "reentrancy/reentrancy.cpp"
-    #include "DetectionLogic.cpp"
+    // #include "DetectionLogic.cpp"
 #endif
 #include <iostream>
 
@@ -55,21 +55,21 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
     return true;
 }
 
-void EVMAnalyser::transactionEnds(int gas, std::string callerAddress) {
+void EVMAnalyser::transactionBegins(int gas, std::string callerAddress) {
     souffle::tuple newTuple(relCallEntry); 
     newTuple << gas << callerAddress;
     relCallEntry->insert(newTuple);
     //TODO: should increase executionTraceCount here?
 }
 
-void EVMAnalyser::transactionBegins(int gas) {
+void EVMAnalyser::transactionEnds(int gas) {
     souffle::tuple newTuple(relCallExit);
     newTuple << gas;
     relCallExit->insert(newTuple); 
     //TODP: should increase exectutionTraceCount here?
 }
 
-bool EVMAnalyser::queryExpoilt(std::string exploitName) {
+bool EVMAnalyser::queryExploit(std::string exploitName) {
     if (souffle::Relation *rel = prog->getRelation(exploitName)) {
         // Re-entrancy 
         if (exploitName == "reentrancy") {
