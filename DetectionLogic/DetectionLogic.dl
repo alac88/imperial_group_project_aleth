@@ -6,9 +6,11 @@
  * call(c:CallNum, a1:EthAddress, a2:EthAddress, p:IntSet)
  * ibid.
  * 
- * reentrancy(c:ProgCounter, a1:EthAddress, a2:EthAddress, p:IntSet, p2:IntSet)
- * At programme counter, c, the call from contract address a1 to address a2 involved
+ * reentrancy(c:CallNum, a1:EthAddress, a2:EthAddress, p:IntSet, p2:IntSet)
+ * The call with number c calls from contract address a1 to address a2 involved
  * a reentrant callback to the calling contract, address a1.
+ * Note: this logic is circular, meaning a recursive reentrancy creates reentrancy
+ * facts for every connective possibility between reentrant calls.
 */
 
 //types
@@ -27,7 +29,7 @@
 
 call(C, A1, A2, P) :- direct_call(C, A1, A2, P); direct_call(C, A1, A3, P), call(C2, A3, A2, P2).
 
-reentrancy(2, A1, A2, P, P2) :- call(2, A1, A2, P), call(1, A2, A1, P2), A1 != A2.
+reentrancy(C2, A1, A2, P, P2) :- call(C2, A1, A2, P), call(C1, A2, A1, P2), A1 != A2.
 
 /**************************************************************************************************/
 
