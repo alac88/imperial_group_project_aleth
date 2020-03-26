@@ -86,11 +86,6 @@ void Executive::initialize(Transaction const& _transaction)
     m_t = _transaction;
     m_baseGasRequired = m_t.baseGasRequired(m_sealEngine.evmSchedule(m_envInfo.number()));
 
-    // signal init
-    std::cout << "starting @ " << m_t.from().hex() << " ";
-    std::cout << "sending to " << m_t.to().hex() << std::endl;
-    std::cout << m_t.gas() << std::endl;
-
     try
     {
         m_sealEngine.verifyTransaction(ImportRequirements::Everything, m_t, m_envInfo.header(), m_envInfo.gasUsed());
@@ -138,6 +133,13 @@ void Executive::initialize(Transaction const& _transaction)
         }
         m_gasCost = (u256)gasCost;  // Convert back to 256-bit, safe now.
     }
+
+    // signal init
+    std::cout << "==========================" << std::endl;
+    std::cout << "starting @ " << m_t.from().hex() << " ";
+    std::cout << "sending to " << m_t.to().hex() << std::endl;
+    std::cout << m_t.gas() << std::endl;
+
 
 
 }
@@ -454,7 +456,9 @@ bool Executive::finalize()
 
         std::cout << "myAdd " << m_ext->myAddress.hex() << " ";
         std::cout << "caller " << m_ext->caller.hex() << " ";
-        std::cout << "origin " << m_ext->origin.hex() << std::endl;
+        std::cout << "origin " << m_ext->origin.hex() << " ";
+        std::cout << "==========================" << std::endl;
+
 
     }
 
