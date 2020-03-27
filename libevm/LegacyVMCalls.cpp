@@ -186,7 +186,7 @@ void LegacyVM::caseCall()
         //     std::cout << "Analyser population failed\n";
         // }
         // analyser->queryExploit("reentrancy");
-        // result.output.copyTo(output);
+        result.output.copyTo(output);
 
         // Here we have 2 options:
         // 1. Keep the whole returned memory buffer (owning_bytes_ref):
