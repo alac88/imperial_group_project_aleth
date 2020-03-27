@@ -30,13 +30,11 @@ namespace dev
         }
 
         void ExecutionTrace::print() {
-            std::cout << instruction << std::endl;
-            // EVMAnalyser* analyser = EVMAnalyser::getInstance();
-            // if(analyser->populateExecutionTrace(this)) {
-                // std::cout << "ExecutionTrace::print() populated\n";
-            // } else {
-                // std::cout << "ExecutionTrace::print() failed\n";
-            // }
+            std::cout << instruction << " ";
+            std::cout << senderAddress << " ";
+            std::cout << receiveAddress << " ";
+            std::cout << valueTransfer << " ";
+            std::cout << gas << std::endl;
         }
 
     }
