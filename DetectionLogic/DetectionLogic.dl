@@ -45,9 +45,8 @@ reentrancy(C2, A1, A2, P, P2) :- call(C2, A1, A2, P), call(C1, A2, A1, P2), A1 !
  * an instance of Locked Ether has been detected
 */
 
-//types
+//Additional types
 .number_type gas
-.symbol_type EthAddress		//Ethereum address for caller and called contracts
 
 .decl call_entry(g1:gas, a1:EthAddress)
 .input call_entry
