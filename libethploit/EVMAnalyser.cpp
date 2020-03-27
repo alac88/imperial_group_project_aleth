@@ -12,6 +12,7 @@ EVMAnalyser::EVMAnalyser() {
     executionTraceCount = 1;
     // TODO: combine two datalog scripts so that there is no need to get multiple instances
     prog = souffle::ProgramFactory::newInstance("reentrancy");
+    prog_locked_ether = souffle::ProgramFactory::newInstance("locked_ether"); 
     relDirectCall = prog->getRelation("direct_call");
     relCallEntry = prog->getRelation("call_entry");
     relCallExit = prog->getRelation("call_exit");
@@ -31,7 +32,7 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
         executionTrace->instruction == "DELEGATECALL" ||
         executionTrace->instruction == "STATICCALL") { // Treating three types of call as the same for now 
         souffle::tuple newTuple(relDirectCall); // create tuple for the relation
-        std::cout << "[Middleware]: " << executionTraceCount << std::endl; 
+        std::cout << "[Middleware]: The populated instruction has ID number " << executionTraceCount << std::endl; 
         newTuple << executionTraceCount
                 << executionTrace->senderAddress
                 << executionTrace->receiveAddress
@@ -39,10 +40,8 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
         relDirectCall->insert(newTuple);
         executionTraceCount++;
     } else if (executionTrace->instruction == "CALL_ENTRY") {
-        // TODO: find out what is call_entry
         // Whether should we use the exectuationTrace datastructure or a separate method to input this relation?
     } else if (executionTrace->instruction == "CALL_EXIT") {
-        // TODO: find out what is call_exit
         // Whether should we use the exectuationTrace datastructure or a separate method to input this relation?
     } else {
         std::cout << "No currently exisited relation matches up with this instruction!" 
@@ -59,14 +58,19 @@ void EVMAnalyser::transactionBegins(int gas, std::string callerAddress) {
     souffle::tuple newTuple(relCallEntry); 
     newTuple << gas << callerAddress;
     relCallEntry->insert(newTuple);
-    //TODO: should increase executionTraceCount here?
+    // TODO: should increase executionTraceCount here?
+    // So executionTraceCount is for detecting re-entrancy exploit in place of the original program counter
+    // Maybe not increasing since the beginning of transcation is not an instruction but a flag
 }
 
 void EVMAnalyser::transactionEnds(int gas) {
     souffle::tuple newTuple(relCallExit);
     newTuple << gas;
     relCallExit->insert(newTuple); 
-    //TODP: should increase exectutionTraceCount here?
+}
+
+void EVMAnalyser::extractReentrancyAddresses() {
+    
 }
 
 bool EVMAnalyser::queryExploit(std::string exploitName) {

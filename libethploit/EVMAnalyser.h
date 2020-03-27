@@ -7,10 +7,15 @@
 
 class EVMAnalyser {
     int executionTraceCount;
+
     EVMAnalyser();
     ~EVMAnalyser(); 
+    
+    void extractReentrancyAddresses();
+
   protected:
     souffle::SouffleProgram *prog;
+    souffle::SouffleProgram *prog_locked_ether;
     souffle::Relation *relDirectCall;
     souffle::Relation *relCallEntry;
     souffle::Relation *relCallExit;
