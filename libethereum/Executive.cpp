@@ -472,6 +472,7 @@ bool Executive::finalize()
         EVMAnalyser* analyser = EVMAnalyser::getInstance();
         analyser->queryExploit("reentrancy");
         analyser->queryExploit("locked_ether");
+        analyser->cleanExecutionTrace();
     }
 
     // Selfdestructs...
