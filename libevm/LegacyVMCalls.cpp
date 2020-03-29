@@ -186,7 +186,7 @@ void LegacyVM::caseCall()
         } else {
             std::cout << "Analyser population failed\n";
         }
-        analyser->queryExploit("reentrancy");
+        // analyser->queryExploit("reentrancy");
         result.output.copyTo(output);
 
         // Here we have 2 options:
