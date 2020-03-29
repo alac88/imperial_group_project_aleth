@@ -2,17 +2,13 @@
 
 #include "souffle/SouffleInterface.h"
 #ifndef EVMANALYSER_TEST
-    #include "locked_ether/locked_ether.cpp"
-    #include "reentrancy/reentrancy.cpp"
-    // #include "DetectionLogic.cpp"
+    #include "DetectionLogic.cpp"
 #endif
 #include <iostream>
 
 EVMAnalyser::EVMAnalyser() {
     executionTraceCount = 1;
-    // TODO: combine two datalog scripts so that there is no need to get multiple instances
-    prog = souffle::ProgramFactory::newInstance("reentrancy");
-    prog_locked_ether = souffle::ProgramFactory::newInstance("locked_ether"); 
+    prog = souffle::ProgramFactory::newInstance("DetectionLogic");
     relDirectCall = prog->getRelation("direct_call");
     relCallEntry = prog->getRelation("call_entry");
     relCallExit = prog->getRelation("call_exit");
