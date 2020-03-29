@@ -34,8 +34,8 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
                 << (int) executionTrace->valueTransfer;
         relDirectCall->insert(newTuple);
         executionTraceCount++;
-    } else if (executionTrace->instruction == "DELTEGATECALL") {
-        souffle::tuple newTupleCall(relDirectCall); // create tuple for the relation
+    } else if (executionTrace->instruction == "DELEGATECALL") {
+        souffle::tuple newTupleCall(relDirectCall);
         std::cout << "[Middleware]: The populated instruction has ID number " << executionTraceCount << std::endl; 
         newTupleCall << executionTraceCount
                 << executionTrace->senderAddress
