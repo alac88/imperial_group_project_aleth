@@ -15,7 +15,7 @@ EVMAnalyser::EVMAnalyser() {
 }
 
 EVMAnalyser::~EVMAnalyser() {
-
+    // An default constructor for testing
 }
 
 EVMAnalyser* EVMAnalyser::getInstance() {
@@ -50,16 +50,16 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
     return true;
 }
 
-void EVMAnalyser::transactionBegins(int gas, std::string callerAddress) {
+void EVMAnalyser::callEntry(int gas, std::string contractAddress) {
     souffle::tuple newTuple(relCallEntry); 
-    newTuple << gas << callerAddress;
+    newTuple << gas << contractAddress;
     relCallEntry->insert(newTuple);
     // TODO: should increase executionTraceCount here?
     // So executionTraceCount is for detecting re-entrancy exploit in place of the original program counter
     // Maybe not increasing since the beginning of transcation is not an instruction but a flag
 }
 
-void EVMAnalyser::transactionEnds(int gas) {
+void EVMAnalyser::callExit(int gas) {
     souffle::tuple newTuple(relCallExit);
     newTuple << gas;
     relCallExit->insert(newTuple); 

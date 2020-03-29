@@ -28,9 +28,9 @@ class EVMAnalyser {
 
     void cleanExecutionTrace();
 
-    void transactionBegins(int gas, std::string callerAddress);
+    void callEntry(int gas, std::string contractAddress);
 
-    void transactionEnds(int gas);
+    void callExit(int gas);
 };
 
 /**
