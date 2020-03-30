@@ -40,7 +40,7 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
         newTupleCall << executionTraceCount
                 << executionTrace->senderAddress
                 << executionTrace->receiveAddress
-                << (int) executionTrace->valueTransfer;
+                << (int) executionTrace->valueTransfer; // valueTransfer, receiveAddress not needed here
         relDirectCall->insert(newTupleCall);
         executionTraceCount++;
 
@@ -62,7 +62,7 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
 
 void EVMAnalyser::callEntry(int gas, std::string contractAddress) {
     souffle::tuple newTuple(relCallEntry); 
-    newTuple << gas << contractAddress;
+    newTuple << executionTraceCount << gas << contractAddress;
     relCallEntry->insert(newTuple);
 
     prog->run();
@@ -73,7 +73,7 @@ void EVMAnalyser::callEntry(int gas, std::string contractAddress) {
 
 void EVMAnalyser::callExit(int gas) {
     souffle::tuple newTuple(relCallExit);
-    newTuple << gas;
+    newTuple << executionTraceCount << gas;
     relCallExit->insert(newTuple); 
 
     prog->run();

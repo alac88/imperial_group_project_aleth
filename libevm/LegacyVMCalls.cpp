@@ -168,8 +168,18 @@ void LegacyVM::caseCall()
     if (caseCallSetup(callParams.get(), output))
     {
         
-        ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer, callParams->gas, m_PC, m_SP, m_SPP);
+        ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer);
+        EVMAnalyser* analyser = EVMAnalyser::getInstance();
+        if(analyser->populateExecutionTrace(&execTrace)) {
+            std::cout << "Analyser populated\n";
+        } else {
+            std::cout << "Analyser population failed\n";
+        }
+        if (m_OP == Instruction::DELEGATECALL) 
+            analyser->callEntry(callParams->gas, callParams->senderAddress);
         CallResult result = m_ext->call(*callParams);
+        if (m_OP == Instruction::DELEGATECALL) 
+            analyser->callExit(callParams->gas);
 
         std::cout << instructionInfo(m_OP).name << " ";
         std::cout << "Sender " << callParams.get()->senderAddress << " ";
@@ -180,12 +190,6 @@ void LegacyVM::caseCall()
         // execTrace.setReturningPC(m_PC);
         // execTrace.print();
 
-        EVMAnalyser* analyser = EVMAnalyser::getInstance();
-        if(analyser->populateExecutionTrace(&execTrace)) {
-            std::cout << "Analyser populated\n";
-        } else {
-            std::cout << "Analyser population failed\n";
-        }
         // analyser->queryExploit("reentrancy");
         result.output.copyTo(output);
 
