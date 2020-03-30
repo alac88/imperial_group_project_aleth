@@ -43,10 +43,6 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
                 << (int) executionTrace->valueTransfer; // valueTransfer, receiveAddress not needed here
         relDirectCall->insert(newTupleCall);
         executionTraceCount++;
-
-        // Maybe also populate a call_entry fact
-        // souffle::tuple newTupleCall(relCallEntry);
-
     } else if (executionTrace->instruction == "CALL_EXIT") {
         // Whether should we use the exectuationTrace datastructure or a separate method to input this relation?
     } else {
@@ -66,9 +62,6 @@ void EVMAnalyser::callEntry(int gas, std::string contractAddress) {
     relCallEntry->insert(newTuple);
 
     prog->run();
-    // TODO: should increase executionTraceCount here?
-    // So executionTraceCount is for detecting re-entrancy exploit in place of the original program counter
-    // Maybe not increasing since the beginning of transcation is not an instruction but a flag
 }
 
 void EVMAnalyser::callExit(int gas) {
