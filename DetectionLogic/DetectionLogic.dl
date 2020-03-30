@@ -27,20 +27,21 @@
 .decl reentrancy(c:CallNum, a1:EthAddress, a2:EthAddress, p:IntSet, p2:IntSet)
 .output reentrancy
 
-call(C, A1, A2, P) :- direct_call(C, A1, A2, P); direct_call(C, A1, A3, P), call(C2, A3, A2, P2).
+call(C, A1, A2, P) :- direct_call(C, A1, A2, P).
+call(C, A1, A2, P) :- direct_call(C, A1, A3, P), call(C2, A3, A2, P2).
 
 reentrancy(C2, A1, A2, P, P2) :- call(C2, A1, A2, P), call(C1, A2, A1, P2), A1 != A2.
 
 /**************************************************************************************************/
 
 /* Facts - Locked Ether
- * call_entry(g1:gas, id:identifier, a1:EthAddress)
- * Contract with address a1 is called when gas value is c1
+ * call_entry(id:identifier, g1:gas, a:EthAddress)
+ * Contract with address a is called when gas value is c1
  * 
- * call_exit(g2:gas, id:identifier)
+ * call_exit(id:identifier, g2:gas)
  * Gas value is c2 when exiting a call to a contract.
  *
- * locked_ether(a1:EthAddress, id:identifier, g1:gas)
+ * locked_ether(id:identifier, g1:gas, a:EthAddress)
  * In the calling of contract with address a1 and gas value g1
  * an instance of Locked Ether has been detected
 */
@@ -49,14 +50,14 @@ reentrancy(C2, A1, A2, P, P2) :- call(C2, A1, A2, P), call(C1, A2, A1, P2), A1 !
 .number_type gas
 .number_type identifier
 
-.decl call_entry(g1:gas, id:identifier, a1:EthAddress)
+.decl call_entry(id:identifier, g1:gas, a:EthAddress)
 .input call_entry
 
-.decl call_exit(g2:gas, id:identifier)
+.decl call_exit(id:identifier, g2:gas)
 .input call_exit
 
-.decl locked_ether(a1:EthAddress, id:identifier, g1:gas)
+.decl locked_ether(id:identifier, g1:gas, a:EthAddress)
 .output locked_ether
 
-locked_ether(A1, ID, G1) :- call_entry(G1, ID, A1), call_exit(G2, ID), G1=G2.
+locked_ether(ID, G1, A) :- call_entry(ID, G1, A), call_exit(ID, G2), G1=G2.
 
