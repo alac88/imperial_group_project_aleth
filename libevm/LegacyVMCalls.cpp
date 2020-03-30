@@ -176,10 +176,10 @@ void LegacyVM::caseCall()
             std::cout << "Analyser population failed\n";
         }
         if (m_OP == Instruction::DELEGATECALL) 
-            analyser->callEntry(callParams->gas, callParams->senderAddress);
+            analyser->callEntry((int)callParams->gas, callParams->senderAddress.hex());
         CallResult result = m_ext->call(*callParams);
         if (m_OP == Instruction::DELEGATECALL) 
-            analyser->callExit(callParams->gas);
+            analyser->callExit((int)callParams->gas);
 
         std::cout << instructionInfo(m_OP).name << " ";
         std::cout << "Sender " << callParams.get()->senderAddress << " ";
