@@ -1,0 +1,63 @@
+/* Facts - re-entrancy
+ * direct_call(c:CallNum, a1:EthAddress, a2:EthAddress, p:NatNum)
+ * The call number c in a given transaction constitutes a call from a contract with address a1
+ * to contract with address a2. The call involves p Ether.
+ *
+ * call(c:CallNum, a1:EthAddress, a2:EthAddress, p:IntSet)
+ * ibid.
+ *
+ * reentrancy(c:CallNum, a1:EthAddress, a2:EthAddress, p:IntSet, p2:IntSet)
+ * The call with number c calls from contract address a1 to address a2 involved
+ * a reentrant callback to the calling contract, address a1.
+ * Note: this logic is circular, meaning a recursive reentrancy creates reentrancy
+ * facts for every connective possibility between reentrant calls.
+*/
+
+//types
+.number_type CallNum
+.symbol_type EthAddress         //Ethereum address for caller and called contracts
+.type NatNum = number
+.type IntSet = number
+
+.decl direct_call(c:CallNum, a1:EthAddress, a2:EthAddress, p:NatNum)
+.input direct_call
+
+.decl call(c:CallNum, a1:EthAddress, a2:EthAddress, p:IntSet)
+
+.decl reentrancy(c:CallNum, a1:EthAddress, a2:EthAddress, p:IntSet, p2:IntSet)
+.output reentrancy
+
+call(C, A1, A2, P) :- direct_call(C, A1, A2, P).
+call(C, A1, A2, P) :- direct_call(C, A1, A3, P), call(C2, A3, A2, P2).
+
+reentrancy(C2, A1, A2, P, P2) :- call(C2, A1, A2, P), call(C1, A2, A1, P2), A1 != A2.
+
+/**************************************************************************************************/
+
+/* Facts - Locked Ether
+ * call_entry(id:identifier, g1:gas, a:EthAddress)
+ * Contract with address a is called when gas value is c1
+ *
+ * call_exit(id:identifier, g2:gas)
+ * Gas value is c2 when exiting a call to a contract.
+ *
+ * locked_ether(id:identifier, g1:gas, a:EthAddress)
+ * In the calling of contract with address a1 and gas value g1
+ * an instance of Locked Ether has been detected
+*/
+
+//Additional types
+.number_type gas
+.number_type identifier
+
+.decl call_entry(id:identifier, g1:gas, a:EthAddress)
+.input call_entry
+
+.decl call_exit(id:identifier, g2:gas)
+.input call_exit
+
+.decl locked_ether(id:identifier, g1:gas, a:EthAddress)
+.output locked_ether
+
+locked_ether(ID, G1, A) :- call_entry(ID, G1, A), call_exit(ID, G2), G1=G2.
+
