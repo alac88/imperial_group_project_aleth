@@ -7,11 +7,17 @@
 
 class EVMAnalyser {
     int executionTraceCount;
+
     EVMAnalyser();
     ~EVMAnalyser(); 
+    
+    void extractReentrancyAddresses();
+
   protected:
     souffle::SouffleProgram *prog;
     souffle::Relation *relDirectCall;
+    souffle::Relation *relCallEntry;
+    souffle::Relation *relCallExit;
     souffle::Relation *queReentrancy;
   public:
     static EVMAnalyser* getInstance();
@@ -21,6 +27,10 @@ class EVMAnalyser {
     bool queryExploit(std::string exploitName);
 
     void cleanExecutionTrace();
+
+    void callEntry(int gas, std::string contractAddress);
+
+    void callExit(int gas);
 };
 
 /**

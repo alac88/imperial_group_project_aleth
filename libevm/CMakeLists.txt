@@ -4,6 +4,11 @@ add_compile_options(
     -Wno-error=unused-variable
     -Wno-error=deprecated-declarations 
 )
+if (APPLE)
+    add_compile_options(
+        -Wno-error=unknown-warning-option
+    )
+endif()
 
 set(sources
     EVMC.cpp EVMC.h
