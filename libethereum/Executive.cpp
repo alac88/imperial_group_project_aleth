@@ -140,8 +140,6 @@ void Executive::initialize(Transaction const& _transaction)
     std::cout << "sending to " << m_t.to().hex() << std::endl;
     std::cout << m_t.gas() << std::endl;
 
-
-
 }
 
 bool Executive::execute()
@@ -168,6 +166,11 @@ bool Executive::call(Address const& _receiveAddress, Address const& _senderAddre
 
 bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address const& _origin)
 {
+
+    // if (m_ext) {
+    //     std::cout << "gas first " << m_ext->balance(m_ext->myAddress) << std::endl;
+    // }
+
     // If external transaction.
     if (m_t)
     {
@@ -230,6 +233,10 @@ bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address co
                 version, m_depth, false, _p.staticCall);
         }
     }
+
+    // if (m_ext) {
+    //     std::cout << "gas now " << m_ext->balance(m_ext->myAddress) << std::endl;
+    // }
 
     // Transfer ether.
     m_s.transferBalance(_p.senderAddress, _p.receiveAddress, _p.valueTransfer);

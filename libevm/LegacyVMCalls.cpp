@@ -169,12 +169,16 @@ void LegacyVM::caseCall()
     {
         
         ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer, callParams->gas, m_PC, m_SP, m_SPP);
-        CallResult result = m_ext->call(*callParams);
 
         std::cout << instructionInfo(m_OP).name << " ";
         std::cout << "Sender " << callParams.get()->senderAddress << " ";
-        std::cout << "Receive Address" << callParams.get()->receiveAddress << std::endl;
+        // std::cout << "Code Address " << callParams.get()->codeAddress << " ";
+        std::cout << "Receive Address " << callParams.get()->receiveAddress << " ";
+        std::cout << "Gas start " << callParams.get()->gas << std::endl;
 
+        CallResult result = m_ext->call(*callParams);
+
+        std::cout << "Gas end " << callParams.get()->gas << std::endl;
 
         // execTrace.setReturningPC(m_PC);
         // execTrace.print();
