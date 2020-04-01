@@ -108,15 +108,16 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
         // Locked ethers
         if (exploitName == "locked_ether") {
             if (rel->size() != 0) {
-                std::string A1; 
-                int P1;
+                std::string contractAddress; 
+                int id;
+                int gas;
                 int count = 0;
 
                 for (auto &output : *rel) {
                     count++;
-                    output >> A1 >> P1;
-                    std::cout << "[Middleware]: Query Result: " << count << " Contract in address: " << A1 
-                        << " has been locked" << std::endl; 
+                    output >> id >> gas >> contractAddress;
+                    std::cout << "[Middleware]: Query Result: " << count << " Contract in address: " 
+                        << contractAddress << " has been locked" << std::endl; 
                 }
                 return true; 
             } else {
