@@ -57,16 +57,20 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
 }
 
 void EVMAnalyser::callEntry(int gas, std::string contractAddress) {
+    // Note that the DELEGATECALL relation has not yet been populated now
+    // But the executionTraceCount has been set for the next instruction i.e. the DELEGATECALL
     souffle::tuple newTuple(relCallEntry); 
     newTuple << executionTraceCount << gas << contractAddress;
     relCallEntry->insert(newTuple);
+
+    std::cout << "[Middleware]: "
 
     prog->run();
 }
 
 void EVMAnalyser::callExit(int gas) {
     souffle::tuple newTuple(relCallExit);
-    newTuple << executionTraceCount << gas;
+    newTuple << executionTraceCount-1 << gas; // Minus 1 to refer back the DELEGATECALL
     relCallExit->insert(newTuple); 
 
     prog->run();

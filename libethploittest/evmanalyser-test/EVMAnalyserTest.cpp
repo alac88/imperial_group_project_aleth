@@ -66,6 +66,16 @@ struct F {
         analyser->callEntry(1000, "0x60");
     }
 
+    void addDelegateCall() {
+        ExecutionTraceMock et("DELEGATECALL",
+                                "0x70",
+                                "0x60",
+                                5,
+                                10);
+
+        analyser->populateExecutionTrace(&et);
+    }
+
     void addCallExit() {
         analyser->callExit(1000);
     }
@@ -156,6 +166,7 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
 
     BOOST_AUTO_TEST_CASE(query_a_locked_ether) {
         addCallEntry();
+        addDelegateCall();
         addCallExit();
 
         BOOST_TEST(analyser->queryExploit("locked_ether"));        
