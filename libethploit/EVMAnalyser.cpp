@@ -63,7 +63,7 @@ void EVMAnalyser::callEntry(int gas, std::string contractAddress) {
     newTuple << executionTraceCount << gas << contractAddress;
     relCallEntry->insert(newTuple);
 
-    std::cout << "[Middleware]: "
+    std::cout << "[Middleware]: ";
 
     prog->run();
 }
