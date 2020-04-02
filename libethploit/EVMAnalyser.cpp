@@ -43,8 +43,10 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
                 << (int) executionTrace->valueTransfer; // valueTransfer, receiveAddress not needed here
         relDirectCall->insert(newTupleCall);
         executionTraceCount++;
-    } else if (executionTrace->instruction == "CALL_EXIT") {
-        // Whether should we use the exectuationTrace datastructure or a separate method to input this relation?
+    } else if (executionTrace->instruction == "PUSH") {
+        // Reserved for call_result fact
+    } else if (executionTrace->instruction == "JUMPI") {
+        // Reserved for influence_condition fact
     } else {
         std::cout << "[Middleware]: No currently exisited relation matches up with this instruction!" 
             << std::endl;
@@ -57,10 +59,10 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
 }
 
 void EVMAnalyser::callEntry(int gas, std::string contractAddress) {
-    // Note that the DELEGATECALL relation has not yet been populated now
-    // But the executionTraceCount has been set for the next instruction i.e. the DELEGATECALL
+    // Note that the DELEGATECALL relation has been populated now
+    // So Minus 1 to refer back the DELEGATECALL
     souffle::tuple newTuple(relCallEntry); 
-    newTuple << executionTraceCount << gas << contractAddress;
+    newTuple << executionTraceCount-1 << gas << contractAddress;
     relCallEntry->insert(newTuple);
 
     std::cout << "[Middleware]: ";
@@ -107,6 +109,27 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
     
         // Locked ethers
         if (exploitName == "locked_ether") {
+            if (rel->size() != 0) {
+                std::string contractAddress; 
+                int id;
+                int gas;
+                int count = 0;
+
+                for (auto &output : *rel) {
+                    count++;
+                    output >> id >> gas >> contractAddress;
+                    std::cout << "[Middleware]: Query Result: " << count << " Contract in address: " 
+                        << contractAddress << " has been locked" << std::endl; 
+                }
+                return true; 
+            } else {
+                std::cout << "[Middleware]: No locked ether has been detected." << std::endl;
+                return false; 
+            }
+        }
+
+        // Unhandled reception
+        if (exploitName == "unhandled_reception") {
             if (rel->size() != 0) {
                 std::string contractAddress; 
                 int id;

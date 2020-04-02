@@ -165,8 +165,8 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
     }
 
     BOOST_AUTO_TEST_CASE(query_a_locked_ether) {
-        addCallEntry();
         addDelegateCall();
+        addCallEntry();
         addCallExit();
 
         BOOST_TEST(analyser->queryExploit("locked_ether"));        
