@@ -168,25 +168,30 @@ void LegacyVM::caseCall()
     if (caseCallSetup(callParams.get(), output))
     {
         
-        ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer, callParams->gas, m_PC, m_SP, m_SPP);
+        ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer);
+        EVMAnalyser* analyser = EVMAnalyser::getInstance();
+        if(analyser->populateExecutionTrace(&execTrace)) {
+            std::cout << "Analyser populated\n";
+        } else {
+            std::cout << "Analyser population failed\n";
+        }
+        if (m_OP == Instruction::DELEGATECALL) 
+            analyser->callEntry((int)callParams->gas, callParams->senderAddress.hex());
         CallResult result = m_ext->call(*callParams);
+        if (m_OP == Instruction::DELEGATECALL) 
+            analyser->callExit((int)callParams->gas);
 
         std::cout << instructionInfo(m_OP).name << " ";
         std::cout << "Sender " << callParams.get()->senderAddress << " ";
-        std::cout << "Receive Address" << callParams.get()->receiveAddress << std::endl;
+        std::cout << "Receive Address" << callParams.get()->receiveAddress << " "; 
+        std::cout << "Code Address " << callParams.get()->codeAddress << std::endl;
 
 
         // execTrace.setReturningPC(m_PC);
         // execTrace.print();
 
-        // EVMAnalyser* analyser = EVMAnalyser::getInstance();
-        // if(analyser->populateExecutionTrace(&execTrace)) {
-        //     std::cout << "Analyser populated\n";
-        // } else {
-        //     std::cout << "Analyser population failed\n";
-        // }
         // analyser->queryExploit("reentrancy");
-        // result.output.copyTo(output);
+        result.output.copyTo(output);
 
         // Here we have 2 options:
         // 1. Keep the whole returned memory buffer (owning_bytes_ref):

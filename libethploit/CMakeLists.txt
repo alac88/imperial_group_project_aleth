@@ -19,8 +19,13 @@ add_compile_options(
     -Wno-error=unused-but-set-variable 
     -Wno-error=unused-parameter 
     -Wno-error=unused-variable
-    -Wno-error=deprecated-declarations 
+    -Wno-error=deprecated-declarations
 )
+if (APPLE)
+    add_compile_options(
+        -Wno-error=unknown-warning-option
+    )
+endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
 set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
