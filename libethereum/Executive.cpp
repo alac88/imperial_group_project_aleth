@@ -13,7 +13,6 @@
 #include <libethcore/CommonJS.h>
 #include <libevm/LegacyVM.h>
 #include <libevm/VMFactory.h>
-#include "libethploit/EVMAnalyser.h"
 
 using namespace std;
 using namespace dev;
@@ -469,10 +468,6 @@ bool Executive::finalize()
         // signal finalisation
         std::cout << "finishing @" << m_t.from().hex() << std::endl;
         std::cout << "gas now " << m_gas << " hence used " << gasUsed() << std::endl;
-        EVMAnalyser* analyser = EVMAnalyser::getInstance();
-        analyser->queryExploit("reentrancy");
-        analyser->queryExploit("locked_ether");
-        analyser->cleanExecutionTrace();
     }
 
     // Selfdestructs...
