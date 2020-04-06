@@ -62,6 +62,24 @@ struct F {
         analyser->populateExecutionTrace(&et);
     }
 
+    void addCallEntry() {
+        analyser->callEntry(1000, "0x60");
+    }
+
+    void addDelegateCall() {
+        ExecutionTraceMock et("DELEGATECALL",
+                                "0x70",
+                                "0x60",
+                                5,
+                                10);
+
+        analyser->populateExecutionTrace(&et);
+    }
+
+    void addCallExit() {
+        analyser->callExit(1000);
+    }
+
     EVMAnalyserTest* analyser; 
 };
 
@@ -144,6 +162,14 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         analyser->populateExecutionTrace(&et14);
 
         BOOST_TEST(analyser->queryExploit("reentrancy"));        
+    }
+
+    BOOST_AUTO_TEST_CASE(query_a_locked_ether) {
+        addDelegateCall();
+        addCallEntry();
+        addCallExit();
+
+        BOOST_TEST(analyser->queryExploit("locked_ether"));        
     }
 
     BOOST_AUTO_TEST_CASE(not_allow_wrong_exploit_name) {
