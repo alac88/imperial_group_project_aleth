@@ -1,11 +1,11 @@
 /* Facts - re-entrancy
  * direct_call(c:CallNum, a1:EthAddress, a2:EthAddress, p:NatNum)
- * The call number c in a given transaction constitutes a call from a contract with address a1
+ * The call number c in a given transaction constitutes a call from a contract with address a1 
  * to contract with address a2. The call involves p Ether.
- *
+ * 
  * call(c:CallNum, a1:EthAddress, a2:EthAddress, p:IntSet)
  * ibid.
- *
+ * 
  * reentrancy(c:CallNum, a1:EthAddress, a2:EthAddress, p:IntSet, p2:IntSet)
  * The call with number c calls from contract address a1 to address a2 involved
  * a reentrant callback to the calling contract, address a1.
@@ -15,7 +15,7 @@
 
 //types
 .number_type CallNum
-.symbol_type EthAddress         //Ethereum address for caller and called contracts
+.symbol_type EthAddress		//Ethereum address for caller and called contracts
 .type NatNum = number
 .type IntSet = number
 
@@ -37,7 +37,7 @@ reentrancy(C2, A1, A2, P, P2) :- call(C2, A1, A2, P), call(C1, A2, A1, P2), A1 !
 /* Facts - Locked Ether
  * call_entry(id:identifier, g1:gas, a:EthAddress)
  * Contract with address a is called when gas value is c1
- *
+ * 
  * call_exit(id:identifier, g2:gas)
  * Gas value is c2 when exiting a call to a contract.
  *

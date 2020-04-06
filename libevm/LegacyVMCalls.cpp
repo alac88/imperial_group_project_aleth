@@ -187,6 +187,7 @@ void LegacyVM::caseCall()
         std::cout << "Code Address " << callParams.get()->codeAddress << std::endl;
 
 
+
         // execTrace.setReturningPC(m_PC);
         // execTrace.print();
 
