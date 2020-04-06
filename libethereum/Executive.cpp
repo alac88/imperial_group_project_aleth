@@ -166,6 +166,12 @@ bool Executive::call(Address const& _receiveAddress, Address const& _senderAddre
 
 bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address const& _origin)
 {
+
+    std::cout << "Executive::call()" << " ";
+    std::cout << "Sender " << _p.senderAddress << " ";
+    std::cout << "Receive Address" << _p.receiveAddress << " "; 
+    std::cout << "Code Address " << _p.codeAddress << std::endl;
+
     // If external transaction.
     if (m_t)
     {
