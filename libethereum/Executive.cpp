@@ -136,6 +136,7 @@ void Executive::initialize(Transaction const& _transaction)
     }
 
     // signal init
+    std::cout << "===================" << std::endl;
     std::cout << "starting @ " << m_t.from().hex() << " ";
     std::cout << "sending to " << m_t.to().hex() << std::endl;
     std::cout << m_t.gas() << std::endl;
@@ -167,7 +168,7 @@ bool Executive::call(Address const& _receiveAddress, Address const& _senderAddre
 
 bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address const& _origin)
 {
-
+    
     std::cout << "Executive::call()" << " ";
     std::cout << "Sender " << _p.senderAddress << " ";
     std::cout << "Receive Address" << _p.receiveAddress << " "; 
@@ -492,6 +493,7 @@ bool Executive::finalize()
         analyser->queryExploit("reentrancy");
         analyser->queryExploit("locked_ether");
         analyser->cleanExecutionTrace();
+        std::cout << "===================" << std::endl;
     }
 
     // Selfdestructs...
