@@ -1,4 +1,5 @@
 #include <set>
+#include <queue>
 
 #include "EVMAnalyser.h"
 #include "souffle/SouffleInterface.h"
@@ -85,7 +86,72 @@ void EVMAnalyser::callExit(int gas) {
 }
 
 void EVMAnalyser::extractReentrancyAddresses() {
-    
+    souffle::Relation *rel = prog->getRelation("reentrancy");
+
+    std::set<int> idSet;
+    int count = 0;
+    for (auto &output : *rel ) {
+        int id;
+        std::string senderAddr, receiverAddr;
+        int ether1, ether2;
+
+        count++;
+        output >> id >> senderAddr >> receiverAddr >> ether1 >> ether2;
+        idSet.insert(id);
+        // std::cout << "[Middleware]: Query Result: " << count << " Re-entrancy from address: " 
+        //     << A1 << " to address: " << A2 << " has been detected with " << P 
+        //     << " and " << P2 << " value trasfered. "
+        //     << std::endl;
+    }
+
+    int totalEther = 0;
+    unsigned long i = 0;
+    std::queue<std::string> chain;
+    std::string receiverAddrPre = "Null";
+    for (auto &output : *relDirectCall) {
+        int idOriginal;
+        std::string senderAddrOriginal, receiverAddrOriginal;
+        int etherOriginal;
+
+        output >> idOriginal >> senderAddrOriginal >> receiverAddrOriginal >> etherOriginal;
+
+        if (idSet.find(idOriginal) != idSet.end()) {
+            i++;
+            chain.push(senderAddrOriginal);
+            totalEther += etherOriginal;
+
+            if ((senderAddrOriginal != receiverAddrPre && receiverAddrPre != "Null") || i == idSet.size()) {
+                // Output the address chain
+                if (senderAddrOriginal != receiverAddrPre) {
+                    chain.pop();
+                    totalEther -= etherOriginal;
+                }
+
+                OUTPUT << FORERED <<"Query Result: " << " Re-entrancy: ";
+
+                std::string addrStart = chain.front();
+                std::cout << addrStart;
+                chain.pop();
+                while (!chain.empty()) {
+                    std::cout << " => " << chain.front();
+                    chain.pop();
+                }
+                std::cout << " => " << addrStart << " has been detected with " << totalEther 
+                    << " value trasfered in total." << RESETTEXT
+                    << std::endl;
+
+                // Reset
+                if (senderAddrOriginal != receiverAddrPre) {
+                    chain.push(senderAddrOriginal);
+                    totalEther = etherOriginal;
+                } else {
+                    totalEther = 0;
+                }
+            }
+        }
+
+        receiverAddrPre = receiverAddrOriginal;
+    }    
 }
 
 bool EVMAnalyser::queryExploit(std::string exploitName) {
@@ -95,42 +161,43 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
         // Re-entrancy 
         if (exploitName == "reentrancy") {
             if (rel->size() != 0) {
-                std::set<int> idSet;
-                int id;
-                std::string senderAddr, receiverAddr;
-                int ether1, ether2;
-                int count = 0;
+                extractReentrancyAddresses();
+                // std::set<int> idSet;
+                // int id;
+                // std::string senderAddr, receiverAddr;
+                // int ether1, ether2;
+                // int count = 0;
 
-                for (auto &output : *rel ) {
-                    count++;
-                    output >> id >> senderAddr >> receiverAddr >> ether1 >> ether2;
-                    idSet.insert(id);
-                    // std::cout << "[Middleware]: Query Result: " << count << " Re-entrancy from address: " 
-                    //     << A1 << " to address: " << A2 << " has been detected with " << P 
-                    //     << " and " << P2 << " value trasfered. "
-                    //     << std::endl;
-                }
+                // for (auto &output : *rel ) {
+                //     count++;
+                //     output >> id >> senderAddr >> receiverAddr >> ether1 >> ether2;
+                //     idSet.insert(id);
+                //     // std::cout << "[Middleware]: Query Result: " << count << " Re-entrancy from address: " 
+                //     //     << A1 << " to address: " << A2 << " has been detected with " << P 
+                //     //     << " and " << P2 << " value trasfered. "
+                //     //     << std::endl;
+                // }
 
-                // Assuming there is only one re-entrancy chain
-                int totalEther = 0;
-                for (auto &output : *relDirectCall) {
-                    int idOriginal;
-                    std::string senderAddrOriginal, receiverAddrOriginal;
-                    int etherOriginal;
+                // // Assuming there is only one re-entrancy chain
+                // int totalEther = 0;
+                // for (auto &output : *relDirectCall) {
+                //     int idOriginal;
+                //     std::string senderAddrOriginal, receiverAddrOriginal;
+                //     int etherOriginal;
 
-                    output >> idOriginal >> senderAddrOriginal >> receiverAddrOriginal >> etherOriginal;
+                //     output >> idOriginal >> senderAddrOriginal >> receiverAddrOriginal >> etherOriginal;
 
-                    if (idSet.find(idOriginal) != idSet.end()) {
-                        totalEther += etherOriginal;
-                    }
+                //     if (idSet.find(idOriginal) != idSet.end()) {
+                //         totalEther += etherOriginal;
+                //     }
 
-                    if (etherOriginal == id) { // C is the last identifier
-                        OUTPUT << FORERED <<"Query Result: " << " Re-entrancy from address: " 
-                            << senderAddrOriginal << " to address: " << receiverAddrOriginal << " has been detected with " 
-                            << totalEther << " value trasfered in total." << RESETTEXT
-                            << std::endl;         
-                    }
-                }
+                //     if (idOriginal == id) { // C is the last identifier
+                //         OUTPUT << FORERED <<"Query Result: " << " Re-entrancy from address: " 
+                //             << senderAddrOriginal << " to address: " << receiverAddrOriginal << " has been detected with " 
+                //             << totalEther << " value trasfered in total." << RESETTEXT
+                //             << std::endl;         
+                //     }
+                // }
                 return true;
             } else {
                 OUTPUT << "No re-entrancy has been detected." << std::endl;

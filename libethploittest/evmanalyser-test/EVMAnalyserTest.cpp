@@ -128,7 +128,7 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         ExecutionTraceMock et3("CALL", "0x80", "0x90", 5, 10);
         analyser->populateExecutionTrace(&et3);
         
-        ExecutionTraceMock et4("CALL", "0x90", "0x100", 5, 10);
+        ExecutionTraceMock et4("CALL", "0x90", "0x60", 5, 10);
         analyser->populateExecutionTrace(&et4);
         
         ExecutionTraceMock et5("CALL", "0x90", "0x100", 5, 10);
@@ -158,7 +158,7 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         ExecutionTraceMock et13("CALL", "0x170", "0x180", 5, 10);
         analyser->populateExecutionTrace(&et13);
      
-        ExecutionTraceMock et14("CALL", "0x180", "0x60", 5, 10);
+        ExecutionTraceMock et14("CALL", "0x180", "0x90", 5, 10);
         analyser->populateExecutionTrace(&et14);
 
         BOOST_TEST(analyser->queryExploit("reentrancy"));        
