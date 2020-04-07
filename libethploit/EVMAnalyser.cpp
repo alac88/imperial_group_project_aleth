@@ -1,10 +1,17 @@
-#include "EVMAnalyser.h"
+#include <set>
+#include <queue>
 
+#include "EVMAnalyser.h"
 #include "souffle/SouffleInterface.h"
 #ifndef EVMANALYSER_TEST
     #include "DetectionLogic.cpp"
 #endif
 #include <iostream>
+
+// Output related marcros
+#define FORERED "\x1B[31m"
+#define RESETTEXT "\x1B[0m"
+#define OUTPUT std::cout << "[Middleware]: " 
 
 EVMAnalyser::EVMAnalyser() {
     executionTraceCount = 1;
@@ -27,7 +34,7 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
     if (executionTrace->instruction == "CALL" || 
         executionTrace->instruction == "STATICCALL") { // Treating three types of call as the same for now 
         souffle::tuple newTuple(relDirectCall); // create tuple for the relation
-        std::cout << "[Middleware]: The populated instruction has ID number " << executionTraceCount << std::endl; 
+        OUTPUT << "The populated instruction has ID number " << executionTraceCount << std::endl; 
         newTuple << executionTraceCount
                 << executionTrace->senderAddress
                 << executionTrace->receiveAddress
@@ -36,7 +43,7 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
         executionTraceCount++;
     } else if (executionTrace->instruction == "DELEGATECALL") {
         souffle::tuple newTupleCall(relDirectCall);
-        std::cout << "[Middleware]: The populated instruction has ID number " << executionTraceCount << std::endl; 
+        OUTPUT << "The populated instruction has ID number " << executionTraceCount << std::endl; 
         newTupleCall << executionTraceCount
                 << executionTrace->senderAddress
                 << executionTrace->receiveAddress
@@ -48,12 +55,10 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
     } else if (executionTrace->instruction == "JUMPI") {
         // Reserved for influence_condition fact
     } else {
-        std::cout << "[Middleware]: No currently exisited relation matches up with this instruction!" 
+        OUTPUT << "No currently exisited relation matches up with this instruction!" 
             << std::endl;
         return false; 
     }
-
-    prog->run(); // for prototype, run everytime receive a new executionTrace
 
     return true;
 }
@@ -65,9 +70,9 @@ void EVMAnalyser::callEntry(int gas, std::string contractAddress) {
     newTuple << executionTraceCount-1 << gas << contractAddress;
     relCallEntry->insert(newTuple);
 
-    std::cout << "[Middleware]: ";
+    OUTPUT << "callEntry for " << executionTraceCount << " has been populated"
+        << std::endl;
 
-    prog->run();
 }
 
 void EVMAnalyser::callExit(int gas) {
@@ -75,34 +80,87 @@ void EVMAnalyser::callExit(int gas) {
     newTuple << executionTraceCount-1 << gas; // Minus 1 to refer back the DELEGATECALL
     relCallExit->insert(newTuple); 
 
-    prog->run();
+    OUTPUT << "callExit for " << executionTraceCount-1 << " has been populated"
+        << std::endl;
+
 }
 
 void EVMAnalyser::extractReentrancyAddresses() {
-    
+    souffle::Relation *rel = prog->getRelation("reentrancy");
+
+    std::set<int> idSet;
+    int count = 0;
+    for (auto &output : *rel ) {
+        int id;
+        std::string senderAddr, receiverAddr;
+        int ether1, ether2;
+
+        count++;
+        output >> id >> senderAddr >> receiverAddr >> ether1 >> ether2;
+        idSet.insert(id);
+    }
+
+    int totalEther = 0;
+    unsigned long i = 0;
+    std::queue<std::string> chain;
+    std::string receiverAddrPre = "Null";
+    for (auto &output : *relDirectCall) {
+        int idOriginal;
+        std::string senderAddrOriginal, receiverAddrOriginal;
+        int etherOriginal;
+
+        output >> idOriginal >> senderAddrOriginal >> receiverAddrOriginal >> etherOriginal;
+
+        if (idSet.find(idOriginal) != idSet.end()) {
+            i++;
+            chain.push(senderAddrOriginal);
+            totalEther += etherOriginal;
+
+            if ((senderAddrOriginal != receiverAddrPre && receiverAddrPre != "Null") || i == idSet.size()) {
+                // Output the address chain
+                if (senderAddrOriginal != receiverAddrPre) {
+                    chain.pop();
+                    totalEther -= etherOriginal;
+                }
+
+                OUTPUT << FORERED <<"Query Result: " << " Re-entrancy: ";
+
+                std::string addrStart = chain.front();
+                std::cout << addrStart;
+                chain.pop();
+                while (!chain.empty()) {
+                    std::cout << " => " << chain.front();
+                    chain.pop();
+                }
+                std::cout << " => " << addrStart << " has been detected with " << totalEther 
+                    << " value trasfered in total." << RESETTEXT
+                    << std::endl;
+
+                // Reset
+                if (senderAddrOriginal != receiverAddrPre) {
+                    chain.push(senderAddrOriginal);
+                    totalEther = etherOriginal;
+                } else {
+                    totalEther = 0;
+                }
+            }
+        }
+
+        receiverAddrPre = receiverAddrOriginal;
+    }    
 }
 
 bool EVMAnalyser::queryExploit(std::string exploitName) {
+    prog->run();
+
     if (souffle::Relation *rel = prog->getRelation(exploitName)) {
         // Re-entrancy 
         if (exploitName == "reentrancy") {
             if (rel->size() != 0) {
-                int C;
-                std::string A1, A2;
-                int P, P2;
-                int count = 0;
-
-                for (auto &output : *rel ) {
-                    count++;
-                    output >> C >> A1 >> A2 >> P >> P2;
-                    std::cout << "[Middleware]: Query Result: " << count << " Re-entrancy from address: " 
-                        << A1 << " to address: " << A2 << " has been detected with " << P 
-                        << " and " << P2 << " value trasfered. "
-                        << std::endl;
-                } 
+                extractReentrancyAddresses();
                 return true;
             } else {
-                std::cout << "[Middleware]: No re-entrancy has been detected." << std::endl;
+                OUTPUT << "No re-entrancy has been detected." << std::endl;
                 return false;
             }
         }
@@ -118,12 +176,12 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                 for (auto &output : *rel) {
                     count++;
                     output >> id >> gas >> contractAddress;
-                    std::cout << "[Middleware]: Query Result: " << count << " Contract in address: " 
-                        << contractAddress << " has been locked" << std::endl; 
+                    OUTPUT << FORERED << "Query Result: " << count << " Contract in address: " 
+                        << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
                 }
                 return true; 
             } else {
-                std::cout << "[Middleware]: No locked ether has been detected." << std::endl;
+                OUTPUT << "No locked ether has been detected." << std::endl;
                 return false; 
             }
         }
@@ -139,12 +197,12 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                 for (auto &output : *rel) {
                     count++;
                     output >> id >> gas >> contractAddress;
-                    std::cout << "[Middleware]: Query Result: " << count << " Contract in address: " 
+                    OUTPUT << "Query Result: " << count << " Contract in address: " 
                         << contractAddress << " has been locked" << std::endl; 
                 }
                 return true; 
             } else {
-                std::cout << "[Middleware]: No locked ether has been detected." << std::endl;
+                OUTPUT << "No locked ether has been detected." << std::endl;
                 return false; 
             }
         }
