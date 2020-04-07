@@ -139,7 +139,8 @@ void Executive::initialize(Transaction const& _transaction)
     std::cout << "starting @ " << m_t.from().hex() << " ";
     std::cout << "sending to " << m_t.to().hex() << std::endl;
     std::cout << m_t.gas() << std::endl;
-
+    std::cout << "From's balance: " << m_s.balance(m_t.from()) << std::endl;
+    std::cout << "To's balance: " << m_s.balance(m_t.to()) << std::endl;
 }
 
 bool Executive::execute()
@@ -474,6 +475,10 @@ bool Executive::finalize()
         // signal finalisation
         std::cout << "finishing @" << m_t.from().hex() << std::endl;
         std::cout << "gas now " << m_gas << " hence used " << gasUsed() << std::endl;
+        std::cout << "From's balance: " << m_s.balance(m_t.from()) << std::endl;
+        std::cout << "To's balance: " << m_s.balance(m_t.to()) << std::endl;
+
+
         EVMAnalyser* analyser = EVMAnalyser::getInstance();
         analyser->queryExploit("reentrancy");
         analyser->queryExploit("locked_ether");
