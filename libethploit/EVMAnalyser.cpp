@@ -1,13 +1,13 @@
 #include <set>
 
 #include "EVMAnalyser.h"
-
 #include "souffle/SouffleInterface.h"
 #ifndef EVMANALYSER_TEST
     #include "DetectionLogic.cpp"
 #endif
 #include <iostream>
 
+// Output related marcros
 #define FORERED "\x1B[31m"
 #define RESETTEXT "\x1B[0m"
 #define OUTPUT std::cout << "[Middleware]: " 
@@ -59,8 +59,6 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
         return false; 
     }
 
-    prog->run(); // for prototype, run everytime receive a new executionTrace
-
     return true;
 }
 
@@ -74,7 +72,6 @@ void EVMAnalyser::callEntry(int gas, std::string contractAddress) {
     OUTPUT << "callEntry for " << executionTraceCount << " has been populated"
         << std::endl;
 
-    prog->run();
 }
 
 void EVMAnalyser::callExit(int gas) {
@@ -85,7 +82,6 @@ void EVMAnalyser::callExit(int gas) {
     OUTPUT << "callExit for " << executionTraceCount-1 << " has been populated"
         << std::endl;
 
-    prog->run();
 }
 
 void EVMAnalyser::extractReentrancyAddresses() {
@@ -93,6 +89,8 @@ void EVMAnalyser::extractReentrancyAddresses() {
 }
 
 bool EVMAnalyser::queryExploit(std::string exploitName) {
+    prog->run();
+
     if (souffle::Relation *rel = prog->getRelation(exploitName)) {
         // Re-entrancy 
         if (exploitName == "reentrancy") {
