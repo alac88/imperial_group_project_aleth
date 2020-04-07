@@ -98,15 +98,15 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
         if (exploitName == "reentrancy") {
             if (rel->size() != 0) {
                 std::set<int> idSet;
-                int C;
-                std::string A1, A2;
-                int P, P2;
+                int id;
+                std::string senderAddr, receiverAddr;
+                int ether1, ether2;
                 int count = 0;
 
                 for (auto &output : *rel ) {
                     count++;
-                    output >> C >> A1 >> A2 >> P >> P2;
-                    idSet.insert(C);
+                    output >> id >> senderAddr >> receiverAddr >> ether1 >> ether2;
+                    idSet.insert(id);
                     // std::cout << "[Middleware]: Query Result: " << count << " Re-entrancy from address: " 
                     //     << A1 << " to address: " << A2 << " has been detected with " << P 
                     //     << " and " << P2 << " value trasfered. "
@@ -114,22 +114,22 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                 }
 
                 // Assuming there is only one re-entrancy chain
-                int totalP = 0;
+                int totalEther = 0;
                 for (auto &output : *relDirectCall) {
-                    int COriginal;
-                    std::string A1Original, A2Original;
-                    int POriginal;
+                    int idOriginal;
+                    std::string senderAddrOriginal, receiverAddrOriginal;
+                    int etherOriginal;
 
-                    output >> COriginal >> A1Original >> A2Original >> POriginal;
+                    output >> idOriginal >> senderAddrOriginal >> receiverAddrOriginal >> etherOriginal;
 
-                    if (idSet.find(COriginal) != idSet.end()) {
-                        totalP += POriginal;
+                    if (idSet.find(idOriginal) != idSet.end()) {
+                        totalEther += etherOriginal;
                     }
 
-                    if (COriginal == C) { // C is the last identifier
+                    if (etherOriginal == id) { // C is the last identifier
                         OUTPUT << FORERED <<"Query Result: " << " Re-entrancy from address: " 
-                            << A1Original << " to address: " << A2Original << " has been detected with " << totalP 
-                            << " value trasfered in total." << RESETTEXT
+                            << senderAddrOriginal << " to address: " << receiverAddrOriginal << " has been detected with " 
+                            << totalEther << " value trasfered in total." << RESETTEXT
                             << std::endl;         
                     }
                 }
