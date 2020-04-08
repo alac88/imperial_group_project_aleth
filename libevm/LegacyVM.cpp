@@ -60,6 +60,7 @@ uint64_t LegacyVM::decodeJumpvDest(const byte* const _code, uint64_t& _pc, byte 
 //
 void LegacyVM::onOperation(Instruction _instr)
 {
+    std::cout << "onOperation: " << instructionInfo(_instr).name << std::endl;
     if (m_onOp)
         (m_onOp)(++m_nSteps, m_PC, _instr,
             m_newMemSize > m_mem.size() ? (m_newMemSize - m_mem.size()) / 32 : uint64_t(0),
@@ -273,6 +274,7 @@ void LegacyVM::interpretCases()
         CASE(CALL)
         CASE(CALLCODE)
         {
+            std::cout << "Case CALLS\n";
             ON_OP();
             if (m_OP == Instruction::DELEGATECALL && !m_schedule->haveDelegateCall) {
                 std::cout << "1st bad instr\n";
