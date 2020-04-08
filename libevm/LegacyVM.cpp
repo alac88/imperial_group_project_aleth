@@ -205,6 +205,7 @@ void LegacyVM::fetchInstruction()
 
 owning_bytes_ref LegacyVM::exec(u256& _io_gas, ExtVMFace& _ext, OnOpFunc const& _onOp)
 {
+    std::cout << "LegacyVM::exec\n";
     m_io_gas_p = &_io_gas;
     m_io_gas = uint64_t(_io_gas);
     m_ext = &_ext;
