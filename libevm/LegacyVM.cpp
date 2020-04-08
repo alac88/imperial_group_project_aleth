@@ -238,6 +238,7 @@ owning_bytes_ref LegacyVM::exec(u256& _io_gas, ExtVMFace& _ext, OnOpFunc const& 
 //
 void LegacyVM::interpretCases()
 {
+    std::cout << "interpretCases()\n";
     INIT_CASES
     DO_CASES
     {
@@ -273,12 +274,18 @@ void LegacyVM::interpretCases()
         CASE(CALLCODE)
         {
             ON_OP();
-            if (m_OP == Instruction::DELEGATECALL && !m_schedule->haveDelegateCall)
+            if (m_OP == Instruction::DELEGATECALL && !m_schedule->haveDelegateCall) {
+                std::cout << "1st bad instr\n";
                 throwBadInstruction();
-            if (m_OP == Instruction::STATICCALL && !m_schedule->haveStaticCall)
+            }
+            if (m_OP == Instruction::STATICCALL && !m_schedule->haveStaticCall) {
+                std::cout << "2nd bad instr\n";
                 throwBadInstruction();
-            if (m_OP == Instruction::CALL && m_ext->staticCall && m_SP[2] != 0)
+            }
+            if (m_OP == Instruction::CALL && m_ext->staticCall && m_SP[2] != 0) {
+                std::cout << "disallowed state change\n"; 
                 throwDisallowedStateChange();
+            }
             m_bounce = &LegacyVM::caseCall;
             // cout << "PC: " << m_PC << "\n io gas: " << m_io_gas;
             // cout << "\n runGas: " << m_runGas << "\n SP: " << m_SP;
