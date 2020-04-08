@@ -679,8 +679,11 @@ void LegacyVM::interpretCases()
         CASE(SHR)
         {
             // Pre-constantinople
-            if (!m_schedule->haveBitwiseShifting)
+            std::cout << "Case SHR\n";
+            if (!m_schedule->haveBitwiseShifting) {
+                std::cout << "not haveBitwiseShifting\n";
                 throwBadInstruction();
+            }
 
             ON_OP();
             updateIOGas();
