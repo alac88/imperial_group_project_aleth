@@ -85,6 +85,16 @@ void EVMAnalyser::callExit(int gas) {
 
 }
 
+void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {};
+
+void EVMAnalyser::callResult(int result) {};
+
+void EVMAnalyser::swap(int index) {}; // SWAP2 = swap the first(0) and the third(2) element
+
+void EVMAnalyser::dup(int position) {}; // DUP2 = dup second(1) element on the stack
+
+void EVMAnalyser::jumpi(int condition) {};
+
 void EVMAnalyser::extractReentrancyAddresses() {
     souffle::Relation *rel = prog->getRelation("reentrancy");
 

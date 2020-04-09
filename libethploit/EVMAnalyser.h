@@ -4,14 +4,24 @@
 #include "libethploit/ExecutionTrace.h"
 
 #include <string>
+#include <vector>
 
 class EVMAnalyser {
     int executionTraceCount;
+    
+    int latestID = 0;
+    std::vector<int> stackIDs;
 
     EVMAnalyser();
     ~EVMAnalyser(); 
     
     void extractReentrancyAddresses();
+
+    void swap(int index); // SWAP2 = swap the first(0) and the third(2) element
+
+    void dup(int position); // DUP2 = dup second(1) element on the stack
+
+    void jumpi(int condition);
 
   protected:
     souffle::SouffleProgram *prog;
@@ -19,6 +29,10 @@ class EVMAnalyser {
     souffle::Relation *relCallEntry;
     souffle::Relation *relCallExit;
     souffle::Relation *queReentrancy;
+    souffle::Relation *relIsOutput;
+    souffle::Relation *relCallResult;
+    souffle::Relation *relInCondition;
+
   public:
     static EVMAnalyser* getInstance();
 
@@ -31,6 +45,10 @@ class EVMAnalyser {
     void callEntry(int gas, std::string contractAddress);
 
     void callExit(int gas);
+
+    void instruction(std::string opcode, int nArgs, int nRet);
+
+    void callResult(int result);
 };
 
 /**
