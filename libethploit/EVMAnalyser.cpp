@@ -300,23 +300,22 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
             }
         }
 
-        // Unhandled reception
-        if (exploitName == "unhandled_reception") {
+        // Unhandled exception
+        if (exploitName == "unhandled_exception") {
             if (rel->size() != 0) {
                 std::string contractAddress; 
-                int id;
-                int gas;
+                // int id;
+                // int gas;
                 int count = 0;
 
                 for (auto &output : *rel) {
                     count++;
-                    output >> id >> gas >> contractAddress;
-                    OUTPUT << "Query Result: " << count << " Contract in address: " 
-                        << contractAddress << " has been locked" << std::endl; 
+                    // output >> id >> gas >> contractAddress;
+                    OUTPUT << FORERED << "Query Result: " << count << " unhandled exception detected." << std::endl; 
                 }
                 return true; 
             } else {
-                OUTPUT << "No locked ether has been detected." << std::endl;
+                OUTPUT << "No unhandled exception has been detected." << std::endl;
                 return false; 
             }
         }
