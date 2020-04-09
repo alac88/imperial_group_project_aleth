@@ -85,15 +85,62 @@ void EVMAnalyser::callExit(int gas) {
 
 }
 
-void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {};
+void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
+    if (nArgs < 0)
+        return;
+    if (opcode.find("SWAP") != std::string::npos) {
+        swap(nArgs);
+        return;
+    }
+    if (opcode.find("DUP") != std::string::npos) {
+        dup(nArgs);
+        return;
+    }
+    if (opcode.find("JUMPI") != std::string::npos || opcode.find("JUMPIF") != std::string::npos || opcode.find("JUMPCI") != std::string::npos) {
+        jumpi();
+        return;
+    }
+    if (nRet < 0 || nRet > 1) 
+        return;
 
-void EVMAnalyser::callResult(int result) {};
+    if (nArgs > 0 && nRet == 1) {
+        // create new ID
+        // for each arg
+            // insert tuple to is_output
+        // remove args used
+        // push new ID
+    } else if (nArgs > 0) {
+        // remove args used
+    } else if (nRet == 1) {
+        // push new ID
+    }
 
-void EVMAnalyser::swap(int index) {}; // SWAP2 = swap the first(0) and the third(2) element
+};
 
-void EVMAnalyser::dup(int position) {}; // DUP2 = dup second(1) element on the stack
+void EVMAnalyser::callResult(int result) {
+    // take latestID and result
+    // insert tuple to call_result
+};
 
-void EVMAnalyser::jumpi(int condition) {};
+void EVMAnalyser::swap(int pos) {
+    // no tuple insertion
+    // swap IDs on stack
+    std::swap(stackIDs[0], stackIDs[pos - 1]);
+}; // SWAP2 -> 3 = swap first and third element
+
+void EVMAnalyser::dup(int pos) {
+    // create newID
+    // take ID of the original position
+    // insert tuple to is_output
+    // push newID to stack
+
+}; // DUP2 -> 2 = dup second(1) element on the stack
+
+void EVMAnalyser::jumpi() {
+    // take second element on stack as condition 
+    // insert tuple to in_condition
+    // remove first two elements on stack
+};
 
 void EVMAnalyser::extractReentrancyAddresses() {
     souffle::Relation *rel = prog->getRelation("reentrancy");

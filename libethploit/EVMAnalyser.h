@@ -17,9 +17,9 @@ class EVMAnalyser {
     
     void extractReentrancyAddresses();
 
-    void swap(int index); // SWAP2 = swap the first(0) and the third(2) element
+    void swap(int pos); 
 
-    void dup(int position); // DUP2 = dup second(1) element on the stack
+    void dup(int pos); 
 
     void jumpi(int condition);
 
