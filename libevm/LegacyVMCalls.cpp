@@ -203,7 +203,7 @@ void LegacyVM::caseCall()
 
         // @middleware: to be passed
         std::cout << "Call success " << m_SPP[0] << std::endl;
-
+        analyser->callResult((int)m_SPP[0]);
     }
     else
         m_SPP[0] = 0;
