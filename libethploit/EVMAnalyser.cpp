@@ -305,6 +305,9 @@ void EVMAnalyser::cleanExecutionTrace() {
     prog->purgeOutputRelations();
 
     executionTraceCount = 1;
+    latestID = 0;
+    stackIDs.clear();
+
 }
 
 EVMAnalyserTest* EVMAnalyserTest::getInstance() {
