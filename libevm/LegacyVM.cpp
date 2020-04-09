@@ -66,6 +66,7 @@ void LegacyVM::onOperation(Instruction _instr)
             m_runGas, m_io_gas, this, m_ext);
 
     InstructionInfo iInfo = instructionInfo(_instr);
+    // @middleware: to be passed
     std::cout << "OP " << iInfo.name << " Args " << iInfo.args << " Ret " << iInfo.ret << std::endl; 
 
 }
