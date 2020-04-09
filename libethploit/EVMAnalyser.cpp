@@ -145,9 +145,16 @@ void EVMAnalyser::swap(int pos) {
 
 void EVMAnalyser::dup(int pos) {
     // create newID
+    latestID++;
+
     // take ID of the original position
     // insert tuple to is_output
+    souffle::tuple newTuple(relIsOutput);
+    newTuple << latestID << stackIDs[pos - 1];
+    relIsOutput->insert(newTuple); 
+    
     // push newID to stack
+    stackIDs.insert(stackIDs.begin(), latestID);
 
 }; // DUP2 -> 2 = dup second(1) element on the stack
 
