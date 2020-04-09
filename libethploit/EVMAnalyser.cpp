@@ -19,6 +19,9 @@ EVMAnalyser::EVMAnalyser() {
     relDirectCall = prog->getRelation("direct_call");
     relCallEntry = prog->getRelation("call_entry");
     relCallExit = prog->getRelation("call_exit");
+    relIsOutput = prog->getRelation("is_output");
+    relCallResult = prog->getRelation("call_result");
+    relInCondition = prog->getRelation("in_condition");
 }
 
 EVMAnalyser::~EVMAnalyser() {
