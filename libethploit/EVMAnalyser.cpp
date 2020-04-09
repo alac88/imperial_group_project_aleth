@@ -114,9 +114,9 @@ void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
         for (int i = 0; i < nArgs; i++) {
             std::cout << "insert to is_output: " << latestID << " " << stackIDs[i] << std::endl;
             // insert tuple to is_output
-            // souffle::tuple newTuple(relIsOutput);
-            // newTuple << latestID << stackIDs[i];
-            // relIsOutput->insert(newTuple); 
+            souffle::tuple newTuple(relIsOutput);
+            newTuple << latestID << stackIDs[i];
+            relIsOutput->insert(newTuple); 
         }
 
         // remove args used
@@ -145,7 +145,7 @@ void EVMAnalyser::callResult(int result) {
     // relCallResult->insert(newTuple); 
     std::cout << "New state: ";
     for (auto &i : stackIDs) 
-        std::cout << i;
+        std::cout << i << ", ";
     std::cout << std::endl;
 
 };
