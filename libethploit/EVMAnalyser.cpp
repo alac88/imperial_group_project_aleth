@@ -109,12 +109,14 @@ void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
     if (nArgs > 0 && nRet == 1) {
         // create new ID
         latestID++;
+
         // for each arg
         for (int i = 0; i < nArgs; i++) {
+            std::cout << "insert to is_output: " << latestID << " " << stackIDs[i] << std::endl;
             // insert tuple to is_output
-            souffle::tuple newTuple(relIsOutput);
-            newTuple << latestID << stackIDs[i];
-            relIsOutput->insert(newTuple); 
+            // souffle::tuple newTuple(relIsOutput);
+            // newTuple << latestID << stackIDs[i];
+            // relIsOutput->insert(newTuple); 
         }
 
         // remove args used
@@ -128,15 +130,23 @@ void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
         // push new ID
         stackIDs.insert(stackIDs.begin(), ++latestID);
     }
-
+    std::cout << "New state: ";
+    for (auto &i : stackIDs) 
+        std::cout << i << ", ";
+    std::cout << std::endl;
 };
 
 void EVMAnalyser::callResult(int result) {
     // take latestID and result
     // insert tuple to call_result
-    souffle::tuple newTuple(relCallResult);
-    newTuple << latestID << result;
-    relCallResult->insert(newTuple); 
+    std::cout << "insert to call_result: " << latestID << " " << result << std::endl;
+    // souffle::tuple newTuple(relCallResult);
+    // newTuple << latestID << result;
+    // relCallResult->insert(newTuple); 
+    std::cout << "New state: ";
+    for (auto &i : stackIDs) 
+        std::cout << i;
+    std::cout << std::endl;
 
 };
 
@@ -144,6 +154,11 @@ void EVMAnalyser::swap(int pos) {
     // no tuple insertion
     // swap IDs on stack
     std::swap(stackIDs[0], stackIDs[pos - 1]);
+    std::cout << "New state: ";
+    for (auto &i : stackIDs) 
+        std::cout << i << ", ";
+    std::cout << std::endl;
+
 }; // SWAP2 -> 3 = swap first and third element
 
 void EVMAnalyser::dup(int pos) {
@@ -152,24 +167,36 @@ void EVMAnalyser::dup(int pos) {
 
     // take ID of the original position
     // insert tuple to is_output
-    souffle::tuple newTuple(relIsOutput);
-    newTuple << latestID << stackIDs[pos - 1];
-    relIsOutput->insert(newTuple); 
+    std::cout << "insert to is_output: " << latestID << " " << stackIDs[pos - 1] << std::endl;
+    // souffle::tuple newTuple(relIsOutput);
+    // newTuple << latestID << stackIDs[pos - 1];
+    // relIsOutput->insert(newTuple); 
 
     // push newID to stack
     stackIDs.insert(stackIDs.begin(), latestID);
+    std::cout << "New state: ";
+    for (auto &i : stackIDs) 
+        std::cout << i << ", ";
+    std::cout << std::endl;
 
 }; // DUP2 -> 2 = dup second(1) element on the stack
 
 void EVMAnalyser::jumpi() {
     // take second element on stack as condition 
     // insert tuple to in_condition
-    souffle::tuple newTuple(relInCondition);
-    newTuple << stackIDs[1];
-    relInCondition->insert(newTuple); 
+    std::cout << "insert to in_condition: " << stackIDs[1] << std::endl;
+
+    // souffle::tuple newTuple(relInCondition);
+    // newTuple << stackIDs[1];
+    // relInCondition->insert(newTuple); 
 
     // remove first two elements on stack
     stackIDs.erase(stackIDs.begin(), stackIDs.begin() + 2);
+    std::cout << "New state: ";
+    for (auto &i : stackIDs) 
+        std::cout << i << ", ";
+    std::cout << std::endl;
+
 };
 
 void EVMAnalyser::extractReentrancyAddresses() {
@@ -307,7 +334,6 @@ void EVMAnalyser::cleanExecutionTrace() {
     executionTraceCount = 1;
     latestID = 0;
     stackIDs.clear();
-
 }
 
 EVMAnalyserTest* EVMAnalyserTest::getInstance() {
