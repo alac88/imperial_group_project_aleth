@@ -105,14 +105,25 @@ void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
 
     if (nArgs > 0 && nRet == 1) {
         // create new ID
+        latestID++;
         // for each arg
+        for (int i = 0; i < nArgs; i++) {
             // insert tuple to is_output
+            souffle::tuple newTuple(relIsOutput);
+            newTuple << latestID << stackIDs[i];
+            relIsOutput->insert(newTuple); 
+        }
+
         // remove args used
+        stackIDs.erase(stackIDs.begin(), stackIDs.begin() + nArgs);
         // push new ID
+        stackIDs.insert(stackIDs.begin(), latestID);
     } else if (nArgs > 0) {
         // remove args used
+        stackIDs.erase(stackIDs.begin(), stackIDs.begin() + nArgs);
     } else if (nRet == 1) {
         // push new ID
+        stackIDs.insert(stackIDs.begin(), ++latestID);
     }
 
 };
