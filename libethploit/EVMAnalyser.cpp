@@ -131,6 +131,10 @@ void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
 void EVMAnalyser::callResult(int result) {
     // take latestID and result
     // insert tuple to call_result
+    souffle::tuple newTuple(relCallResult);
+    newTuple << latestID << result;
+    relCallResult->insert(newTuple); 
+
 };
 
 void EVMAnalyser::swap(int pos) {
