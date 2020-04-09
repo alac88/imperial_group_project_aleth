@@ -66,51 +66,54 @@ locked_ether(ID, G1, A) :- call_entry(ID, G1, A), call_exit(ID, G2), G1=G2.
 /* Facts - Unhandled Exceptions
  *
  * Those facts which are instantiated by the EVM:
- * is_output(id:identifier, a:result, b:opcodeArg)
- * Given an ocpode, is_output(id, a, b) is true when b is one of its argument and a is the value returned.
- * Since multiple facts can be created for the same opcodes, facts for each opcode are assigned an
- * integer identifier so that it is clear which facts relate to the same opcode.
- * in_condition(id:identifier, a:result)
- * Given a result of an opcode a fact in_condition(id, a) is created if a is the second element of the stack
- * when JUMPI is called. The fact in_condition is given an id value so that the result value, a, can be associated
- * with other facts that concern the same opcode.
- * call_result(id:identifier, a:result, v:NatNum)
- * Given an opcode a fact call_result(id, a, v) is created where a is the result of a call and v is the value of that
- * call. Again call_result is given an id value so that the result value, a, can be associated
- * with other facts that concern the same opcode.
+ * is_output(a:result, b:opcodeArg)
+ * Given an ocpode, is_output(a, b) is true when b is one of its argument and a is the ID of the value returned
+ * on the stack. This allows us to track dependencies between opcodes.
+ * in_condition(a:result)
+ * Given a result of an opcode a fact in_condition(a) is created if a is the ID of the second element on the stack
+ * when JUMPI is called.
+ * call_result(a:result, v:NatNum)
+ * Given an opcode a fact call_result(a, v) is created where a is the ID of the result of a call and v is the value of
+ * that call.
  *
 */
+
+//Additional types
 
 .type result = symbol
 .type opcodeArg = symbol
 
 //input relations:
 
-.decl is_output(id:identifier, a:result, b:opcodeArg)
+.decl is_output(a:result, b:opcodeArg)       //opcode takes argument B with result A.
 .input is_output
 
-.decl in_condition(id:identifier, a:result)
+.decl in_condition(a:result)
 .input in_condition
 
-.decl call_result(id:identifier, a:result, v:NatNum)
+.decl call_result(a:result, v:NatNum)       //id = a; v is what is returned on the stack by call
 .input call_result
 
 //facts used in deduction steps:
 
-.decl depends(id:identifier, a:result, b:opcodeArg)
-.decl influences_condition(id:identifier, a:result)
+.decl depends(a:result, b:opcodeArg)
+.decl influences_condition(a:result)
 
 //output fact:
 
-.decl unhandled_exception(id:identifier, a:opcodeArg)
+.decl unhandled_exception(a:opcodeArg)
 .output unhandled_exception
 
-//detection logic
+//dependencies
 
-depends(ID, A, B) :- is_output(ID, A, B).
-depends(ID, A, B) :- is_output(ID, A, C), depends(ID, C, B).
+depends(A, B) :- is_output(A, B).
+depends(A, B) :- is_output(A, C), depends(C, B).
 
-influences_condition(ID, A) :- in_condition(ID, A).
-influences_condition(ID, A) :- depends(ID, B, A), in_condition(ID, B).
+//conditions influenced as per JUMPI instructions
 
-unhandled_exception(ID, A) :- call_result(ID, A, 0), !influences_condition(ID, A).
+influences_condition(A) :- in_condition(A).
+influences_condition(A) :- depends(B, A), in_condition(B).
+
+//Rule for unhandled_exception fact (evidence of vulnerability passed back to middleware)
+
+unhandled_exception(A) :- call_result(A, 0), !influences_condition(A).
