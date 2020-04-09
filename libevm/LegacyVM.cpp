@@ -64,6 +64,11 @@ void LegacyVM::onOperation(Instruction _instr)
         (m_onOp)(++m_nSteps, m_PC, _instr,
             m_newMemSize > m_mem.size() ? (m_newMemSize - m_mem.size()) / 32 : uint64_t(0),
             m_runGas, m_io_gas, this, m_ext);
+
+    InstructionInfo iInfo = instructionInfo(_instr);
+    // @middleware: to be passed
+    std::cout << "OP " << iInfo.name << " Args " << iInfo.args << " Ret " << iInfo.ret << std::endl; 
+
 }
 
 //
