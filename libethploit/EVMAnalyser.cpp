@@ -152,7 +152,7 @@ void EVMAnalyser::dup(int pos) {
     souffle::tuple newTuple(relIsOutput);
     newTuple << latestID << stackIDs[pos - 1];
     relIsOutput->insert(newTuple); 
-    
+
     // push newID to stack
     stackIDs.insert(stackIDs.begin(), latestID);
 
@@ -161,7 +161,12 @@ void EVMAnalyser::dup(int pos) {
 void EVMAnalyser::jumpi() {
     // take second element on stack as condition 
     // insert tuple to in_condition
+    souffle::tuple newTuple(relInCondition);
+    newTuple << stackIDs[1];
+    relInCondition->insert(newTuple); 
+
     // remove first two elements on stack
+    stackIDs.erase(stackIDs.begin(), stackIDs.begin() + 2);
 };
 
 void EVMAnalyser::extractReentrancyAddresses() {
