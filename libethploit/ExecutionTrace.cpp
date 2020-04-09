@@ -21,7 +21,6 @@ namespace dev
             std::cout << senderAddress << " ";
             std::cout << receiveAddress << " ";
             std::cout << valueTransfer << " ";
-            std::cout << gas << std::endl;
         }
 
     }

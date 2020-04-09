@@ -50,7 +50,6 @@ struct ExecutionTrace
     std::string senderAddress;
     std::string receiveAddress;
     u256 valueTransfer;
-    u256 gas;
 
     ExecutionTrace() {}; // Add a default constructor for the convenience of test
     ExecutionTrace(Instruction _instruction,
