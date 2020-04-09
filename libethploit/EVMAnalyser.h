@@ -21,7 +21,7 @@ class EVMAnalyser {
 
     void dup(int pos); 
 
-    void jumpi(int condition);
+    void jumpi();
 
   protected:
     souffle::SouffleProgram *prog;
