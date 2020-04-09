@@ -114,9 +114,10 @@ void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
         for (int i = 0; i < nArgs; i++) {
             std::cout << "insert to is_output: " << latestID << " " << stackIDs[i] << std::endl;
             // insert tuple to is_output
-            souffle::tuple newTuple(relIsOutput);
-            newTuple << latestID << stackIDs[i];
-            relIsOutput->insert(newTuple); 
+            // TODO: uncomment below: 
+            // souffle::tuple newTuple(relIsOutput);
+            // newTuple << latestID << stackIDs[i];
+            // relIsOutput->insert(newTuple); 
         }
 
         // remove args used
@@ -140,6 +141,7 @@ void EVMAnalyser::callResult(int result) {
     // take latestID and result
     // insert tuple to call_result
     std::cout << "insert to call_result: " << latestID << " " << result << std::endl;
+    // TODO: uncomment below:   
     // souffle::tuple newTuple(relCallResult);
     // newTuple << latestID << result;
     // relCallResult->insert(newTuple); 
@@ -168,6 +170,7 @@ void EVMAnalyser::dup(int pos) {
     // take ID of the original position
     // insert tuple to is_output
     std::cout << "insert to is_output: " << latestID << " " << stackIDs[pos - 1] << std::endl;
+    // TODO: uncomment below: 
     // souffle::tuple newTuple(relIsOutput);
     // newTuple << latestID << stackIDs[pos - 1];
     // relIsOutput->insert(newTuple); 
@@ -185,7 +188,7 @@ void EVMAnalyser::jumpi() {
     // take second element on stack as condition 
     // insert tuple to in_condition
     std::cout << "insert to in_condition: " << stackIDs[1] << std::endl;
-
+    // TODO: uncomment below: 
     // souffle::tuple newTuple(relInCondition);
     // newTuple << stackIDs[1];
     // relInCondition->insert(newTuple); 
