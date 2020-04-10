@@ -54,7 +54,8 @@ class EVMAnalyserTest : public EVMAnalyser {
   public:
     EVMAnalyserTest();
 
-    static EVMAnalyserTest* getInstance();
+    static EVMAnalyserTest* getInstance(std::string _account = "UNDEFINED", 
+        std::string _transactionHash = "UNDEFINED");
     
     int getRelationSize(std::string relationName);
 };

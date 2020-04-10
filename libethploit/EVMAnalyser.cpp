@@ -298,8 +298,8 @@ void EVMAnalyser::cleanExecutionTrace() {
     executionTraceCount = 1;
 }
 
-EVMAnalyserTest* EVMAnalyserTest::getInstance() {
-    return (EVMAnalyserTest *) EVMAnalyser::getInstance(); 
+EVMAnalyserTest* EVMAnalyserTest::getInstance(std::string _account, std::string _transactionHash) {
+    return (EVMAnalyserTest *) EVMAnalyser::getInstance(_account, _transactionHash); 
 }
 
 int EVMAnalyserTest::getRelationSize(std::string relationName) {

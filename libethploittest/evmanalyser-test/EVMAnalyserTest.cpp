@@ -1,4 +1,7 @@
 #define BOOST_TEST_MODULE libevmanalyser_test
+
+#include<stdlib.h>
+
 #include "boost/test/included/unit_test.hpp"
 #include "turtle/mock.hpp"
 #include "EVMAnalyser.h"
@@ -32,7 +35,7 @@ MOCK_BASE_CLASS(ExecutionTraceMock, dev::eth::ExecutionTrace) {
 struct F {
     F() {
         // static factory_Sf_reentrancy __factory_Sf_reentrancy_instance;
-        analyser = EVMAnalyserTest::getInstance();
+        analyser = EVMAnalyserTest::getInstance(std::to_string(rand()), std::to_string(rand()));
         BOOST_TEST_MESSAGE("setup fixture");
     }
 
