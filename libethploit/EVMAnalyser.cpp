@@ -130,10 +130,10 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
         // push new ID
         stackIDs.insert(stackIDs.begin(), ++latestID);
     }
-    std::cout << "New state: ";
-    for (auto &i : stackIDs) 
-        std::cout << i << ", ";
-    std::cout << std::endl;
+    // std::cout << "New state: ";
+    // for (auto &i : stackIDs) 
+    //     std::cout << i << ", ";
+    // std::cout << std::endl;
 }
 
 void EVMAnalyser::callResult(int result) {
@@ -143,10 +143,10 @@ void EVMAnalyser::callResult(int result) {
     souffle::tuple newTuple(relCallResult);
     newTuple << stackIDs[0] << result;
     relCallResult->insert(newTuple); 
-    std::cout << "New state: ";
-    for (auto &i : stackIDs) 
-        std::cout << i << ", ";
-    std::cout << std::endl;
+    // std::cout << "New state: ";
+    // for (auto &i : stackIDs) 
+    //     std::cout << i << ", ";
+    // std::cout << std::endl;
 
 };
 
@@ -154,10 +154,10 @@ void EVMAnalyser::swap(int pos) {
     // no tuple insertion
     // swap IDs on stack
     std::swap(stackIDs[0], stackIDs[pos]);
-    std::cout << "New state: ";
-    for (auto &i : stackIDs) 
-        std::cout << i << ", ";
-    std::cout << std::endl;
+    // std::cout << "New state: ";
+    // for (auto &i : stackIDs) 
+    //     std::cout << i << ", ";
+    // std::cout << std::endl;
 
 }; // SWAP2 = swap first(0) and third(2) element
 
@@ -174,10 +174,10 @@ void EVMAnalyser::dup(int pos) {
 
     // push newID to stack
     stackIDs.insert(stackIDs.begin(), latestID);
-    std::cout << "New state: ";
-    for (auto &i : stackIDs) 
-        std::cout << i << ", ";
-    std::cout << std::endl;
+    // std::cout << "New state: ";
+    // for (auto &i : stackIDs) 
+    //     std::cout << i << ", ";
+    // std::cout << std::endl;
 
 }; // DUP2 = dup second(1) element on the stack
 
@@ -191,10 +191,10 @@ void EVMAnalyser::jumpi() {
 
     // remove first two elements on stack
     stackIDs.erase(stackIDs.begin(), stackIDs.begin() + 2);
-    std::cout << "New state: ";
-    for (auto &i : stackIDs) 
-        std::cout << i << ", ";
-    std::cout << std::endl;
+    // std::cout << "New state: ";
+    // for (auto &i : stackIDs) 
+    //     std::cout << i << ", ";
+    // std::cout << std::endl;
 
 };
 
