@@ -306,15 +306,13 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
         // Unhandled exception
         if (exploitName == "unhandled_exception") {
             if (rel->size() != 0) {
-                std::string contractAddress; 
                 int stackID;
-                // int gas;
                 int count = 0;
 
                 for (auto &output : *rel) {
                     count++;
-                    // output >> id >> gas >> contractAddress;
-                    OUTPUT << FORERED << "Query Result: " << count << " unhandled exception detected." << RESETTEXT << std::endl; 
+                    output >> stackID;
+                    OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " << "StackID: " << stackID << RESETTEXT << std::endl; 
                 }
                 return true; 
             } else {
