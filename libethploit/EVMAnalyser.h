@@ -23,6 +23,7 @@ class EVMAnalyser {
 
     void jumpi();
 
+    void argsRet(int nArgs, int nRet);
   protected:
     souffle::SouffleProgram *prog;
     souffle::Relation *relDirectCall;
@@ -46,7 +47,7 @@ class EVMAnalyser {
 
     void callExit(int gas);
 
-    void instruction(std::string opcode, int nArgs, int nRet);
+    void instruction(std::string const& opcode, int nArgs, int nRet);
 
     void callResult(int result);
 };

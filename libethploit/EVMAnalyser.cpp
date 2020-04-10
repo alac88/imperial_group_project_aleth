@@ -88,40 +88,35 @@ void EVMAnalyser::callExit(int gas) {
 
 }
 
-void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
-    // ZO: It seems that the meaning of nArgs is not consistent
-    
-    // ZO: Illegal inputs, maybe should somehow notify the users
-    if (nArgs < 0)
-        return;
-    if (nRet < 0 || nRet > 1) 
-        return;
-
-    // ZO: I would suggest calling swap(), dup() and jumpi directly in the evm
+void EVMAnalyser::instruction(std::string const& opcode, int nArgs, int nRet) {   
     if (opcode.find("SWAP") != std::string::npos) {
-        swap(nArgs);
+        int pos = std::stoi(opcode.substr(4));
+        swap(pos);
         return;
     }
     if (opcode.find("DUP") != std::string::npos) {
-        dup(nArgs);
+        int pos = std::stoi(opcode.substr(3));
+        dup(pos);
         return;
     }
     if (opcode.find("JUMPI") != std::string::npos 
         || opcode.find("JUMPIF") != std::string::npos 
-        || opcode.find("JUMPCI") != std::string::npos) { // Maybe opcode == "JUMPI" is sufficient here? 
+        || opcode.find("JUMPCI") != std::string::npos) { 
         jumpi();
         return;
     }
 
-    // ZO: nRet could be larger than 1?
+    argsRet(nArgs, nRet);
+};
+
+void EVMAnalyser::argsRet(int nArgs, int nRet) {
     if (nArgs > 0 && nRet == 1) {
         // create new ID
         latestID++;
 
         // for each arg
         for (int i = 0; i < nArgs; i++) {
-            /* ZO: Replace std::cout with OUTPUT could print out [Middleware] */
-            std::cout << "insert to is_output: " << latestID << " " << stackIDs[i] << std::endl;
+            OUTPUT << "insert to is_output: " << latestID << " " << stackIDs[i] << std::endl;
             // insert tuple to is_output
             souffle::tuple newTuple(relIsOutput);
             newTuple << latestID << stackIDs[i];
@@ -143,12 +138,12 @@ void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
     for (auto &i : stackIDs) 
         std::cout << i << ", ";
     std::cout << std::endl;
-};
+}
 
 void EVMAnalyser::callResult(int result) {
     // take latestID and result
     // insert tuple to call_result
-    std::cout << "insert to call_result: " << latestID << " " << result << std::endl;
+    OUTPUT << "insert to call_result: " << latestID << " " << result << std::endl;
     souffle::tuple newTuple(relCallResult);
     newTuple << latestID << result;
     relCallResult->insert(newTuple); 
@@ -162,13 +157,13 @@ void EVMAnalyser::callResult(int result) {
 void EVMAnalyser::swap(int pos) {
     // no tuple insertion
     // swap IDs on stack
-    std::swap(stackIDs[0], stackIDs[pos - 1]);
+    std::swap(stackIDs[0], stackIDs[pos]);
     std::cout << "New state: ";
     for (auto &i : stackIDs) 
         std::cout << i << ", ";
     std::cout << std::endl;
 
-}; // SWAP2 -> 3 = swap first and third element
+}; // SWAP2 = swap first(0) and third(2) element
 
 void EVMAnalyser::dup(int pos) {
     // create newID
@@ -176,7 +171,7 @@ void EVMAnalyser::dup(int pos) {
 
     // take ID of the original position
     // insert tuple to is_output
-    std::cout << "insert to is_output: " << latestID << " " << stackIDs[pos - 1] << std::endl;
+    OUTPUT << "insert to is_output: " << latestID << " " << stackIDs[pos - 1] << std::endl;
     souffle::tuple newTuple(relIsOutput);
     newTuple << latestID << stackIDs[pos - 1];
     relIsOutput->insert(newTuple); 
@@ -188,15 +183,15 @@ void EVMAnalyser::dup(int pos) {
         std::cout << i << ", ";
     std::cout << std::endl;
 
-}; // DUP2 -> 2 = dup second(1) element on the stack
+}; // DUP2 = dup second(1) element on the stack
 
 void EVMAnalyser::jumpi() {
     // take second element on stack as condition 
     // insert tuple to in_condition
-    std::cout << "insert to in_condition: " << stackIDs[1] << std::endl;
-    souffle::tuple newTuple(relInCondition);
-    newTuple << stackIDs[1];
-    relInCondition->insert(newTuple); 
+    OUTPUT << "insert to in_condition: " << stackIDs[1] << std::endl;
+    // souffle::tuple newTuple(relInCondition);
+    // newTuple << stackIDs[1];
+    // relInCondition->insert(newTuple); 
 
     // remove first two elements on stack
     stackIDs.erase(stackIDs.begin(), stackIDs.begin() + 2);
