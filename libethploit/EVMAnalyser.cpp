@@ -101,8 +101,28 @@ void EVMAnalyser::instruction(std::string const& opcode, int nArgs, int nRet) {
         jumpi();
         return;
     }
+    if (opcode == "DELEGATECALL" || opcode == "STATICCALL" || opcode == "CALL" || opcode == "CALLCODE") {
+        storeCallArgs(nArgs);
+        return;
+    }
 
     argsRet(nArgs, nRet);
+};
+
+void EVMAnalyser::storeCallArgs(int nArgs) {
+    std::vector<int> callArgs;
+    for (int i = 0; i < nArgs; i++) {
+        callArgs.push_back(stackIDs[i]);
+    }
+    
+    callStack.insert(callStack.begin(), callArgs);
+    // remove args used
+    stackIDs.erase(stackIDs.begin(), stackIDs.begin() + nArgs);
+
+    // std::cout << "New state: ";
+    // for (auto &i : stackIDs) 
+    //     std::cout << i << ", ";
+    // std::cout << std::endl;
 };
 
 void EVMAnalyser::argsRet(int nArgs, int nRet) {
@@ -137,12 +157,31 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
 }
 
 void EVMAnalyser::callResult(int result) {
-    // take latestID and result
+    // create new ID when call result is received
+    latestID++;
+
+    // take first callArgs in callStack
+    auto callArgs = callStack[0];
+    for (auto &arg : callArgs) {
+        OUTPUT << "insert to is_output: " << latestID << " " << arg << std::endl;
+        // insert tuple to is_output
+        souffle::tuple newTuple(relIsOutput);
+        newTuple << latestID << arg;
+        relIsOutput->insert(newTuple); 
+    }
+
+    // remove callArgs from callStack
+    callStack.erase(callStack.begin());
+    
     // insert tuple to call_result
-    OUTPUT << "insert to call_result: " << stackIDs[0] << " " << result << std::endl;
+    OUTPUT << "insert to call_result: " << latestID << " " << result << std::endl;
     souffle::tuple newTuple(relCallResult);
-    newTuple << stackIDs[0] << result;
+    newTuple << latestID << result;
     relCallResult->insert(newTuple); 
+
+    // push new ID
+    stackIDs.insert(stackIDs.begin(), latestID);
+
     // std::cout << "New state: ";
     // for (auto &i : stackIDs) 
     //     std::cout << i << ", ";
@@ -330,6 +369,7 @@ void EVMAnalyser::cleanExecutionTrace() {
     executionTraceCount = 1;
     latestID = 0;
     stackIDs.clear();
+    callStack.clear();
 }
 
 EVMAnalyserTest* EVMAnalyserTest::getInstance() {

@@ -11,6 +11,7 @@ class EVMAnalyser {
     
     int latestID = 0;
     std::vector<int> stackIDs;
+    std::vector<std::vector<int>> callStack;
 
     EVMAnalyser();
     ~EVMAnalyser(); 
@@ -24,6 +25,9 @@ class EVMAnalyser {
     void jumpi();
 
     void argsRet(int nArgs, int nRet);
+
+    void storeCallArgs(int nArgs);
+
   protected:
     souffle::SouffleProgram *prog;
     souffle::Relation *relDirectCall;
