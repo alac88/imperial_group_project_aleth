@@ -119,7 +119,6 @@ void EVMAnalyser::extractReentrancyAddresses() {
 
     // Standard json fields
     // json["sender_account"] = senderAccout;
-    transactionHash = "TEST";
     json["transaction_hash"] = transactionHash;
 
     std::set<int> idSet;
@@ -220,18 +219,23 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
         // Locked ethers
         if (exploitName == "locked_ether") {
             if (rel->size() != 0) {
-                std::string contractAddress; 
-                int id;
-                int gas;
                 int count = 0;
 
                 for (auto &output : *rel) {
+                    std::string contractAddress; 
+                    int id;
+                    int gas;
+                    
                     count++;
                     output >> id >> gas >> contractAddress;
 #ifdef EVMANALYSER_DEBUG
                     OUTPUT << FORERED << "Query Result: " << count << " Contract in address: " 
                         << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
 #endif
+                    Json::Value json(Json::objectValue);
+                    json["transaction_hash"] = transactionHash;
+                    json["contract_address"] = contractAddress;
+                    lockedEtherJSON << json << std::endl;
                 }
                 return true; 
             } else {
@@ -245,12 +249,13 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
         // Unhandled reception
         if (exploitName == "unhandled_reception") {
             if (rel->size() != 0) {
-                std::string contractAddress; 
-                int id;
-                int gas;
                 int count = 0;
 
                 for (auto &output : *rel) {
+                    std::string contractAddress; 
+                    int id;
+                    int gas;
+
                     count++;
                     output >> id >> gas >> contractAddress;
 #ifdef EVMANALYSER_DEBUG
