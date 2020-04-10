@@ -89,9 +89,15 @@ void EVMAnalyser::callExit(int gas) {
 }
 
 void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
-    // It seems that the meaning of nArgs is not consistent
+    // ZO: It seems that the meaning of nArgs is not consistent
+    
+    // ZO: Illegal inputs, maybe should somehow notify the users
     if (nArgs < 0)
         return;
+    if (nRet < 0 || nRet > 1) 
+        return;
+
+    // ZO: I would suggest calling swap(), dup() and jumpi directly in the evm
     if (opcode.find("SWAP") != std::string::npos) {
         swap(nArgs);
         return;
@@ -100,25 +106,26 @@ void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
         dup(nArgs);
         return;
     }
-    if (opcode.find("JUMPI") != std::string::npos || opcode.find("JUMPIF") != std::string::npos || opcode.find("JUMPCI") != std::string::npos) {
+    if (opcode.find("JUMPI") != std::string::npos 
+        || opcode.find("JUMPIF") != std::string::npos 
+        || opcode.find("JUMPCI") != std::string::npos) { // Maybe opcode == "JUMPI" is sufficient here? 
         jumpi();
         return;
     }
-    if (nRet < 0 || nRet > 1) 
-        return;
 
+    // ZO: nRet could be larger than 1?
     if (nArgs > 0 && nRet == 1) {
         // create new ID
         latestID++;
 
         // for each arg
         for (int i = 0; i < nArgs; i++) {
+            /* ZO: Replace std::cout with OUTPUT could print out [Middleware] */
             std::cout << "insert to is_output: " << latestID << " " << stackIDs[i] << std::endl;
             // insert tuple to is_output
-            // TODO: uncomment below: 
-            // souffle::tuple newTuple(relIsOutput);
-            // newTuple << latestID << stackIDs[i];
-            // relIsOutput->insert(newTuple); 
+            souffle::tuple newTuple(relIsOutput);
+            newTuple << latestID << stackIDs[i];
+            relIsOutput->insert(newTuple); 
         }
 
         // remove args used
@@ -142,10 +149,9 @@ void EVMAnalyser::callResult(int result) {
     // take latestID and result
     // insert tuple to call_result
     std::cout << "insert to call_result: " << latestID << " " << result << std::endl;
-    // TODO: uncomment below:   
-    // souffle::tuple newTuple(relCallResult);
-    // newTuple << latestID << result;
-    // relCallResult->insert(newTuple); 
+    souffle::tuple newTuple(relCallResult);
+    newTuple << latestID << result;
+    relCallResult->insert(newTuple); 
     std::cout << "New state: ";
     for (auto &i : stackIDs) 
         std::cout << i << ", ";
@@ -171,10 +177,9 @@ void EVMAnalyser::dup(int pos) {
     // take ID of the original position
     // insert tuple to is_output
     std::cout << "insert to is_output: " << latestID << " " << stackIDs[pos - 1] << std::endl;
-    // TODO: uncomment below: 
-    // souffle::tuple newTuple(relIsOutput);
-    // newTuple << latestID << stackIDs[pos - 1];
-    // relIsOutput->insert(newTuple); 
+    souffle::tuple newTuple(relIsOutput);
+    newTuple << latestID << stackIDs[pos - 1];
+    relIsOutput->insert(newTuple); 
 
     // push newID to stack
     stackIDs.insert(stackIDs.begin(), latestID);
@@ -189,10 +194,9 @@ void EVMAnalyser::jumpi() {
     // take second element on stack as condition 
     // insert tuple to in_condition
     std::cout << "insert to in_condition: " << stackIDs[1] << std::endl;
-    // TODO: uncomment below: 
-    // souffle::tuple newTuple(relInCondition);
-    // newTuple << stackIDs[1];
-    // relInCondition->insert(newTuple); 
+    souffle::tuple newTuple(relInCondition);
+    newTuple << stackIDs[1];
+    relInCondition->insert(newTuple); 
 
     // remove first two elements on stack
     stackIDs.erase(stackIDs.begin(), stackIDs.begin() + 2);
