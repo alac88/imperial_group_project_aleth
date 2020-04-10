@@ -23,6 +23,7 @@ class EVMAnalyser {
 
     void jumpi();
 
+    void argsRet(int nArgs, int nRet);
   protected:
     souffle::SouffleProgram *prog;
     souffle::Relation *relDirectCall;

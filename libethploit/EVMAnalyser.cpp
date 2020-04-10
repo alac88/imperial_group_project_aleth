@@ -88,16 +88,13 @@ void EVMAnalyser::callExit(int gas) {
 
 }
 
-void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
-    // ZO: It seems that the meaning of nArgs is not consistent
-    
+void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {    
     // ZO: Illegal inputs, maybe should somehow notify the users
     if (nArgs < 0)
         return;
     if (nRet < 0 || nRet > 1) 
         return;
 
-    // ZO: I would suggest calling swap(), dup() and jumpi directly in the evm
     if (opcode.find("SWAP") != std::string::npos) {
         swap(nArgs);
         return;
@@ -108,19 +105,21 @@ void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
     }
     if (opcode.find("JUMPI") != std::string::npos 
         || opcode.find("JUMPIF") != std::string::npos 
-        || opcode.find("JUMPCI") != std::string::npos) { // Maybe opcode == "JUMPI" is sufficient here? 
+        || opcode.find("JUMPCI") != std::string::npos) { 
         jumpi();
         return;
     }
 
-    // ZO: nRet could be larger than 1?
+    argsRet(nArgs, nRet);
+};
+
+void EVMAnalyser::argsRet(int nArgs, int nRet) {
     if (nArgs > 0 && nRet == 1) {
         // create new ID
         latestID++;
 
         // for each arg
         for (int i = 0; i < nArgs; i++) {
-            /* ZO: Replace std::cout with OUTPUT could print out [Middleware] */
             std::cout << "insert to is_output: " << latestID << " " << stackIDs[i] << std::endl;
             // insert tuple to is_output
             souffle::tuple newTuple(relIsOutput);
@@ -143,7 +142,7 @@ void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
     for (auto &i : stackIDs) 
         std::cout << i << ", ";
     std::cout << std::endl;
-};
+}
 
 void EVMAnalyser::callResult(int result) {
     // take latestID and result
