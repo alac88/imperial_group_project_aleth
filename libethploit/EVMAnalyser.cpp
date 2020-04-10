@@ -89,6 +89,7 @@ void EVMAnalyser::callExit(int gas) {
 }
 
 void EVMAnalyser::instruction(std::string opcode, int nArgs, int nRet) {
+    // It seems that the meaning of nArgs is not consistent
     if (nArgs < 0)
         return;
     if (opcode.find("SWAP") != std::string::npos) {
