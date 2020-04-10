@@ -14,12 +14,6 @@ MOCK_BASE_CLASS(ExecutionTraceMock, dev::eth::ExecutionTrace) {
         senderAddress = _senderAddr;
         receiveAddress = _receiverAddr;
         valueTransfer = _valueTransfer;
-        // gas = _gas;
-        
-        // uint64_t m_PC;  // program counter
-        // uint64_t m_PC_post = 0; // returning program counter for delegate call
-        // u256* m_SP;    // stack pointer
-        // u256* m_SPP;    // stack pointer    
     }
 };
 

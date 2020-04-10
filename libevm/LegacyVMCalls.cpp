@@ -183,12 +183,10 @@ void LegacyVM::caseCall()
 
         std::cout << instructionInfo(m_OP).name << " ";
         std::cout << "Sender " << callParams.get()->senderAddress << " ";
-        std::cout << "Receive Address" << callParams.get()->receiveAddress << " "; 
-        std::cout << "Code Address " << callParams.get()->codeAddress << std::endl;
+        std::cout << "Receive Address" << callParams.get()->receiveAddress << "\n"; 
 
         // execTrace.print();
 
-        // analyser->queryExploit("reentrancy");
         result.output.copyTo(output);
 
         // Here we have 2 options:

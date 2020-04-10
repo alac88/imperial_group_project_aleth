@@ -286,11 +286,6 @@ void LegacyVM::interpretCases()
             if (m_OP == Instruction::CALL && m_ext->staticCall && m_SP[2] != 0)
                 throwDisallowedStateChange();
             m_bounce = &LegacyVM::caseCall;
-            // cout << "PC: " << m_PC << "\n io gas: " << m_io_gas;
-            // cout << "\n runGas: " << m_runGas << "\n SP: " << m_SP;
-            // cout << "\n returnDataSize: " << m_returnData.size() << "\n output size: " << m_output.size() << endl;
-            // cout << "depth: " << m_ext->depth << endl;
-
         }
         BREAK
 
