@@ -80,8 +80,8 @@ locked_ether(ID, G1, A) :- call_entry(ID, G1, A), call_exit(ID, G2), G1=G2.
 
 //Additional types
 
-.type result = symbol
-.type opcodeArg = symbol
+.type result = number
+.type opcodeArg = number
 
 //input relations:
 
