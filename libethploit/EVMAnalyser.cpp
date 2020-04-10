@@ -52,7 +52,9 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
     if (executionTrace->instruction == "CALL" || 
         executionTrace->instruction == "STATICCALL") { // Treating three types of call as the same for now 
         souffle::tuple newTuple(relDirectCall); // create tuple for the relation
-        OUTPUT << "The populated instruction has ID number " << executionTraceCount << std::endl; 
+#ifdef EVMANALYSER_DEBUG
+        OUTPUT << "The populated instruction has ID number " << executionTraceCount << std::endl;
+#endif
         newTuple << executionTraceCount
                 << executionTrace->senderAddress
                 << executionTrace->receiveAddress
@@ -61,7 +63,9 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
         executionTraceCount++;
     } else if (executionTrace->instruction == "DELEGATECALL") {
         souffle::tuple newTupleCall(relDirectCall);
+#ifdef EVMANALYSER_DEBUG
         OUTPUT << "The populated instruction has ID number " << executionTraceCount << std::endl; 
+#endif
         newTupleCall << executionTraceCount
                 << executionTrace->senderAddress
                 << executionTrace->receiveAddress
@@ -73,8 +77,10 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
     } else if (executionTrace->instruction == "JUMPI") {
         // Reserved for influence_condition fact
     } else {
+#ifdef EVMANALYSER_DEBUG
         OUTPUT << "No currently exisited relation matches up with this instruction!" 
             << std::endl;
+#endif
         return false; 
     }
 
@@ -88,8 +94,10 @@ void EVMAnalyser::callEntry(int gas, std::string contractAddress) {
     newTuple << executionTraceCount-1 << gas << contractAddress;
     relCallEntry->insert(newTuple);
 
+#ifdef EVMANALYSER_DEBUG
     OUTPUT << "callEntry for " << executionTraceCount << " has been populated"
         << std::endl;
+#endif
 
 }
 
@@ -98,8 +106,10 @@ void EVMAnalyser::callExit(int gas) {
     newTuple << executionTraceCount-1 << gas; // Minus 1 to refer back the DELEGATECALL
     relCallExit->insert(newTuple); 
 
+#ifdef EVMANALYSER_DEBUG
     OUTPUT << "callExit for " << executionTraceCount-1 << " has been populated"
         << std::endl;
+#endif
 
 }
 
@@ -187,7 +197,7 @@ void EVMAnalyser::extractReentrancyAddresses() {
     }
 
     // Save the new json tuple
-    reentrancyJSON << json;
+    reentrancyJSON << json << std::endl;
 }
 
 bool EVMAnalyser::queryExploit(std::string exploitName) {
@@ -200,7 +210,9 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                 extractReentrancyAddresses();
                 return true;
             } else {
+#ifdef EVMANALYSER_DEBUG
                 OUTPUT << "No re-entrancy has been detected." << std::endl;
+#endif
                 return false;
             }
         }
@@ -216,12 +228,16 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                 for (auto &output : *rel) {
                     count++;
                     output >> id >> gas >> contractAddress;
+#ifdef EVMANALYSER_DEBUG
                     OUTPUT << FORERED << "Query Result: " << count << " Contract in address: " 
                         << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
+#endif
                 }
                 return true; 
             } else {
+#ifdef EVMANALYSER_DEBUG
                 OUTPUT << "No locked ether has been detected." << std::endl;
+#endif
                 return false; 
             }
         }
@@ -237,18 +253,24 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                 for (auto &output : *rel) {
                     count++;
                     output >> id >> gas >> contractAddress;
+#ifdef EVMANALYSER_DEBUG
                     OUTPUT << "Query Result: " << count << " Contract in address: " 
                         << contractAddress << " has been locked" << std::endl; 
+#endif
                 }
                 return true; 
             } else {
+#ifdef EVMANALYSER_DEBUG
                 OUTPUT << "No locked ether has been detected." << std::endl;
+#endif
                 return false; 
             }
         }
     }
-    
-    std::cout << "[Middleware]: Wrong exploit name!" << std::endl;
+
+#ifdef EVMANALYSER_DEBUG
+    OUTPUT << "Wrong exploit name!" << std::endl;
+#endif
     return false;
 }
 
