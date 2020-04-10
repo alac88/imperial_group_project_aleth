@@ -53,10 +53,6 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
                 << (int) executionTrace->valueTransfer; // valueTransfer, receiveAddress not needed here
         relDirectCall->insert(newTupleCall);
         executionTraceCount++;
-    } else if (executionTrace->instruction == "PUSH") {
-        // Reserved for call_result fact
-    } else if (executionTrace->instruction == "JUMPI") {
-        // Reserved for influence_condition fact
     } else {
         OUTPUT << "No existing relation matches up with this instruction!" 
             << std::endl;
