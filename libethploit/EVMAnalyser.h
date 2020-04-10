@@ -19,16 +19,22 @@ class EVMAnalyser {
     void initialiseJSON(); 
     void extractReentrancyAddresses();
     void setTransactionHash(std::string _transactionHash);
+    void setAccount(std::string _account);
 
   protected:
     std::string transactionHash;
+    std::string account;
+
     souffle::SouffleProgram *prog;
+
     souffle::Relation *relDirectCall;
     souffle::Relation *relCallEntry;
     souffle::Relation *relCallExit;
     souffle::Relation *queReentrancy;
+
   public:
-    static EVMAnalyser* getInstance(std::string _transactionHash = "UNDEFINED");
+    static EVMAnalyser* getInstance(std::string _account = "UNDEFINED", 
+        std::string _transactionHash = "UNDEFINED");
 
     bool populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace);
 

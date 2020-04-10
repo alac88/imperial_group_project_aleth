@@ -39,10 +39,17 @@ void EVMAnalyser::setTransactionHash(std::string _transactionHash) {
     transactionHash = _transactionHash;
 }
 
-EVMAnalyser* EVMAnalyser::getInstance(std::string _transactionHash) {
+void EVMAnalyser::setAccount(std::string _account) {
+    account = _account;
+}
+
+EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transactionHash) {
     static EVMAnalyser instance;
     if (_transactionHash != "UNDEFINED") {
         instance.setTransactionHash(_transactionHash);
+    }
+    if (_account != "UNDEFINED") {
+        instance.setAccount(_account);
     }
     instance.initialiseJSON();
     return &instance; 
@@ -118,7 +125,7 @@ void EVMAnalyser::extractReentrancyAddresses() {
     Json::Value json(Json::objectValue);
 
     // Standard json fields
-    // json["sender_account"] = senderAccout;
+    json["account"] = account;
     json["transaction_hash"] = transactionHash;
 
     std::set<int> idSet;
@@ -225,7 +232,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                     std::string contractAddress; 
                     int id;
                     int gas;
-                    
+
                     count++;
                     output >> id >> gas >> contractAddress;
 #ifdef EVMANALYSER_DEBUG
@@ -233,6 +240,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                         << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
 #endif
                     Json::Value json(Json::objectValue);
+                    json["account"] = account;
                     json["transaction_hash"] = transactionHash;
                     json["contract_address"] = contractAddress;
                     lockedEtherJSON << json << std::endl;
