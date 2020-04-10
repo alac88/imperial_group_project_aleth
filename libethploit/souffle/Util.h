@@ -103,71 +103,30 @@ inline unsigned long __builtin_ctzll(unsigned long long value) {
 }
 #endif
 
-namespace souffle {
-
 /**
- * Converts a string to a RamDomain
+ * Converts a string to a number
  */
-inline RamDomain RamDomainFromString(
-        const std::string& str, std::size_t* position = nullptr, const int base = 10) {
-    RamDomain val;
-#if RAM_DOMAIN_SIZE == 64
-    val = std::stoll(str, position, base);
-#else
-    val = std::stoi(str, position, base);
-#endif
-    return static_cast<RamDomain>(val);
-}
-
-/**
- * Converts a string to a RamFloat
- */
-inline RamFloat RamFloatFromString(const std::string& str, std::size_t* position = nullptr) {
-    RamFloat val;
-#if RAM_DOMAIN_SIZE == 64
-    val = std::stod(str, position);
-#else
-    val = std::stof(str, position);
-#endif
-    return static_cast<RamFloat>(val);
-}
-
-/**
- * Converts a string to a RamUnsigned
- */
-inline RamUnsigned RamUnsignedFromString(
-        const std::string& str, std::size_t* position = nullptr, const int base = 10) {
-    RamUnsigned val;
-#if RAM_DOMAIN_SIZE == 64
-    val = std::stoul(str, position, base);
-#else
-    val = std::stoull(str, position, base);
-#endif
-    return static_cast<RamUnsigned>(val);
-}
 
 #if RAM_DOMAIN_SIZE == 64
-inline RamDomain stord(const std::string& str, std::size_t* pos = nullptr, int base = 10) {
-    return static_cast<RamDomain>(std::stoull(str, pos, base));
-}
+#define stord(a) std::stoll(a)
 #elif RAM_DOMAIN_SIZE == 32
-inline RamDomain stord(const std::string& str, std::size_t* pos = nullptr, int base = 10) {
-    return static_cast<RamDomain>(std::stoul(str, pos, base));
-}
+#define stord(a) std::stoi(a)
 #else
 #error RAM Domain is neither 32bit nor 64bit
 #endif
 
+namespace souffle {
+
 /**
- * Check whether a string is a sequence of digits
+ * Check whether a string is a sequence of numbers
  */
 inline bool isNumber(const char* str) {
     if (str == nullptr) {
         return false;
     }
 
-    while (*str != 0) {
-        if (isdigit(*str) == 0) {
+    while (*str) {
+        if (!isdigit(*str)) {
             return false;
         }
         str++;
@@ -345,9 +304,7 @@ struct range {
     std::vector<range> partition(int np = 100) {
         // obtain the size
         int n = 0;
-        for (auto i = a; i != b; ++i) {
-            n++;
-        }
+        for (auto i = a; i != b; ++i) n++;
 
         // split it up
         auto s = n / np;
@@ -1090,7 +1047,7 @@ inline bool existDir(const std::string& name) {
  * Check whether a given file exists and it is an executable
  */
 inline bool isExecutable(const std::string& name) {
-    return existFile(name) && (access(name.c_str(), X_OK) == 0);
+    return existFile(name) && !access(name.c_str(), X_OK);
 }
 
 /**
@@ -1098,7 +1055,7 @@ inline bool isExecutable(const std::string& name) {
  */
 inline std::string which(const std::string& name) {
     char buf[PATH_MAX];
-    if ((::realpath(name.c_str(), buf) != nullptr) && isExecutable(buf)) {
+    if (::realpath(name.c_str(), buf) && isExecutable(buf)) {
         return buf;
     }
     const char* syspath = ::getenv("PATH");
@@ -1110,7 +1067,7 @@ inline std::string which(const std::string& name) {
     std::string sub;
     while (std::getline(sstr, sub, ':')) {
         std::string path = sub + "/" + name;
-        if (isExecutable(path) && (realpath(path.c_str(), buf) != nullptr)) {
+        if (isExecutable(path) && realpath(path.c_str(), buf)) {
             return buf;
         }
     }
@@ -1155,13 +1112,9 @@ inline std::string absPath(const std::string& path) {
  */
 inline std::string pathJoin(const std::string& first, const std::string& second) {
     unsigned firstPos = static_cast<unsigned>(first.size()) - 1;
-    while (first.at(firstPos) == '/') {
-        firstPos--;
-    }
+    while (first.at(firstPos) == '/') firstPos--;
     unsigned secondPos = 0;
-    while (second.at(secondPos) == '/') {
-        secondPos++;
-    }
+    while (second.at(secondPos) == '/') secondPos++;
     return first.substr(0, firstPos + 1) + '/' + second.substr(secondPos);
 }
 
@@ -1211,14 +1164,10 @@ inline std::string simpleName(const std::string& path) {
     std::string name = baseName(path);
     const size_t lastDot = name.find_last_of('.');
     // file has no extension
-    if (lastDot == std::string::npos) {
-        return name;
-    }
+    if (lastDot == std::string::npos) return name;
     const size_t lastSlash = name.find_last_of('/');
     // last slash occurs after last dot, so no extension
-    if (lastSlash != std::string::npos && lastSlash > lastDot) {
-        return name;
-    }
+    if (lastSlash != std::string::npos && lastSlash > lastDot) return name;
     // last dot after last slash, or no slash
     return name.substr(0, lastDot);
 }
@@ -1230,14 +1179,10 @@ inline std::string fileExtension(const std::string& path) {
     std::string name = path;
     const size_t lastDot = name.find_last_of('.');
     // file has no extension
-    if (lastDot == std::string::npos) {
-        return std::string();
-    }
+    if (lastDot == std::string::npos) return std::string();
     const size_t lastSlash = name.find_last_of('/');
     // last slash occurs after last dot, so no extension
-    if (lastSlash != std::string::npos && lastSlash > lastDot) {
-        return std::string();
-    }
+    if (lastSlash != std::string::npos && lastSlash > lastDot) return std::string();
     // last dot after last slash, or no slash
     return name.substr(lastDot + 1);
 }
@@ -1298,7 +1243,7 @@ inline std::string stringify(const std::string& input) {
 /** Valid C++ identifier, note that this does not ensure the uniqueness of identifiers returned. */
 inline std::string identifier(std::string id) {
     for (size_t i = 0; i < id.length(); i++) {
-        if (((isalpha(id[i]) == 0) && i == 0) || ((isalnum(id[i]) == 0) && id[i] != '_')) {
+        if ((!isalpha(id[i]) && i == 0) || (!isalnum(id[i]) && id[i] != '_')) {
             id[i] = '_';
         }
     }
@@ -1348,16 +1293,12 @@ public:
     void access(const T& val) {
         // test whether it is contained
         for (std::size_t i = 0; i < size; i++) {
-            if (entries[i] != val) {
-                continue;
-            }
+            if (entries[i] != val) continue;
 
             // -- move this one to the front --
 
             // if it is the first, nothing to handle
-            if (i == first) {
-                return;
-            }
+            if (i == first) return;
 
             // if this is the last, just first and last need to change
             if (i == last) {
@@ -1420,9 +1361,7 @@ template <typename T, unsigned size>
 std::ostream& operator<<(std::ostream& out, const LRUCache<T, size>& cache) {
     bool first = true;
     cache.forEachInOrder([&](const T& val) {
-        if (!first) {
-            out << ",";
-        }
+        if (!first) out << ",";
         first = false;
         out << val;
         return false;
@@ -1521,7 +1460,7 @@ public:
  * disabled;
  */
 inline bool isHintsProfilingEnabled() {
-    return std::getenv("SOUFFLE_PROFILE_HINTS") != nullptr;
+    return std::getenv("SOUFFLE_PROFILE_HINTS");
 }
 
 /**
@@ -1540,15 +1479,11 @@ public:
               misses((active) ? other.getMisses() : 0) {}
 
     void addHit() {
-        if (active) {
-            hits.fetch_add(1, std::memory_order_relaxed);
-        }
+        if (active) hits.fetch_add(1, std::memory_order_relaxed);
     }
 
     void addMiss() {
-        if (active) {
-            misses.fetch_add(1, std::memory_order_relaxed);
-        }
+        if (active) misses.fetch_add(1, std::memory_order_relaxed);
     }
 
     std::size_t getHits() const {

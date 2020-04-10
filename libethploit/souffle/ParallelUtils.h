@@ -121,7 +121,7 @@ public:
         }
         Lease(const Lease& other) = delete;
         ~Lease() {
-            if (mux != nullptr) {
+            if (mux) {
                 mux->unlock();
             }
         }

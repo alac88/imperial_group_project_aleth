@@ -167,11 +167,6 @@ bool Executive::call(Address const& _receiveAddress, Address const& _senderAddre
 bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address const& _origin)
 {
 
-    std::cout << "Executive::call()" << " ";
-    std::cout << "Sender " << _p.senderAddress << " ";
-    std::cout << "Receive Address" << _p.receiveAddress << " "; 
-    std::cout << "Code Address " << _p.codeAddress << std::endl;
-
     // If external transaction.
     if (m_t)
     {
@@ -354,10 +349,6 @@ bool Executive::go(OnOpFunc const& _onOp)
             // Create VM instance. Force Interpreter if tracing requested.
             auto vm = VMFactory::create();
 
-            // Signal transaction start
-            // std::cout << "I am starting" << std::endl;
-            // std::cout << "Gas start " << m_gas << std::endl;
-
             if (m_isCreation)
             {
                 auto out = vm->exec(m_gas, *m_ext, _onOp);
@@ -430,10 +421,6 @@ bool Executive::go(OnOpFunc const& _onOp)
             // has drawbacks. Essentially, the amount of ram has to be increased here.
         }
 
-        // Signal transaction end
-        // std::cout << "I am ending" << std::endl;
-        // std::cout << "gas after " << m_gas << std::endl;
-
         if (m_res && m_output)
             // Copy full output:
             m_res->output = m_output.toVector();
@@ -457,11 +444,6 @@ bool Executive::finalize()
         assert(m_ext->sub.refunds >= 0);
         int64_t maxRefund = (static_cast<int64_t>(m_t.gas()) - static_cast<int64_t>(m_gas)) / 2;
         m_gas += min(maxRefund, m_ext->sub.refunds);
-
-        std::cout << "myAdd " << m_ext->myAddress.hex() << " ";
-        std::cout << "caller " << m_ext->caller.hex() << " ";
-        std::cout << "origin " << m_ext->origin.hex() << std::endl;
-
     }
 
     if (m_t)
@@ -477,6 +459,7 @@ bool Executive::finalize()
         EVMAnalyser* analyser = EVMAnalyser::getInstance();
         analyser->queryExploit("reentrancy");
         analyser->queryExploit("locked_ether");
+        analyser->queryExploit("unhandled_exception");
         analyser->cleanExecutionTrace();
     }
 

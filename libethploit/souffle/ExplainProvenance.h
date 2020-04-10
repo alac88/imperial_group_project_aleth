@@ -23,7 +23,6 @@
 
 #include <sstream>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace souffle {
@@ -40,7 +39,7 @@ public:
      * @param s, symbol of the variable
      * @param idx, first occurence of the variable
      * */
-    Equivalence(char t, std::string s, std::pair<size_t, size_t> idx) : type(t), symbol(std::move(s)) {
+    Equivalence(char t, std::string s, std::pair<size_t, size_t> idx) : type(t), symbol(s) {
         indices.push_back(idx);
     }
 
@@ -186,10 +185,12 @@ public:
         }
 
         // create symbol mask
-        std::vector<RamTypeAttribute> symbolMask(rel->getArity());
+        std::vector<bool> symMask(rel->getArity());
 
         for (size_t i = 0; i < rel->getArity(); i++) {
-            symbolMask.at(i) = RamPrimitiveFromChar(*(rel->getAttrType(i)));
+            if (*(rel->getAttrType(i)) == 's') {
+                symMask.at(i) = true;
+            }
         }
 
         // create IODirectives
@@ -201,7 +202,7 @@ public:
         auto originalCoutBuf = std::cout.rdbuf(out.rdbuf());
 
         // print relation
-        printRelationOutput(symbolMask, dir, *rel);
+        printRelationOutput(symMask, dir, *rel);
 
         // restore original cout buffer
         std::cout.rdbuf(originalCoutBuf);
@@ -238,8 +239,8 @@ protected:
         return nums;
     }
 
-    std::vector<std::string> numsToArgs(
-            const std::string& relName, const std::vector<RamDomain>& nums) const {
+    std::vector<std::string> numsToArgs(const std::string& relName, const std::vector<RamDomain>& nums,
+            std::vector<bool>* err = nullptr) const {
         std::vector<std::string> args;
 
         auto rel = prog.getRelation(relName);
@@ -248,18 +249,22 @@ protected:
         }
 
         for (size_t i = 0; i < nums.size(); i++) {
-            if (*rel->getAttrType(i) == 's') {
-                args.push_back("\"" + std::string(symTable.resolve(nums[i])) + "\"");
+            if (err && (*err)[i]) {
+                args.push_back("_");
             } else {
-                args.push_back(std::to_string(nums[i]));
+                if (*rel->getAttrType(i) == 's') {
+                    args.push_back("\"" + std::string(symTable.resolve(nums[i])) + "\"");
+                } else {
+                    args.push_back(std::to_string(nums[i]));
+                }
             }
         }
 
         return args;
     }
 
-    virtual void printRelationOutput(const std::vector<RamTypeAttribute>& symbolMask,
-            const IODirectives& ioDir, const Relation& rel) = 0;
+    virtual void printRelationOutput(
+            const std::vector<bool>& symMask, const IODirectives& ioDir, const Relation& rel) = 0;
 };
 
 }  // end of namespace souffle

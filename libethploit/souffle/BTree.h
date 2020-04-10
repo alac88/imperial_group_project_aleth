@@ -814,11 +814,8 @@ protected:
 
                     // search for new position (since other may have been altered in the meanwhile)
                     size_type i = 0;
-                    for (; i <= other->numElements; ++i) {
-                        if (other->getChild(i) == predecessor) {
-                            break;
-                        }
-                    }
+                    for (; i <= other->numElements; ++i)
+                        if (other->getChild(i) == predecessor) break;
 
                     pos = (i > other->numElements) ? 0 : i;
                     other->insert_inner(root, root_lock, pos, predecessor, key, newNode, locked_nodes);
@@ -882,9 +879,7 @@ protected:
 
 #ifdef IS_PARALLEL
             // print the lock state
-            if (this->lock.is_write_locked()) {
-                std::cout << " locked";
-            }
+            if (this->lock.is_write_locked()) std::cout << " locked";
 #endif
 
             out << "\n";
@@ -1382,9 +1377,7 @@ public:
                 cur_lease = cur->lock.start_read();
 
                 // check validity of root pointer
-                if (root_lock.end_read(root_lease)) {
-                    break;
-                }
+                if (root_lock.end_read(root_lease)) break;
 
             } while (true);
         }
@@ -1493,9 +1486,7 @@ public:
                         parent->lock.start_write();
                         while (true) {
                             // check whether parent is correct
-                            if (parent == priv->parent) {
-                                break;
-                            }
+                            if (parent == priv->parent) break;
                             // switch parent
                             parent->lock.abort_write();
                             parent = priv->parent;
@@ -1510,9 +1501,7 @@ public:
                     parents.push_back(parent);
 
                     // stop at "sphere of influence"
-                    if (!parent || !parent->isFull()) {
-                        break;
-                    }
+                    if (!parent || !parent->isFull()) break;
 
                     // go one step higher
                     priv = parent;
@@ -1690,6 +1679,30 @@ public:
             // use insert with hint
             insert(*it, hints);
         }
+    }
+
+    /**
+     * Inserts all elements of the given b-tree into this tree.
+     * This can be a more effective alternative to the ordered insertion
+     * of elements utilizing iterators.
+     */
+    void insertAll(const btree& other) {
+        // shortcut for non-sense operation
+        if (this == &other) {
+            return;
+        }
+
+        // make sure bigger tree is inserted in smaller tree
+        if ((size() + 10000) < other.size()) {
+            // switch sides
+            btree tmp = other;
+            tmp.insertAll(*this);
+            swap(tmp);
+            return;
+        }
+
+        // by default use the iterator based insertion
+        insert(other.begin(), other.end());
     }
 
     // Obtains an iterator referencing the first element of the tree.

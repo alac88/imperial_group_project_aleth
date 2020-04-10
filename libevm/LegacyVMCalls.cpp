@@ -183,15 +183,10 @@ void LegacyVM::caseCall()
 
         std::cout << instructionInfo(m_OP).name << " ";
         std::cout << "Sender " << callParams.get()->senderAddress << " ";
-        std::cout << "Receive Address" << callParams.get()->receiveAddress << " "; 
-        std::cout << "Code Address " << callParams.get()->codeAddress << std::endl;
+        std::cout << "Receive Address" << callParams.get()->receiveAddress << "\n"; 
 
-
-
-        // execTrace.setReturningPC(m_PC);
         // execTrace.print();
 
-        // analyser->queryExploit("reentrancy");
         result.output.copyTo(output);
 
         // Here we have 2 options:
@@ -203,6 +198,10 @@ void LegacyVM::caseCall()
         m_returnData = result.output.toBytes();
 
         m_SPP[0] = result.status == EVMC_SUCCESS ? 1 : 0;
+
+        // @middleware: to be passed
+        std::cout << "Call success " << m_SPP[0] << std::endl;
+        analyser->callResult((int)m_SPP[0]);
     }
     else
         m_SPP[0] = 0;

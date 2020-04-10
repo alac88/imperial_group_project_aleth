@@ -19,6 +19,9 @@ EVMAnalyser::EVMAnalyser() {
     relDirectCall = prog->getRelation("direct_call");
     relCallEntry = prog->getRelation("call_entry");
     relCallExit = prog->getRelation("call_exit");
+    relIsOutput = prog->getRelation("is_output");
+    relCallResult = prog->getRelation("call_result");
+    relInCondition = prog->getRelation("in_condition");
 }
 
 EVMAnalyser::~EVMAnalyser() {
@@ -50,12 +53,8 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
                 << (int) executionTrace->valueTransfer; // valueTransfer, receiveAddress not needed here
         relDirectCall->insert(newTupleCall);
         executionTraceCount++;
-    } else if (executionTrace->instruction == "PUSH") {
-        // Reserved for call_result fact
-    } else if (executionTrace->instruction == "JUMPI") {
-        // Reserved for influence_condition fact
     } else {
-        OUTPUT << "No currently exisited relation matches up with this instruction!" 
+        OUTPUT << "No existing relation matches up with this instruction!" 
             << std::endl;
         return false; 
     }
@@ -84,6 +83,120 @@ void EVMAnalyser::callExit(int gas) {
         << std::endl;
 
 }
+
+void EVMAnalyser::instruction(std::string const& opcode, int nArgs, int nRet) {   
+    if (opcode.find("SWAP") != std::string::npos) {
+        int pos = std::stoi(opcode.substr(4));
+        swap(pos);
+        return;
+    }
+    if (opcode.find("DUP") != std::string::npos) {
+        int pos = std::stoi(opcode.substr(3));
+        dup(pos);
+        return;
+    }
+    if (opcode.find("JUMPI") != std::string::npos 
+        || opcode.find("JUMPIF") != std::string::npos 
+        || opcode.find("JUMPCI") != std::string::npos) { 
+        jumpi();
+        return;
+    }
+
+    argsRet(nArgs, nRet);
+};
+
+void EVMAnalyser::argsRet(int nArgs, int nRet) {
+    if (nArgs > 0 && nRet == 1) {
+        // create new ID
+        latestID++;
+
+        // for each arg
+        for (int i = 0; i < nArgs; i++) {
+            OUTPUT << "insert to is_output: " << latestID << " " << stackIDs[i] << std::endl;
+            // insert tuple to is_output
+            souffle::tuple newTuple(relIsOutput);
+            newTuple << latestID << stackIDs[i];
+            relIsOutput->insert(newTuple); 
+        }
+
+        // remove args used
+        stackIDs.erase(stackIDs.begin(), stackIDs.begin() + nArgs);
+        // push new ID
+        stackIDs.insert(stackIDs.begin(), latestID);
+    } else if (nArgs > 0) {
+        // remove args used
+        stackIDs.erase(stackIDs.begin(), stackIDs.begin() + nArgs);
+    } else if (nRet == 1) {
+        // push new ID
+        stackIDs.insert(stackIDs.begin(), ++latestID);
+    }
+    // std::cout << "New state: ";
+    // for (auto &i : stackIDs) 
+    //     std::cout << i << ", ";
+    // std::cout << std::endl;
+}
+
+void EVMAnalyser::callResult(int result) {
+    // take latestID and result
+    // insert tuple to call_result
+    OUTPUT << "insert to call_result: " << stackIDs[0] << " " << result << std::endl;
+    souffle::tuple newTuple(relCallResult);
+    newTuple << stackIDs[0] << result;
+    relCallResult->insert(newTuple); 
+    // std::cout << "New state: ";
+    // for (auto &i : stackIDs) 
+    //     std::cout << i << ", ";
+    // std::cout << std::endl;
+
+};
+
+void EVMAnalyser::swap(int pos) {
+    // no tuple insertion
+    // swap IDs on stack
+    std::swap(stackIDs[0], stackIDs[pos]);
+    // std::cout << "New state: ";
+    // for (auto &i : stackIDs) 
+    //     std::cout << i << ", ";
+    // std::cout << std::endl;
+
+}; // SWAP2 = swap first(0) and third(2) element
+
+void EVMAnalyser::dup(int pos) {
+    // create newID
+    latestID++;
+
+    // take ID of the original position
+    // insert tuple to is_output
+    OUTPUT << "insert to is_output: " << latestID << " " << stackIDs[pos - 1] << std::endl;
+    souffle::tuple newTuple(relIsOutput);
+    newTuple << latestID << stackIDs[pos - 1];
+    relIsOutput->insert(newTuple); 
+
+    // push newID to stack
+    stackIDs.insert(stackIDs.begin(), latestID);
+    // std::cout << "New state: ";
+    // for (auto &i : stackIDs) 
+    //     std::cout << i << ", ";
+    // std::cout << std::endl;
+
+}; // DUP2 = dup second(1) element on the stack
+
+void EVMAnalyser::jumpi() {
+    // take second element on stack as condition 
+    // insert tuple to in_condition
+    OUTPUT << "insert to in_condition: " << stackIDs[1] << std::endl;
+    souffle::tuple newTuple(relInCondition);
+    newTuple << stackIDs[1];
+    relInCondition->insert(newTuple); 
+
+    // remove first two elements on stack
+    stackIDs.erase(stackIDs.begin(), stackIDs.begin() + 2);
+    // std::cout << "New state: ";
+    // for (auto &i : stackIDs) 
+    //     std::cout << i << ", ";
+    // std::cout << std::endl;
+
+};
 
 void EVMAnalyser::extractReentrancyAddresses() {
     souffle::Relation *rel = prog->getRelation("reentrancy");
@@ -133,7 +246,7 @@ void EVMAnalyser::extractReentrancyAddresses() {
                     chain.pop();
                 }
                 std::cout << " => " << addrStart << " has been detected with " << totalEther 
-                    << " value trasfered in total." << RESETTEXT
+                    << " value transferred in total." << RESETTEXT
                     << std::endl;
 
                 // Reset
@@ -186,23 +299,20 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
             }
         }
 
-        // Unhandled reception
-        if (exploitName == "unhandled_reception") {
+        // Unhandled exception
+        if (exploitName == "unhandled_exception") {
             if (rel->size() != 0) {
-                std::string contractAddress; 
-                int id;
-                int gas;
+                int stackID;
                 int count = 0;
 
                 for (auto &output : *rel) {
                     count++;
-                    output >> id >> gas >> contractAddress;
-                    OUTPUT << "Query Result: " << count << " Contract in address: " 
-                        << contractAddress << " has been locked" << std::endl; 
+                    output >> stackID;
+                    OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " << "StackID: " << stackID << RESETTEXT << std::endl; 
                 }
                 return true; 
             } else {
-                OUTPUT << "No locked ether has been detected." << std::endl;
+                OUTPUT << "No unhandled exception has been detected." << std::endl;
                 return false; 
             }
         }
@@ -218,6 +328,8 @@ void EVMAnalyser::cleanExecutionTrace() {
     prog->purgeOutputRelations();
 
     executionTraceCount = 1;
+    latestID = 0;
+    stackIDs.clear();
 }
 
 EVMAnalyserTest* EVMAnalyserTest::getInstance() {
