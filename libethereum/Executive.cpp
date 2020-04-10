@@ -1,4 +1,4 @@
-// Aleth: Ethereum C++ client, tools and libraries.
+                                // Aleth: Ethereum C++ client, tools and libraries.
 // Copyright 2014-2019 Aleth Authors.
 // Licensed under the GNU General Public License, Version 3.
 
@@ -13,6 +13,7 @@
 #include <libethcore/CommonJS.h>
 #include <libevm/LegacyVM.h>
 #include <libevm/VMFactory.h>
+#include "libethploit/EVMAnalyser.h"
 
 using namespace std;
 using namespace dev;
@@ -85,6 +86,7 @@ void Executive::initialize(Transaction const& _transaction)
 {
     m_t = _transaction;
     m_baseGasRequired = m_t.baseGasRequired(m_sealEngine.evmSchedule(m_envInfo.number()));
+
     try
     {
         m_sealEngine.verifyTransaction(ImportRequirements::Everything, m_t, m_envInfo.header(), m_envInfo.gasUsed());
@@ -132,6 +134,12 @@ void Executive::initialize(Transaction const& _transaction)
         }
         m_gasCost = (u256)gasCost;  // Convert back to 256-bit, safe now.
     }
+
+    // signal init
+    std::cout << "starting @ " << m_t.from().hex() << " ";
+    std::cout << "sending to " << m_t.to().hex() << std::endl;
+    std::cout << m_t.gas() << std::endl;
+
 }
 
 bool Executive::execute()
@@ -158,6 +166,12 @@ bool Executive::call(Address const& _receiveAddress, Address const& _senderAddre
 
 bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address const& _origin)
 {
+
+    std::cout << "Executive::call()" << " ";
+    std::cout << "Sender " << _p.senderAddress << " ";
+    std::cout << "Receive Address" << _p.receiveAddress << " "; 
+    std::cout << "Code Address " << _p.codeAddress << std::endl;
+
     // If external transaction.
     if (m_t)
     {
@@ -339,6 +353,11 @@ bool Executive::go(OnOpFunc const& _onOp)
         {
             // Create VM instance. Force Interpreter if tracing requested.
             auto vm = VMFactory::create();
+
+            // Signal transaction start
+            // std::cout << "I am starting" << std::endl;
+            // std::cout << "Gas start " << m_gas << std::endl;
+
             if (m_isCreation)
             {
                 auto out = vm->exec(m_gas, *m_ext, _onOp);
@@ -411,6 +430,10 @@ bool Executive::go(OnOpFunc const& _onOp)
             // has drawbacks. Essentially, the amount of ram has to be increased here.
         }
 
+        // Signal transaction end
+        // std::cout << "I am ending" << std::endl;
+        // std::cout << "gas after " << m_gas << std::endl;
+
         if (m_res && m_output)
             // Copy full output:
             m_res->output = m_output.toVector();
@@ -434,6 +457,11 @@ bool Executive::finalize()
         assert(m_ext->sub.refunds >= 0);
         int64_t maxRefund = (static_cast<int64_t>(m_t.gas()) - static_cast<int64_t>(m_gas)) / 2;
         m_gas += min(maxRefund, m_ext->sub.refunds);
+
+        std::cout << "myAdd " << m_ext->myAddress.hex() << " ";
+        std::cout << "caller " << m_ext->caller.hex() << " ";
+        std::cout << "origin " << m_ext->origin.hex() << std::endl;
+
     }
 
     if (m_t)
@@ -442,6 +470,14 @@ bool Executive::finalize()
 
         u256 feesEarned = (m_t.gas() - m_gas) * m_t.gasPrice();
         m_s.addBalance(m_envInfo.author(), feesEarned);
+
+        // signal finalisation
+        std::cout << "finishing @" << m_t.from().hex() << std::endl;
+        std::cout << "gas now " << m_gas << " hence used " << gasUsed() << std::endl;
+        EVMAnalyser* analyser = EVMAnalyser::getInstance();
+        analyser->queryExploit("reentrancy");
+        analyser->queryExploit("locked_ether");
+        analyser->cleanExecutionTrace();
     }
 
     // Selfdestructs...
