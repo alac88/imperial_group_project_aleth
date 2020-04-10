@@ -178,13 +178,13 @@ public:
 
     // Parse. If parse fails, return Json() and assign an error message to err.
     static Json parse(const std::string& in, std::string& err, JsonParse strategy = JsonParse::STANDARD);
-
     static Json parse(const char* in, std::string& err, JsonParse strategy = JsonParse::STANDARD) {
-        if (in == nullptr) {
+        if (in) {
+            return parse(std::string(in), err, strategy);
+        } else {
             err = "null input";
             return nullptr;
         }
-        return parse(std::string(in), err, strategy);
     }
     // Parse multiple objects, concatenated or separated by whitespace
     static std::vector<Json> parse_multi(const std::string& in, std::string::size_type& parser_stop_pos,
@@ -217,21 +217,7 @@ public:
      * the given type. If not, return false and set err to a descriptive message.
      */
     using shape = std::initializer_list<std::pair<std::string, Type>>;
-    bool has_shape(const shape& types, std::string& err) const {
-        if (!is_object()) {
-            err = "expected JSON object, got " + dump();
-            return false;
-        }
-
-        for (auto& item : types) {
-            if ((*this)[item.first].type() != item.second) {
-                err = "bad type for " + item.first + " in " + dump();
-                return false;
-            }
-        }
-
-        return true;
-    }
+    bool has_shape(const shape& types, std::string& err) const;
 
 private:
     std::shared_ptr<JsonValue> m_ptr;
@@ -259,7 +245,38 @@ protected:
     virtual ~JsonValue() = default;
 };
 
+}  // namespace json11
+/* Copyright (c) 2013 Dropbox, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+namespace json11 {
+
 static const int max_depth = 200;
+
+using std::initializer_list;
+using std::make_shared;
+using std::map;
+using std::move;
+using std::string;
+using std::vector;
 
 /* Helper for representing null - just a do-nothing struct, plus comparison
  * operators so the helpers in JsonValue work. We can't use nullptr_t because
@@ -278,11 +295,11 @@ struct NullStruct {
  * Serialization
  */
 
-static void dump(NullStruct, std::string& out) {
+static void dump(NullStruct, string& out) {
     out += "null";
 }
 
-static void dump(double value, std::string& out) {
+static void dump(double value, string& out) {
     if (std::isfinite(value)) {
         char buf[32];
         snprintf(buf, sizeof buf, "%.17g", value);
@@ -292,17 +309,17 @@ static void dump(double value, std::string& out) {
     }
 }
 
-static void dump(long long value, std::string& out) {
+static void dump(long long value, string& out) {
     char buf[32];
     snprintf(buf, sizeof buf, "%lld", value);
     out += buf;
 }
 
-static void dump(bool value, std::string& out) {
+static void dump(bool value, string& out) {
     out += value ? "true" : "false";
 }
 
-static void dump(const std::string& value, std::string& out) {
+static void dump(const string& value, string& out) {
     out += '"';
     for (size_t i = 0; i < value.length(); i++) {
         const char ch = value[i];
@@ -339,7 +356,7 @@ static void dump(const std::string& value, std::string& out) {
     out += '"';
 }
 
-static void dump(const Json::array& values, std::string& out) {
+static void dump(const Json::array& values, string& out) {
     bool first = true;
     out += "[";
     for (const auto& value : values) {
@@ -350,7 +367,7 @@ static void dump(const Json::array& values, std::string& out) {
     out += "]";
 }
 
-static void dump(const Json::object& values, std::string& out) {
+static void dump(const Json::object& values, string& out) {
     bool first = true;
     out += "{";
     for (const auto& kv : values) {
@@ -363,7 +380,7 @@ static void dump(const Json::object& values, std::string& out) {
     out += "}";
 }
 
-inline void Json::dump(std::string& out) const {
+inline void Json::dump(string& out) const {
     m_ptr->dump(out);
 }
 
@@ -375,7 +392,8 @@ template <Json::Type tag, typename T>
 class Value : public JsonValue {
 protected:
     // Constructors
-    explicit Value(T value) : m_value(std::move(value)) {}
+    explicit Value(const T& value) : m_value(value) {}
+    explicit Value(T&& value) : m_value(move(value)) {}
 
     // Get type tag
     Json::Type type() const override {
@@ -391,7 +409,7 @@ protected:
     }
 
     const T m_value;
-    void dump(std::string& out) const override {
+    void dump(string& out) const override {
         json11::dump(m_value, out);
     }
 };
@@ -447,14 +465,14 @@ public:
     explicit JsonBoolean(bool value) : Value(value) {}
 };
 
-class JsonString final : public Value<Json::STRING, std::string> {
-    const std::string& string_value() const override {
+class JsonString final : public Value<Json::STRING, string> {
+    const string& string_value() const override {
         return m_value;
     }
 
 public:
-    explicit JsonString(const std::string& value) : Value(value) {}
-    explicit JsonString(std::string&& value) : Value(std::move(value)) {}
+    explicit JsonString(const string& value) : Value(value) {}
+    explicit JsonString(string&& value) : Value(move(value)) {}
 };
 
 class JsonArray final : public Value<Json::ARRAY, Json::array> {
@@ -465,18 +483,18 @@ class JsonArray final : public Value<Json::ARRAY, Json::array> {
 
 public:
     explicit JsonArray(const Json::array& value) : Value(value) {}
-    explicit JsonArray(Json::array&& value) : Value(std::move(value)) {}
+    explicit JsonArray(Json::array&& value) : Value(move(value)) {}
 };
 
 class JsonObject final : public Value<Json::OBJECT, Json::object> {
     const Json::object& object_items() const override {
         return m_value;
     }
-    const Json& operator[](const std::string& key) const override;
+    const Json& operator[](const string& key) const override;
 
 public:
     explicit JsonObject(const Json::object& value) : Value(value) {}
-    explicit JsonObject(Json::object&& value) : Value(std::move(value)) {}
+    explicit JsonObject(Json::object&& value) : Value(move(value)) {}
 };
 
 class JsonNull final : public Value<Json::NUL, NullStruct> {
@@ -488,12 +506,12 @@ public:
  * Static globals - static-init-safe
  */
 struct Statics {
-    const std::shared_ptr<JsonValue> null = std::make_shared<JsonNull>();
-    const std::shared_ptr<JsonValue> t = std::make_shared<JsonBoolean>(true);
-    const std::shared_ptr<JsonValue> f = std::make_shared<JsonBoolean>(false);
-    const std::string empty_string{};
-    const std::vector<Json> empty_vector{};
-    const std::map<std::string, Json> empty_map{};
+    const std::shared_ptr<JsonValue> null = make_shared<JsonNull>();
+    const std::shared_ptr<JsonValue> t = make_shared<JsonBoolean>(true);
+    const std::shared_ptr<JsonValue> f = make_shared<JsonBoolean>(false);
+    const string empty_string{};
+    const vector<Json> empty_vector{};
+    const map<string, Json> empty_map{};
     Statics() = default;
 };
 
@@ -514,16 +532,16 @@ static const Json& static_null() {
 
 inline Json::Json() noexcept : m_ptr(statics().null) {}
 inline Json::Json(std::nullptr_t) noexcept : m_ptr(statics().null) {}
-inline Json::Json(double value) : m_ptr(std::make_shared<JsonDouble>(value)) {}
-inline Json::Json(long long value) : m_ptr(std::make_shared<JsonInt>(value)) {}
+inline Json::Json(double value) : m_ptr(make_shared<JsonDouble>(value)) {}
+inline Json::Json(long long value) : m_ptr(make_shared<JsonInt>(value)) {}
 inline Json::Json(bool value) : m_ptr(value ? statics().t : statics().f) {}
-inline Json::Json(const std::string& value) : m_ptr(std::make_shared<JsonString>(value)) {}
-inline Json::Json(std::string&& value) : m_ptr(std::make_shared<JsonString>(std::move(value))) {}
-inline Json::Json(const char* value) : m_ptr(std::make_shared<JsonString>(value)) {}
-inline Json::Json(const Json::array& values) : m_ptr(std::make_shared<JsonArray>(values)) {}
-inline Json::Json(Json::array&& values) : m_ptr(std::make_shared<JsonArray>(std::move(values))) {}
-inline Json::Json(const Json::object& values) : m_ptr(std::make_shared<JsonObject>(values)) {}
-inline Json::Json(Json::object&& values) : m_ptr(std::make_shared<JsonObject>(std::move(values))) {}
+inline Json::Json(const string& value) : m_ptr(make_shared<JsonString>(value)) {}
+inline Json::Json(string&& value) : m_ptr(make_shared<JsonString>(move(value))) {}
+inline Json::Json(const char* value) : m_ptr(make_shared<JsonString>(value)) {}
+inline Json::Json(const Json::array& values) : m_ptr(make_shared<JsonArray>(values)) {}
+inline Json::Json(Json::array&& values) : m_ptr(make_shared<JsonArray>(move(values))) {}
+inline Json::Json(const Json::object& values) : m_ptr(make_shared<JsonObject>(values)) {}
+inline Json::Json(Json::object&& values) : m_ptr(make_shared<JsonObject>(move(values))) {}
 
 /* * * * * * * * * * * * * * * * * * * *
  * Accessors
@@ -544,19 +562,19 @@ inline long long Json::long_value() const {
 inline bool Json::bool_value() const {
     return m_ptr->bool_value();
 }
-inline const std::string& Json::string_value() const {
+inline const string& Json::string_value() const {
     return m_ptr->string_value();
 }
-inline const std::vector<Json>& Json::array_items() const {
+inline const vector<Json>& Json::array_items() const {
     return m_ptr->array_items();
 }
-inline const std::map<std::string, Json>& Json::object_items() const {
+inline const map<string, Json>& Json::object_items() const {
     return m_ptr->object_items();
 }
 inline const Json& Json::operator[](size_t i) const {
     return (*m_ptr)[i];
 }
-inline const Json& Json::operator[](const std::string& key) const {
+inline const Json& Json::operator[](const string& key) const {
     return (*m_ptr)[key];
 }
 
@@ -572,23 +590,23 @@ inline long long JsonValue::long_value() const {
 inline bool JsonValue::bool_value() const {
     return false;
 }
-inline const std::string& JsonValue::string_value() const {
+inline const string& JsonValue::string_value() const {
     return statics().empty_string;
 }
-inline const std::vector<Json>& JsonValue::array_items() const {
+inline const vector<Json>& JsonValue::array_items() const {
     return statics().empty_vector;
 }
-inline const std::map<std::string, Json>& JsonValue::object_items() const {
+inline const map<string, Json>& JsonValue::object_items() const {
     return statics().empty_map;
 }
 inline const Json& JsonValue::operator[](size_t) const {
     return static_null();
 }
-inline const Json& JsonValue::operator[](const std::string&) const {
+inline const Json& JsonValue::operator[](const string&) const {
     return static_null();
 }
 
-inline const Json& JsonObject::operator[](const std::string& key) const {
+inline const Json& JsonObject::operator[](const string& key) const {
     auto iter = m_value.find(key);
     return (iter == m_value.end()) ? static_null() : iter->second;
 }
@@ -625,14 +643,14 @@ inline bool Json::operator<(const Json& other) const {
  *
  * Format char c suitable for printing in an error message.
  */
-static inline std::string esc(char c) {
+static inline string esc(char c) {
     char buf[12];
     if (static_cast<uint8_t>(c) >= 0x20 && static_cast<uint8_t>(c) <= 0x7f) {
         snprintf(buf, sizeof buf, "'%c' (%d)", c, c);
     } else {
         snprintf(buf, sizeof buf, "(%d)", c);
     }
-    return std::string(buf);
+    return string(buf);
 }
 
 static inline bool in_range(long x, long lower, long upper) {
@@ -647,9 +665,9 @@ namespace {
 struct JsonParser final {
     /* State
      */
-    const std::string& str;
+    const string& str;
     size_t i;
-    std::string& err;
+    string& err;
     bool failed;
     const JsonParse strategy;
 
@@ -657,12 +675,12 @@ struct JsonParser final {
      *
      * Mark this parse as failed.
      */
-    Json fail(std::string&& msg) {
-        return fail(std::move(msg), Json());
+    Json fail(string&& msg) {
+        return fail(move(msg), Json());
     }
 
     template <typename T>
-    T fail(std::string&& msg, const T err_ret) {
+    T fail(string&& msg, const T err_ret) {
         if (!failed) err = std::move(msg);
         failed = true;
         return err_ret;
@@ -733,8 +751,8 @@ struct JsonParser final {
      */
     char get_next_token() {
         consume_garbage();
-        if (failed) return static_cast<char>(0);
-        if (i == str.size()) return fail("unexpected end of input", static_cast<char>(0));
+        if (failed) return (char)0;
+        if (i == str.size()) return fail("unexpected end of input", (char)0);
 
         return str[i++];
     }
@@ -743,7 +761,7 @@ struct JsonParser final {
      *
      * Encode pt as UTF-8 and add it to out.
      */
-    void encode_utf8(long pt, std::string& out) {
+    void encode_utf8(long pt, string& out) {
         if (pt < 0) return;
 
         if (pt < 0x80) {
@@ -765,13 +783,13 @@ struct JsonParser final {
 
     /* parse_string()
      *
-     * Parse a std::string, starting at the current position.
+     * Parse a string, starting at the current position.
      */
-    std::string parse_string() {
-        std::string out;
+    string parse_string() {
+        string out;
         long last_escaped_codepoint = -1;
         while (true) {
-            if (i == str.size()) return fail("unexpected end of input in std::string", "");
+            if (i == str.size()) return fail("unexpected end of input in string", "");
 
             char ch = str[i++];
 
@@ -780,7 +798,7 @@ struct JsonParser final {
                 return out;
             }
 
-            if (in_range(ch, 0, 0x1f)) return fail("unescaped " + esc(ch) + " in std::string", "");
+            if (in_range(ch, 0, 0x1f)) return fail("unescaped " + esc(ch) + " in string", "");
 
             // The usual case: non-escaped characters
             if (ch != '\\') {
@@ -791,13 +809,13 @@ struct JsonParser final {
             }
 
             // Handle escapes
-            if (i == str.size()) return fail("unexpected end of input in std::string", "");
+            if (i == str.size()) return fail("unexpected end of input in string", "");
 
             ch = str[i++];
 
             if (ch == 'u') {
                 // Extract 4-byte escape sequence
-                std::string esc = str.substr(i, 4);
+                string esc = str.substr(i, 4);
                 // Explicitly check length of the substring. The following loop
                 // relies on std::string returning the terminating NUL when
                 // accessing str[length]. Checking here reduces brittleness.
@@ -904,7 +922,7 @@ struct JsonParser final {
      * Expect that 'str' starts at the character that was just read. If it does, advance
      * the input and return res. If not, flag an error.
      */
-    Json expect(const std::string& expected, Json res) {
+    Json expect(const string& expected, Json res) {
         assert(i != 0);
         i--;
         if (str.compare(i, expected.length(), expected) == 0) {
@@ -941,14 +959,14 @@ struct JsonParser final {
         if (ch == '"') return parse_string();
 
         if (ch == '{') {
-            std::map<std::string, Json> data;
+            map<string, Json> data;
             ch = get_next_token();
             if (ch == '}') return data;
 
             while (true) {
                 if (ch != '"') return fail("expected '\"' in object, got " + esc(ch));
 
-                std::string key = parse_string();
+                string key = parse_string();
                 if (failed) return Json();
 
                 ch = get_next_token();
@@ -967,7 +985,7 @@ struct JsonParser final {
         }
 
         if (ch == '[') {
-            std::vector<Json> data;
+            vector<Json> data;
             ch = get_next_token();
             if (ch == ']') return data;
 
@@ -991,7 +1009,7 @@ struct JsonParser final {
 };
 }  // namespace
 
-inline Json Json::parse(const std::string& in, std::string& err, JsonParse strategy) {
+inline Json Json::parse(const string& in, string& err, JsonParse strategy) {
     JsonParser parser{in, 0, err, false, strategy};
     Json result = parser.parse_json(0);
 
@@ -1003,11 +1021,12 @@ inline Json Json::parse(const std::string& in, std::string& err, JsonParse strat
     return result;
 }
 
-inline std::vector<Json> parse_multi(const std::string& in, std::string::size_type& parser_stop_pos,
-        std::string& err, JsonParse strategy) {
+// Documented in json11.hpp
+inline vector<Json> Json::parse_multi(
+        const string& in, std::string::size_type& parser_stop_pos, string& err, JsonParse strategy) {
     JsonParser parser{in, 0, err, false, strategy};
     parser_stop_pos = 0;
-    std::vector<Json> json_vec;
+    vector<Json> json_vec;
     while (parser.i != in.size() && !parser.failed) {
         json_vec.push_back(parser.parse_json(0));
         if (parser.failed) break;
@@ -1018,6 +1037,26 @@ inline std::vector<Json> parse_multi(const std::string& in, std::string::size_ty
         parser_stop_pos = parser.i;
     }
     return json_vec;
+}
+
+/* * * * * * * * * * * * * * * * * * * *
+ * Shape-checking
+ */
+
+inline bool Json::has_shape(const shape& types, string& err) const {
+    if (!is_object()) {
+        err = "expected JSON object, got " + dump();
+        return false;
+    }
+
+    for (auto& item : types) {
+        if ((*this)[item.first].type() != item.second) {
+            err = "bad type for " + item.first + " in " + dump();
+            return false;
+        }
+    }
+
+    return true;
 }
 
 }  // namespace json11

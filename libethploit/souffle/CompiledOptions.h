@@ -68,11 +68,17 @@ protected:
      */
     size_t num_jobs;
 
+    /**
+     * index of stratum to be executed
+     */
+    size_t stratumIndex;
+
 public:
     // all argument constructor
     CmdOptions(const char* s, const char* id, const char* od, bool pe, const char* pfn, size_t nj,
             size_t si = (size_t)-1)
-            : src(s), input_dir(id), output_dir(od), profiling(pe), profile_name(pfn), num_jobs(nj) {}
+            : src(s), input_dir(id), output_dir(od), profiling(pe), profile_name(pfn), num_jobs(nj),
+              stratumIndex(si) {}
 
     /**
      * get source code name
@@ -114,6 +120,13 @@ public:
      */
     size_t getNumJobs() const {
         return num_jobs;
+    }
+
+    /**
+     * get index of stratum to be executed
+     */
+    size_t getStratumIndex() const {
+        return stratumIndex;
     }
 
     /**
@@ -188,6 +201,9 @@ public:
                     std::cerr << "\nWarning: OpenMP was not enabled in compilation\n\n";
 #endif
                     break;
+                case 'i':
+                    stratumIndex = (size_t)std::stoull(optarg);
+                    break;
                 default:
                     printHelpPage(exec_name);
                     return false;
@@ -228,6 +244,8 @@ private:
             std::cerr << "                                    (default: auto)\n";
         }
 #endif
+        std::cerr << "    -i <N>, --index=<N>          -- Specify index of stratum to be executed\n";
+        std::cerr << "                                    (or each in order if omitted)\n";
         std::cerr << "    -h                           -- prints this help page.\n";
         std::cerr << "--------------------------------------------------------------------\n";
         std::cout << " Copyright (c) 2016-20 The Souffle Developers." << std::endl;

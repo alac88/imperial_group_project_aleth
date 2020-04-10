@@ -4,6 +4,7 @@
 #include "libethploit/ExecutionTrace.h"
 
 #include <string>
+#include <vector>
 
 class EVMAnalyser {
     int executionTraceCount;
@@ -12,6 +13,9 @@ class EVMAnalyser {
      */ 
     std::ofstream reentrancyJSON;
     std::ofstream lockedEtherJSON;
+    
+    int latestID = 0;
+    std::vector<int> stackIDs;
 
     EVMAnalyser();
     ~EVMAnalyser(); 
@@ -21,6 +25,13 @@ class EVMAnalyser {
     void setTransactionHash(std::string _transactionHash);
     void setAccount(std::string _account);
 
+    void swap(int pos); 
+
+    void dup(int pos); 
+
+    void jumpi();
+
+    void argsRet(int nArgs, int nRet);
   protected:
     std::string transactionHash;
     std::string account;
@@ -31,6 +42,9 @@ class EVMAnalyser {
     souffle::Relation *relCallEntry;
     souffle::Relation *relCallExit;
     souffle::Relation *queReentrancy;
+    souffle::Relation *relIsOutput;
+    souffle::Relation *relCallResult;
+    souffle::Relation *relInCondition;
 
   public:
     static EVMAnalyser* getInstance(std::string _account = "UNDEFINED", 
@@ -45,6 +59,10 @@ class EVMAnalyser {
     void callEntry(int gas, std::string contractAddress);
 
     void callExit(int gas);
+
+    void instruction(std::string const& opcode, int nArgs, int nRet);
+
+    void callResult(int result);
 };
 
 /**

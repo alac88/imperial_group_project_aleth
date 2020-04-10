@@ -41,15 +41,15 @@ public:
         if (is_open()) {
             return nullptr;
         }
-        if ((mode ^ std::ios::in ^ std::ios::out) == 0) {
+        if (!(mode ^ std::ios::in ^ std::ios::out)) {
             return nullptr;
         }
 
         this->mode = mode;
-        std::string gzmode((mode & std::ios::in) != 0 ? "rb" : "wb");
+        std::string gzmode(mode & std::ios::in ? "rb" : "wb");
         fileHandle = gzopen(filename.c_str(), gzmode.c_str());
 
-        if (fileHandle == nullptr) {
+        if (!fileHandle) {
             return nullptr;
         }
         isOpen = true;
@@ -82,7 +82,7 @@ public:
 
 protected:
     int_type overflow(int c = EOF) override {
-        if (((mode & std::ios::out) == 0) || !isOpen) {
+        if (!(mode & std::ios::out) || !isOpen) {
             return EOF;
         }
 
@@ -100,10 +100,10 @@ protected:
     }
 
     int_type underflow() override {
-        if (((mode & std::ios::in) == 0) || !isOpen) {
+        if (!(mode & std::ios::in) || !isOpen) {
             return EOF;
         }
-        if ((gptr() != nullptr) && (gptr() < egptr())) {
+        if (gptr() && (gptr() < egptr())) {
             return traits_type::to_int_type(*gptr());
         }
 
@@ -124,7 +124,7 @@ protected:
     }
 
     int sync() override {
-        if ((pptr() != nullptr) && pptr() > pbase()) {
+        if (pptr() && pptr() > pbase()) {
             int toWrite = pptr() - pbase();
             if (gzwrite(fileHandle, pbase(), toWrite) != toWrite) {
                 return -1;
@@ -162,7 +162,7 @@ public:
     ~gzfstream() override = default;
 
     void open(const std::string& filename, std::ios_base::openmode mode) {
-        if (buf.open(filename, mode) == nullptr) {
+        if (!buf.open(filename, mode)) {
             clear(rdstate() | std::ios::badbit);
         }
     }
@@ -173,7 +173,7 @@ public:
 
     void close() {
         if (buf.is_open()) {
-            if (buf.close() == nullptr) {
+            if (!buf.close()) {
                 clear(rdstate() | std::ios::badbit);
             }
         }

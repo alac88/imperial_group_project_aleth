@@ -19,12 +19,10 @@
 #pragma once
 
 #include "LambdaBTree.h"
-#include "ParallelUtils.h"
 #include "UnionFind.h"
 #include "Util.h"
 #include <algorithm>
 #include <exception>
-#include <mutex>
 #include <set>
 #include <shared_mutex>
 #include <unordered_map>
@@ -335,9 +333,7 @@ public:
 
         /* pre-increment */
         iterator& operator++() {
-            if (isEndVal) {
-                throw std::out_of_range("error: incrementing an out of range iterator");
-            }
+            if (isEndVal) throw std::out_of_range("error: incrementing an out of range iterator");
 
             switch (ityp) {
                 case IterType::ALL:
@@ -356,9 +352,8 @@ public:
 
                             // we can't iterate along this djset if it is empty
                             djSetList = (*djSetMapListIt).second;
-                            if (djSetList->size() == 0) {
+                            if (djSetList->size() == 0)
                                 throw std::out_of_range("error: encountered a zero size djset");
-                            }
 
                             // update our cAnterior and cPosterior
                             cAnteriorIndex = 0;
