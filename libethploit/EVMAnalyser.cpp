@@ -58,7 +58,7 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
     } else if (executionTrace->instruction == "JUMPI") {
         // Reserved for influence_condition fact
     } else {
-        OUTPUT << "No currently exisited relation matches up with this instruction!" 
+        OUTPUT << "No existing relation matches up with this instruction!" 
             << std::endl;
         return false; 
     }
@@ -250,7 +250,7 @@ void EVMAnalyser::extractReentrancyAddresses() {
                     chain.pop();
                 }
                 std::cout << " => " << addrStart << " has been detected with " << totalEther 
-                    << " value trasfered in total." << RESETTEXT
+                    << " value transferred in total." << RESETTEXT
                     << std::endl;
 
                 // Reset
