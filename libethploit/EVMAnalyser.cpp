@@ -143,9 +143,9 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
 void EVMAnalyser::callResult(int result) {
     // take latestID and result
     // insert tuple to call_result
-    OUTPUT << "insert to call_result: " << latestID << " " << result << std::endl;
+    OUTPUT << "insert to call_result: " << stackIDs[0] << " " << result << std::endl;
     souffle::tuple newTuple(relCallResult);
-    newTuple << latestID << result;
+    newTuple << stackIDs[0] << result;
     relCallResult->insert(newTuple); 
     std::cout << "New state: ";
     for (auto &i : stackIDs) 
