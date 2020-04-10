@@ -47,7 +47,7 @@ class EVMAnalyser {
 
     void callExit(int gas);
 
-    void instruction(std::string opcode, int nArgs, int nRet);
+    void instruction(std::string const& opcode, int nArgs, int nRet);
 
     void callResult(int result);
 };
