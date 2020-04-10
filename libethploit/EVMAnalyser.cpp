@@ -189,9 +189,9 @@ void EVMAnalyser::jumpi() {
     // take second element on stack as condition 
     // insert tuple to in_condition
     OUTPUT << "insert to in_condition: " << stackIDs[1] << std::endl;
-    // souffle::tuple newTuple(relInCondition);
-    // newTuple << stackIDs[1];
-    // relInCondition->insert(newTuple); 
+    souffle::tuple newTuple(relInCondition);
+    newTuple << stackIDs[1];
+    relInCondition->insert(newTuple); 
 
     // remove first two elements on stack
     stackIDs.erase(stackIDs.begin(), stackIDs.begin() + 2);
