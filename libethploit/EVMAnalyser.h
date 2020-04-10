@@ -7,20 +7,28 @@
 
 class EVMAnalyser {
     int executionTraceCount;
+    /**
+     * Example JSON for re-entrancy
+     */ 
+    std::ofstream reentrancyJSON;
+    std::ofstream lockedEtherJSON;
 
     EVMAnalyser();
     ~EVMAnalyser(); 
     
+    void initialiseJSON(); 
     void extractReentrancyAddresses();
+    void setTransactionHash(std::string _transactionHash);
 
   protected:
+    std::string transactionHash;
     souffle::SouffleProgram *prog;
     souffle::Relation *relDirectCall;
     souffle::Relation *relCallEntry;
     souffle::Relation *relCallExit;
     souffle::Relation *queReentrancy;
   public:
-    static EVMAnalyser* getInstance();
+    static EVMAnalyser* getInstance(std::string _transactionHash = "UNDEFINED");
 
     bool populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace);
 

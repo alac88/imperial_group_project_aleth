@@ -1,5 +1,7 @@
 #include <set>
 #include <queue>
+#include <fstream>
+#include <json/json.h>
 
 #include "EVMAnalyser.h"
 #include "souffle/SouffleInterface.h"
@@ -15,7 +17,9 @@
 
 EVMAnalyser::EVMAnalyser() {
     executionTraceCount = 1;
+
     prog = souffle::ProgramFactory::newInstance("DetectionLogic");
+
     relDirectCall = prog->getRelation("direct_call");
     relCallEntry = prog->getRelation("call_entry");
     relCallExit = prog->getRelation("call_exit");
@@ -25,8 +29,22 @@ EVMAnalyser::~EVMAnalyser() {
     // An default constructor for testing
 }
 
-EVMAnalyser* EVMAnalyser::getInstance() {
+void EVMAnalyser::initialiseJSON() {
+    // New JSON tuples default to be appended to the current files.
+    reentrancyJSON.open("reentrancy.json", std::ios::app);
+    lockedEtherJSON.open("locked_ether.json", std::ios::app);
+}
+
+void EVMAnalyser::setTransactionHash(std::string _transactionHash) {
+    transactionHash = _transactionHash;
+}
+
+EVMAnalyser* EVMAnalyser::getInstance(std::string _transactionHash) {
     static EVMAnalyser instance;
+    if (_transactionHash != "UNDEFINED") {
+        instance.setTransactionHash(_transactionHash);
+    }
+    instance.initialiseJSON();
     return &instance; 
 }
 
@@ -87,6 +105,12 @@ void EVMAnalyser::callExit(int gas) {
 
 void EVMAnalyser::extractReentrancyAddresses() {
     souffle::Relation *rel = prog->getRelation("reentrancy");
+    Json::Value json(Json::objectValue);
+
+    // Standard json fields
+    // json["sender_account"] = senderAccout;
+    transactionHash = "TEST";
+    json["transaction_hash"] = transactionHash;
 
     std::set<int> idSet;
     int count = 0;
@@ -123,18 +147,31 @@ void EVMAnalyser::extractReentrancyAddresses() {
                     totalEther -= etherOriginal;
                 }
 
+#ifdef EVMANALYSER_DEBUG
                 OUTPUT << FORERED <<"Query Result: " << " Re-entrancy: ";
+#endif
 
+                std::string reentrancyChain = chain.front();
                 std::string addrStart = chain.front();
+#ifdef EVMANALYSER_DEBUG
                 std::cout << addrStart;
+#endif                
                 chain.pop();
                 while (!chain.empty()) {
+#ifdef EVMANALYSER_DEBUG
                     std::cout << " => " << chain.front();
+#endif              
+                    reentrancyChain += " => " + chain.front();
                     chain.pop();
                 }
+#ifdef EVMANALYSER_DEBUG        
                 std::cout << " => " << addrStart << " has been detected with " << totalEther 
                     << " value trasfered in total." << RESETTEXT
                     << std::endl;
+#endif
+                reentrancyChain += " => " + addrStart;
+                json["reentrancy_chain"] = reentrancyChain;
+                json["total_ether"] = totalEther;
 
                 // Reset
                 if (senderAddrOriginal != receiverAddrPre) {
@@ -147,7 +184,10 @@ void EVMAnalyser::extractReentrancyAddresses() {
         }
 
         receiverAddrPre = receiverAddrOriginal;
-    }    
+    }
+
+    // Save the new json tuple
+    reentrancyJSON << json;
 }
 
 bool EVMAnalyser::queryExploit(std::string exploitName) {
@@ -216,6 +256,9 @@ void EVMAnalyser::cleanExecutionTrace() {
     prog->purgeInputRelations();
     prog->purgeInternalRelations(); // Remenber to clean the internal relations e.g. call in the re-entrancy
     prog->purgeOutputRelations();
+
+    reentrancyJSON.close();
+    lockedEtherJSON.close();
 
     executionTraceCount = 1;
 }
