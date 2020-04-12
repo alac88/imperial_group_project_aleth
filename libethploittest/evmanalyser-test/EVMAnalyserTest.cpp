@@ -73,6 +73,61 @@ struct F {
         analyser->callExit(1000);
     }
 
+    void addSwap1Instr() {
+        analyser->instruction("SWAP1", 2, 2);
+    }
+
+    void addDup1Instr() {
+        analyser->instruction("DUP1", 1, 2);
+    }
+
+    void addJumpIInstr() {
+        analyser->instruction("JUMPI", 2, 0);
+    }
+
+    void addJumpIFInstr() {
+        analyser->instruction("JUMPIF", 2, 0);
+    }   
+    
+    void addJumpCIInstr() {
+        analyser->instruction("JUMPCI", 2, 0);
+    }
+
+    void addCallInstr() {
+        analyser->instruction("CALL", 7, 1);
+    }  
+
+    void addDelegateCallInstr() {
+        analyser->instruction("DELEGATECALL", 6, 1);
+    }      
+    void addCallCodeInstr() {
+        analyser->instruction("CALLCODE", 7, 1);
+    }    
+
+    void addCallResult(int success) {
+        analyser->callResult(success);
+    }
+    
+    void addInstruction(int nArgs, int nRet) {
+        analyser->instruction("Test", nArgs, nRet);
+    }
+
+    int getStackID(int index) {
+        return analyser->getStackID(index);
+    }
+
+    int getStackIDSize() {
+        return analyser->getStackIDSize();
+    }
+
+    int getCallStackSize() {
+        return analyser->getCallStackSize();
+    }
+
+    int getCallArgID(int callStackIndex, int argIndex) {
+        return analyser->getCallArgID(callStackIndex, argIndex);
+    }
+
     EVMAnalyserTest* analyser; 
 };
 
@@ -162,6 +217,297 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         addCallExit();
 
         BOOST_TEST(analyser->queryExploit("locked_ether"));        
+    }
+
+    BOOST_AUTO_TEST_CASE(initial_stackIDs_is_empty) {
+        BOOST_TEST(getStackIDSize() == 0);
+    }
+
+    BOOST_AUTO_TEST_CASE(initial_callStack_is_empty) {
+        BOOST_TEST(getCallStackSize() == 0);
+    }
+
+    BOOST_AUTO_TEST_CASE(getStackIDSize_returns_correct_value) {
+        addInstruction(0, 1);
+        BOOST_TEST(getStackIDSize() == 1);
+    }
+
+    BOOST_AUTO_TEST_CASE(getCallStackSize_returns_correct_value) {
+        addCallInstr();
+        BOOST_TEST(getCallStackSize() == 1);
+    }
+
+     BOOST_AUTO_TEST_CASE(add_instruction_with_return_value_increases_stack_size_by_one) {
+        addInstruction(0, 1);
+        int initialStackSize = getStackIDSize();
+        BOOST_TEST(initialStackSize == 1);
+
+        addInstruction(0, 1);
+        BOOST_TEST(getStackIDSize() == initialStackSize + 1);
+    }
+
+    BOOST_AUTO_TEST_CASE(add_instruction_with_args_decreases_stack_size_by_nArgs) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        int initialStackSize = getStackIDSize();
+        BOOST_TEST(initialStackSize == 2);
+        
+        int nArgs = 2;
+        addInstruction(nArgs, 0);
+        int finalStackSize = initialStackSize - nArgs;
+        BOOST_TEST(getStackIDSize() == finalStackSize);
+    }
+
+    BOOST_AUTO_TEST_CASE(add_instruction_with_args_and_ret_returns_correct_stack_size) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        int initialStackSize = getStackIDSize();
+
+        int nArgs = 2;
+        int nRet = 1;
+        addInstruction(2, 1);
+        int finalStackSize = initialStackSize - nArgs + nRet;
+        BOOST_TEST(getStackIDSize() == finalStackSize);
+    }
+
+    BOOST_AUTO_TEST_CASE(do_nothing_if_no_of_return_values_more_than_one) {
+        addInstruction(0, 2);
+        
+        BOOST_TEST(getStackIDSize() == 0);
+    }
+
+    BOOST_AUTO_TEST_CASE(do_nothing_if_no_of_args_more_than_available) {
+        addInstruction(0, 1);
+        int initialStackSize = getStackIDSize();
+        BOOST_TEST(initialStackSize == 1);
+        
+        int nArgs = 2;
+        addInstruction(nArgs, 0);
+        BOOST_TEST(getStackIDSize() == initialStackSize);
+    }
+
+    BOOST_AUTO_TEST_CASE(delegatecall_instr_consumes_six_args) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+ 
+        BOOST_TEST(getStackIDSize() == 6);
+
+        addDelegateCallInstr();
+        
+        BOOST_TEST(getStackIDSize() == 0);        
+    } 
+    
+    BOOST_AUTO_TEST_CASE(callcode_instr_consumes_seven_args) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+ 
+        BOOST_TEST(getStackIDSize() == 7);
+
+        addCallCodeInstr();
+        
+        BOOST_TEST(getStackIDSize() == 0);        
+    }
+
+    BOOST_AUTO_TEST_CASE(call_instr_consumes_seven_args) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+ 
+        BOOST_TEST(getStackIDSize() == 7);
+
+        addCallInstr();
+        
+        BOOST_TEST(getStackIDSize() == 0);        
+    }
+
+    BOOST_AUTO_TEST_CASE(all_call_instructions_without_call_result_adds_to_callStack) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addCallInstr();
+        
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addDelegateCallInstr();
+        
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addCallCodeInstr();
+
+        BOOST_TEST(getCallStackSize() == 3);        
+    }
+
+    BOOST_AUTO_TEST_CASE(call_instr_with_call_result_consumes_one_item_from_callStack) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addCallInstr();
+
+        BOOST_TEST(getCallStackSize() == 1);        
+
+        addCallResult(1);    
+
+        BOOST_TEST(getCallStackSize() == 0);        
+    }
+
+    BOOST_AUTO_TEST_CASE(call_result_adds_one_item_to_stackID) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addCallInstr();
+
+        BOOST_TEST(getStackIDSize() == 0);        
+
+        addCallResult(1);    
+
+        BOOST_TEST(getStackIDSize() == 1);        
+    }
+
+    BOOST_AUTO_TEST_CASE(call_result_takes_latest_callArgs_in_callStack) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addCallInstr();
+        int firstCallID = getCallArgID(0, 0);
+
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addCallInstr();
+        int secondCallID = getCallArgID(0, 0);
+
+        addCallResult(1);
+
+        BOOST_TEST(getCallArgID(0, 0) == firstCallID);        
+    }
+
+    BOOST_AUTO_TEST_CASE(swap_exchanges_stackIDs_positions) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        BOOST_TEST(getStackID(0) == 2);
+        BOOST_TEST(getStackID(1) == 1);
+
+        addSwap1Instr();
+
+        BOOST_TEST(getStackID(0) == 1);
+        BOOST_TEST(getStackID(1) == 2);
+    }
+
+    BOOST_AUTO_TEST_CASE(dup_adds_a_new_stackID) {
+        addInstruction(0, 1);
+
+        BOOST_TEST(getStackIDSize() == 1);
+
+        addDup1Instr();
+
+        BOOST_TEST(getStackIDSize() == 2);
+    }
+
+    BOOST_AUTO_TEST_CASE(jumpi_consumes_two_stackIDs) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+
+        BOOST_TEST(getStackIDSize() == 2);
+
+        addJumpIInstr();
+
+        BOOST_TEST(getStackIDSize() == 0);
+    }
+
+    BOOST_AUTO_TEST_CASE(jumpif_consumes_two_stackIDs) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+
+        BOOST_TEST(getStackIDSize() == 2);
+
+        addJumpIFInstr();
+
+        BOOST_TEST(getStackIDSize() == 0);
+    }   
+    
+    BOOST_AUTO_TEST_CASE(jumpci_consumes_two_stackIDs) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+
+        BOOST_TEST(getStackIDSize() == 2);
+
+        addJumpCIInstr();
+
+        BOOST_TEST(getStackIDSize() == 0);
+    }
+
+    BOOST_AUTO_TEST_CASE(query_unhandled_exception) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+
+        addCallInstr();
+        addCallResult(0); // failed call
+    
+        BOOST_TEST(analyser->queryExploit("unhandled_exception"));        
+    }
+
+    BOOST_AUTO_TEST_CASE(report_no_unhandled_exception) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+
+        addCallInstr();
+        addCallResult(0);
+        addInstruction(0, 1); // jump destination
+        addJumpIInstr();
+    
+        BOOST_TEST(!analyser->queryExploit("unhandled_exception"));        
     }
 
     BOOST_AUTO_TEST_CASE(not_allow_wrong_exploit_name) {

@@ -67,6 +67,15 @@ class EVMAnalyser {
     void instruction(std::string const& opcode, int nArgs, int nRet);
 
     void callResult(int result);
+
+    int getStackID(int index);
+
+    int getStackIDSize();
+
+    int getCallStackSize();
+
+    int getCallArgID(int callStackIndex, int argIndex);
+
 };
 
 /**
