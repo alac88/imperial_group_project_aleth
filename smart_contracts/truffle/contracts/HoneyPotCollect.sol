@@ -7,7 +7,7 @@ contract HoneyPotCollect {
   HoneyPot public honeypot;
   
   function HoneyPotCollect () {
-    honeypot = HoneyPot(0x48c143Dbf90622369aEBD8DD7747E0829BEA33D6);
+    honeypot = HoneyPot(0xe5a59bE02cadb433E4a4bE5463ce7dA2404907C6);
   }
   
   function kill () {
