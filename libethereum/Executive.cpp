@@ -136,6 +136,7 @@ void Executive::initialize(Transaction const& _transaction)
     }
 
     // signal init
+    std::cout << "t-hash " << m_t.sha3() << " ";
     std::cout << "starting @ " << m_t.from().hex() << " ";
     std::cout << "sending to " << m_t.to().hex() << std::endl;
     std::cout << m_t.gas() << std::endl;
