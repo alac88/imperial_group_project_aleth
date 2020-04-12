@@ -473,6 +473,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
 #ifdef EVMANALYSER_DEBUG
                 OUTPUT << "No unhandled exception has been detected." << std::endl;
 #endif
+                return false;
             }
         }
     }
