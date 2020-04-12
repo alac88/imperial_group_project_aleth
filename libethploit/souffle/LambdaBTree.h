@@ -146,9 +146,7 @@ public:
                 cur_lease = cur->lock.start_read();
 
                 // check validity of root pointer
-                if (this->root_lock.end_read(root_lease)) {
-                    break;
-                }
+                if (this->root_lock.end_read(root_lease)) break;
 
             } while (true);
         }
@@ -286,9 +284,7 @@ public:
                         parent->lock.start_write();
                         while (true) {
                             // check whether parent is correct
-                            if (parent == priv->parent) {
-                                break;
-                            }
+                            if (parent == priv->parent) break;
                             // switch parent
                             parent->lock.abort_write();
                             parent = priv->parent;
@@ -303,9 +299,7 @@ public:
                     parents.push_back(parent);
 
                     // stop at "sphere of influence"
-                    if (!parent || !parent->isFull()) {
-                        break;
-                    }
+                    if (!parent || !parent->isFull()) break;
 
                     // go one step higher
                     priv = parent;
@@ -489,6 +483,30 @@ public:
             // use insert with hint
             insert(*it, hints);
         }
+    }
+
+    /**
+     * Inserts all elements of the given b-tree into this tree.
+     * This can be a more effective alternative to the ordered insertion
+     * of elements utilizing iterators.
+     */
+    void insertAll(const LambdaBTree& other) {
+        // shortcut for non-sense operation
+        if (this == &other) {
+            return;
+        }
+
+        // make sure bigger tree is inserted in smaller tree
+        if ((this->size() + 10000) < other.size()) {
+            // switch sides
+            LambdaBTree tmp = other;
+            tmp.insertAll(*this);
+            swap(tmp);
+            return;
+        }
+
+        // by default use the iterator based insertion
+        insert(other.begin(), other.end());
     }
 
     /**

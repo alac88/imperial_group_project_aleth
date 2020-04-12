@@ -405,7 +405,7 @@ private:
 
     /* Print a command prompt, disabled for non-terminal outputs */
     void printPrompt(const std::string& prompt) override {
-        if (isatty(fileno(stdin)) == 0) {
+        if (!isatty(fileno(stdin))) {
             return;
         }
         std::cout << prompt;
@@ -441,7 +441,7 @@ private:
 
     /* Print any other information, disabled for non-terminal outputs */
     void printInfo(const std::string& info) override {
-        if (isatty(fileno(stdin)) == 0) {
+        if (!isatty(fileno(stdin))) {
             return;
         }
         std::cout << info;
