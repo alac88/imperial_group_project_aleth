@@ -152,7 +152,8 @@ void EVMAnalyser::storeCallArgs(int nArgs) {
     
     callStack.insert(callStack.begin(), callArgs);
     // remove args used
-    stackIDs.erase(stackIDs.begin(), stackIDs.begin() + nArgs);
+    if (stackIDs.size() >= (unsigned) nArgs)
+        stackIDs.erase(stackIDs.begin(), stackIDs.begin() + nArgs);
 
     // std::cout << "New state: ";
     // for (auto &i : stackIDs) 
@@ -162,6 +163,10 @@ void EVMAnalyser::storeCallArgs(int nArgs) {
 
 void EVMAnalyser::argsRet(int nArgs, int nRet) {
     if (nArgs > 0 && nRet == 1) {
+        if (stackIDs.size() < (unsigned) nArgs) {
+            std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
+            return;
+        }
         // create new ID
         latestID++;
 
@@ -179,6 +184,11 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
         // push new ID
         stackIDs.insert(stackIDs.begin(), latestID);
     } else if (nArgs > 0) {
+        if (stackIDs.size() < (unsigned) nArgs) {
+            std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
+            return;
+        }
+
         // remove args used
         stackIDs.erase(stackIDs.begin(), stackIDs.begin() + nArgs);
     } else if (nRet == 1) {
@@ -195,6 +205,10 @@ void EVMAnalyser::callResult(int result) {
     // create new ID when call result is received
     latestID++;
 
+    if (callStack.size() < 1) {
+        std::cout << "Error: there is no pending call arguments on the call stack!\n";
+        return;
+    }
     // take first callArgs in callStack
     auto callArgs = callStack[0];
     for (auto &arg : callArgs) {
@@ -225,6 +239,10 @@ void EVMAnalyser::callResult(int result) {
 };
 
 void EVMAnalyser::swap(int pos) {
+    if (stackIDs.size() < 2) {
+        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
+        return;
+    }
     // no tuple insertion
     // swap IDs on stack
     std::swap(stackIDs[0], stackIDs[pos]);
@@ -236,6 +254,10 @@ void EVMAnalyser::swap(int pos) {
 }; // SWAP2 = swap first(0) and third(2) element
 
 void EVMAnalyser::dup(int pos) {
+    if (stackIDs.size() < (unsigned) pos) {
+        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
+        return;
+    }
     // create newID
     latestID++;
 
@@ -256,6 +278,10 @@ void EVMAnalyser::dup(int pos) {
 }; // DUP2 = dup second(1) element on the stack
 
 void EVMAnalyser::jumpi() {
+    if (stackIDs.size() < 2) {
+        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
+        return;
+    }
     // take second element on stack as condition 
     // insert tuple to in_condition
     OUTPUT << "insert to in_condition: " << stackIDs[1] << std::endl;
@@ -270,6 +296,24 @@ void EVMAnalyser::jumpi() {
     //     std::cout << i << ", ";
     // std::cout << std::endl;
 
+};
+
+int EVMAnalyser::getStackID(int index) {
+    if (stackIDs.size() >= (unsigned) index)
+        return stackIDs[index];
+    return -1;
+};
+
+int EVMAnalyser::getStackIDSize() {
+    return stackIDs.size();
+};
+
+int EVMAnalyser::getCallStackSize() {
+    return callStack.size();
+};
+
+int EVMAnalyser::getCallArgID(int callStackIndex, int argIndex) {
+    return callStack[callStackIndex][argIndex];
 };
 
 void EVMAnalyser::extractReentrancyAddresses() {
