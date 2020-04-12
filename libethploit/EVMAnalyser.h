@@ -8,6 +8,11 @@
 
 class EVMAnalyser {
     int executionTraceCount;
+    /**
+     * Example JSON for re-entrancy
+     */ 
+    std::ofstream reentrancyJSON;
+    std::ofstream lockedEtherJSON;
     
     int latestID = 0;
     std::vector<int> stackIDs;
@@ -16,7 +21,10 @@ class EVMAnalyser {
     EVMAnalyser();
     ~EVMAnalyser(); 
     
+    void initialiseJSON(); 
     void extractReentrancyAddresses();
+    void setTransactionHash(std::string _transactionHash);
+    void setAccount(std::string _account);
 
     void swap(int pos); 
 
@@ -29,7 +37,11 @@ class EVMAnalyser {
     void storeCallArgs(int nArgs);
 
   protected:
+    std::string transactionHash;
+    std::string account;
+
     souffle::SouffleProgram *prog;
+
     souffle::Relation *relDirectCall;
     souffle::Relation *relCallEntry;
     souffle::Relation *relCallExit;
@@ -39,7 +51,8 @@ class EVMAnalyser {
     souffle::Relation *relInCondition;
 
   public:
-    static EVMAnalyser* getInstance();
+    static EVMAnalyser* getInstance(std::string _account = "UNDEFINED", 
+        std::string _transactionHash = "UNDEFINED");
 
     bool populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace);
 
@@ -63,7 +76,8 @@ class EVMAnalyserTest : public EVMAnalyser {
   public:
     EVMAnalyserTest();
 
-    static EVMAnalyserTest* getInstance();
+    static EVMAnalyserTest* getInstance(std::string _account = "UNDEFINED", 
+        std::string _transactionHash = "UNDEFINED");
     
     int getRelationSize(std::string relationName);
 };

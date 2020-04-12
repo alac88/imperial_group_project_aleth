@@ -1,5 +1,7 @@
 #include <set>
 #include <queue>
+#include <fstream>
+#include <json/json.h>
 
 #include "EVMAnalyser.h"
 #include "souffle/SouffleInterface.h"
@@ -15,7 +17,9 @@
 
 EVMAnalyser::EVMAnalyser() {
     executionTraceCount = 1;
+
     prog = souffle::ProgramFactory::newInstance("DetectionLogic");
+
     relDirectCall = prog->getRelation("direct_call");
     relCallEntry = prog->getRelation("call_entry");
     relCallExit = prog->getRelation("call_exit");
@@ -28,8 +32,29 @@ EVMAnalyser::~EVMAnalyser() {
     // An default constructor for testing
 }
 
-EVMAnalyser* EVMAnalyser::getInstance() {
+void EVMAnalyser::initialiseJSON() {
+    // New JSON tuples default to be appended to the current files.
+    reentrancyJSON.open("reentrancy.json", std::ios::app);
+    lockedEtherJSON.open("locked_ether.json", std::ios::app);
+}
+
+void EVMAnalyser::setTransactionHash(std::string _transactionHash) {
+    transactionHash = _transactionHash;
+}
+
+void EVMAnalyser::setAccount(std::string _account) {
+    account = _account;
+}
+
+EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transactionHash) {
     static EVMAnalyser instance;
+    if (_transactionHash != "UNDEFINED") {
+        instance.setTransactionHash(_transactionHash);
+    }
+    if (_account != "UNDEFINED") {
+        instance.setAccount(_account);
+    }
+    instance.initialiseJSON();
     return &instance; 
 }
 
@@ -37,7 +62,9 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
     if (executionTrace->instruction == "CALL" || 
         executionTrace->instruction == "STATICCALL") { // Treating three types of call as the same for now 
         souffle::tuple newTuple(relDirectCall); // create tuple for the relation
-        OUTPUT << "The populated instruction has ID number " << executionTraceCount << std::endl; 
+#ifdef EVMANALYSER_DEBUG
+        OUTPUT << "The populated instruction has ID number " << executionTraceCount << std::endl;
+#endif
         newTuple << executionTraceCount
                 << executionTrace->senderAddress
                 << executionTrace->receiveAddress
@@ -46,7 +73,9 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
         executionTraceCount++;
     } else if (executionTrace->instruction == "DELEGATECALL") {
         souffle::tuple newTupleCall(relDirectCall);
+#ifdef EVMANALYSER_DEBUG
         OUTPUT << "The populated instruction has ID number " << executionTraceCount << std::endl; 
+#endif
         newTupleCall << executionTraceCount
                 << executionTrace->senderAddress
                 << executionTrace->receiveAddress
@@ -54,8 +83,10 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
         relDirectCall->insert(newTupleCall);
         executionTraceCount++;
     } else {
+#ifdef EVMANALYSER_DEBUG
         OUTPUT << "No existing relation matches up with this instruction!" 
             << std::endl;
+#endif
         return false; 
     }
 
@@ -69,8 +100,10 @@ void EVMAnalyser::callEntry(int gas, std::string contractAddress) {
     newTuple << executionTraceCount-1 << gas << contractAddress;
     relCallEntry->insert(newTuple);
 
+#ifdef EVMANALYSER_DEBUG
     OUTPUT << "callEntry for " << executionTraceCount << " has been populated"
         << std::endl;
+#endif
 
 }
 
@@ -79,8 +112,10 @@ void EVMAnalyser::callExit(int gas) {
     newTuple << executionTraceCount-1 << gas; // Minus 1 to refer back the DELEGATECALL
     relCallExit->insert(newTuple); 
 
+#ifdef EVMANALYSER_DEBUG
     OUTPUT << "callExit for " << executionTraceCount-1 << " has been populated"
         << std::endl;
+#endif
 
 }
 
@@ -239,6 +274,11 @@ void EVMAnalyser::jumpi() {
 
 void EVMAnalyser::extractReentrancyAddresses() {
     souffle::Relation *rel = prog->getRelation("reentrancy");
+    Json::Value json(Json::objectValue);
+
+    // Standard json fields
+    json["account"] = account;
+    json["transaction_hash"] = transactionHash;
 
     std::set<int> idSet;
     int count = 0;
@@ -275,18 +315,31 @@ void EVMAnalyser::extractReentrancyAddresses() {
                     totalEther -= etherOriginal;
                 }
 
+#ifdef EVMANALYSER_DEBUG
                 OUTPUT << FORERED <<"Query Result: " << " Re-entrancy: ";
+#endif
 
+                std::string reentrancyChain = chain.front();
                 std::string addrStart = chain.front();
+#ifdef EVMANALYSER_DEBUG
                 std::cout << addrStart;
+#endif                
                 chain.pop();
                 while (!chain.empty()) {
+#ifdef EVMANALYSER_DEBUG
                     std::cout << " => " << chain.front();
+#endif              
+                    reentrancyChain += " => " + chain.front();
                     chain.pop();
                 }
+#ifdef EVMANALYSER_DEBUG        
                 std::cout << " => " << addrStart << " has been detected with " << totalEther 
                     << " value transferred in total." << RESETTEXT
                     << std::endl;
+#endif
+                reentrancyChain += " => " + addrStart;
+                json["reentrancy_chain"] = reentrancyChain;
+                json["total_ether"] = totalEther;
 
                 // Reset
                 if (senderAddrOriginal != receiverAddrPre) {
@@ -299,7 +352,10 @@ void EVMAnalyser::extractReentrancyAddresses() {
         }
 
         receiverAddrPre = receiverAddrOriginal;
-    }    
+    }
+
+    // Save the new json tuple
+    reentrancyJSON << json << std::endl;
 }
 
 bool EVMAnalyser::queryExploit(std::string exploitName) {
@@ -312,7 +368,9 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                 extractReentrancyAddresses();
                 return true;
             } else {
+#ifdef EVMANALYSER_DEBUG
                 OUTPUT << "No re-entrancy has been detected." << std::endl;
+#endif
                 return false;
             }
         }
@@ -320,20 +378,30 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
         // Locked ethers
         if (exploitName == "locked_ether") {
             if (rel->size() != 0) {
-                std::string contractAddress; 
-                int id;
-                int gas;
                 int count = 0;
 
                 for (auto &output : *rel) {
+                    std::string contractAddress; 
+                    int id;
+                    int gas;
+
                     count++;
                     output >> id >> gas >> contractAddress;
+#ifdef EVMANALYSER_DEBUG
                     OUTPUT << FORERED << "Query Result: " << count << " Contract in address: " 
                         << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
+#endif
+                    Json::Value json(Json::objectValue);
+                    json["account"] = account;
+                    json["transaction_hash"] = transactionHash;
+                    json["contract_address"] = contractAddress;
+                    lockedEtherJSON << json << std::endl;
                 }
                 return true; 
             } else {
+#ifdef EVMANALYSER_DEBUG
                 OUTPUT << "No locked ether has been detected." << std::endl;
+#endif
                 return false; 
             }
         }
@@ -345,19 +413,29 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                 int count = 0;
 
                 for (auto &output : *rel) {
+                    std::string contractAddress; 
+                    int id;
+                    int gas;
+
                     count++;
                     output >> stackID;
-                    OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " << "StackID: " << stackID << RESETTEXT << std::endl; 
+#ifdef EVMANALYSER_DEBUG
+                    OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " 
+                        << "StackID: " << stackID << RESETTEXT << std::endl; 
+#endif
                 }
                 return true; 
             } else {
+#ifdef EVMANALYSER_DEBUG
                 OUTPUT << "No unhandled exception has been detected." << std::endl;
-                return false; 
+#endif
             }
         }
     }
-    
-    std::cout << "[Middleware]: Wrong exploit name!" << std::endl;
+
+#ifdef EVMANALYSER_DEBUG
+    OUTPUT << "Wrong exploit name!" << std::endl;
+#endif
     return false;
 }
 
@@ -366,14 +444,17 @@ void EVMAnalyser::cleanExecutionTrace() {
     prog->purgeInternalRelations(); // Remenber to clean the internal relations e.g. call in the re-entrancy
     prog->purgeOutputRelations();
 
+    reentrancyJSON.close();
+    lockedEtherJSON.close();
+
     executionTraceCount = 1;
     latestID = 0;
     stackIDs.clear();
     callStack.clear();
 }
 
-EVMAnalyserTest* EVMAnalyserTest::getInstance() {
-    return (EVMAnalyserTest *) EVMAnalyser::getInstance(); 
+EVMAnalyserTest* EVMAnalyserTest::getInstance(std::string _account, std::string _transactionHash) {
+    return (EVMAnalyserTest *) EVMAnalyser::getInstance(_account, _transactionHash); 
 }
 
 int EVMAnalyserTest::getRelationSize(std::string relationName) {
