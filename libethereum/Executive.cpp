@@ -172,11 +172,12 @@ bool Executive::call(Address const& _receiveAddress, Address const& _senderAddre
 
 bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address const& _origin)
 {
-    
-    std::cout << "Executive::call()" << " ";
-    std::cout << "Sender " << _p.senderAddress << " ";
-    std::cout << "Receive Address" << _p.receiveAddress << " "; 
-    std::cout << "Code Address " << _p.codeAddress << std::endl;
+
+    // DELETE   
+    // std::cout << "Executive::call()" << " ";
+    // std::cout << "Sender " << _p.senderAddress << " ";
+    // std::cout << "Receive Address" << _p.receiveAddress << " "; 
+    // std::cout << "Code Address " << _p.codeAddress << std::endl;
 
     // If external transaction.
     if (m_t)
@@ -194,7 +195,9 @@ bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address co
 
     if (m_sealEngine.isPrecompiled(_p.codeAddress, m_envInfo.number()))
     {
-        std::cout << "if(m_sealEngine.isPrecompiled)\n";
+        // DELETE?   
+        // std::cout << "if(m_sealEngine.isPrecompiled)\n";
+        
         // Empty RIPEMD contract needs to be deleted even in case of OOG
         // because of the anomaly on the main net caused by buggy behavior by both Geth and Parity
         // https://github.com/ethereum/go-ethereum/pull/3341/files#diff-2433aa143ee4772026454b8abd76b9dd
