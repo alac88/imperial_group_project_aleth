@@ -167,8 +167,10 @@ void LegacyVM::caseCall()
     bytesRef output;
     if (caseCallSetup(callParams.get(), output))
     {
-        
         ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer);
+        std::cout << "=== execTrace.print() ===" << std::endl;
+        execTrace.print();
+        std::cout << "=== execTrace.print() ===" << std::endl;
         EVMAnalyser* analyser = EVMAnalyser::getInstance();
         if(analyser->populateExecutionTrace(&execTrace)) {
             std::cout << "Analyser populated\n";
@@ -177,7 +179,18 @@ void LegacyVM::caseCall()
         }
         if (m_OP == Instruction::DELEGATECALL) 
             analyser->callEntry((int)callParams->gas, callParams->senderAddress.hex());
+
+        std::cout << "Before call - Sender's balance: " << m_ext->balance(callParams->senderAddress);
+        std::cout << "Receiver's balance: " << m_ext->balance(callParams->receiveAddress) << std::endl;
+        std::cout << "callParams->gas: " << callParams->gas << std::endl;
+        
         CallResult result = m_ext->call(*callParams);
+        
+        std::cout << "After call - Sender's balance: " << m_ext->balance(callParams->senderAddress);
+        std::cout << "Receiver's balance: " << m_ext->balance(callParams->receiveAddress) << std::endl;
+        std::cout << "callParams->gas: " << callParams->gas << std::endl;
+
+
         if (m_OP == Instruction::DELEGATECALL) 
             analyser->callExit((int)callParams->gas);
 

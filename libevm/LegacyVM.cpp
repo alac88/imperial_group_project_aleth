@@ -61,6 +61,7 @@ uint64_t LegacyVM::decodeJumpvDest(const byte* const _code, uint64_t& _pc, byte 
 //
 void LegacyVM::onOperation(Instruction _instr)
 {
+    std::cout << "onOperation: " << instructionInfo(_instr).name << std::endl;
     if (m_onOp)
         (m_onOp)(++m_nSteps, m_PC, _instr,
             m_newMemSize > m_mem.size() ? (m_newMemSize - m_mem.size()) / 32 : uint64_t(0),
@@ -212,6 +213,7 @@ void LegacyVM::fetchInstruction()
 
 owning_bytes_ref LegacyVM::exec(u256& _io_gas, ExtVMFace& _ext, OnOpFunc const& _onOp)
 {
+    std::cout << "LegacyVM::exec\n";
     m_io_gas_p = &_io_gas;
     m_io_gas = uint64_t(_io_gas);
     m_ext = &_ext;
@@ -244,6 +246,7 @@ owning_bytes_ref LegacyVM::exec(u256& _io_gas, ExtVMFace& _ext, OnOpFunc const& 
 //
 void LegacyVM::interpretCases()
 {
+    std::cout << "interpretCases()\n";
     INIT_CASES
     DO_CASES
     {
@@ -278,13 +281,20 @@ void LegacyVM::interpretCases()
         CASE(CALL)
         CASE(CALLCODE)
         {
+            std::cout << "Case CALLS\n";
             ON_OP();
-            if (m_OP == Instruction::DELEGATECALL && !m_schedule->haveDelegateCall)
+            if (m_OP == Instruction::DELEGATECALL && !m_schedule->haveDelegateCall) {
+                std::cout << "1st bad instr\n";
                 throwBadInstruction();
-            if (m_OP == Instruction::STATICCALL && !m_schedule->haveStaticCall)
+            }
+            if (m_OP == Instruction::STATICCALL && !m_schedule->haveStaticCall) {
+                std::cout << "2nd bad instr\n";
                 throwBadInstruction();
-            if (m_OP == Instruction::CALL && m_ext->staticCall && m_SP[2] != 0)
+            }
+            if (m_OP == Instruction::CALL && m_ext->staticCall && m_SP[2] != 0) {
+                std::cout << "disallowed state change\n"; 
                 throwDisallowedStateChange();
+            }
             m_bounce = &LegacyVM::caseCall;
         }
         BREAK
@@ -671,8 +681,11 @@ void LegacyVM::interpretCases()
         CASE(SHR)
         {
             // Pre-constantinople
-            if (!m_schedule->haveBitwiseShifting)
+            std::cout << "Case SHR\n";
+            if (!m_schedule->haveBitwiseShifting) {
+                std::cout << "not haveBitwiseShifting\n";
                 throwBadInstruction();
+            }
 
             ON_OP();
             updateIOGas();

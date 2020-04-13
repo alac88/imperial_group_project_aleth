@@ -18,9 +18,9 @@ namespace dev
 
         void ExecutionTrace::print() {
             std::cout << instruction << " ";
-            std::cout << senderAddress << " ";
-            std::cout << receiveAddress << " ";
-            std::cout << valueTransfer << " ";
+            std::cout << "Sender: " << senderAddress << " ";
+            std::cout << "Receiver: " << receiveAddress << " ";
+            std::cout << "valueTransfer: " << valueTransfer << " ";
         }
 
     }
