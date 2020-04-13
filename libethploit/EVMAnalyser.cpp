@@ -44,7 +44,7 @@ void EVMAnalyser::setAccount(std::string _account) {
     account = _account;
 }
 
-EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transactionHash, int senderBalance, int receiverBalance) {
+EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance) {
     static EVMAnalyser instance;
     if (_transactionHash != "UNDEFINED") {
         instance.setupTransaction(_transactionHash, senderBalance, receiverBalance);
@@ -56,7 +56,7 @@ EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transac
     return &instance; 
 }
 
-void EVMAnalyser::setupTransaction(std::string _transactionHash, int senderBalance, int receiverBalance) {
+void EVMAnalyser::setupTransaction(std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance) {
     if (senderBalance != -1 && receiverBalance != -1) {
         if (transactionHash != _transactionHash) {
             transactionHash = _transactionHash;
@@ -64,7 +64,7 @@ void EVMAnalyser::setupTransaction(std::string _transactionHash, int senderBalan
             initialSenderBalance = senderBalance;
             initialTotalBalance = senderBalance + receiverBalance;
         } else {
-            int totalDifference = (senderBalance + receiverBalance) - initialTotalBalance;
+            dev::u256 totalDifference = initialTotalBalance - (senderBalance + receiverBalance);
             totalTransfer += initialSenderBalance - senderBalance + totalDifference;
         }
 
