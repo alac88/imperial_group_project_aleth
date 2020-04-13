@@ -10,6 +10,7 @@
 #include "StandardTrace.h"
 #include "State.h"
 #include <libdevcore/CommonIO.h>
+#include <libdevcore/FixedHash.h>
 #include <libethcore/CommonJS.h>
 #include <libevm/LegacyVM.h>
 #include <libevm/VMFactory.h>
@@ -142,6 +143,9 @@ void Executive::initialize(Transaction const& _transaction)
     std::cout << m_t.gas() << std::endl;
     std::cout << "From's balance: " << m_s.balance(m_t.from()) << std::endl;
     std::cout << "To's balance: " << m_s.balance(m_t.to()) << std::endl;
+
+    EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), (int) m_s.balance(m_t.from()), (int) m_s.balance(m_t.to()));
+
 }
 
 bool Executive::execute()
@@ -476,7 +480,8 @@ bool Executive::finalize()
         std::cout << "To's balance: " << m_s.balance(m_t.to()) << std::endl;
 
 
-        EVMAnalyser* analyser = EVMAnalyser::getInstance();
+        EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), (int) m_s.balance(m_t.from()), (int) m_s.balance(m_t.to()));
+
         analyser->queryExploit("reentrancy");
         analyser->queryExploit("locked_ether");
         analyser->queryExploit("unhandled_exception");

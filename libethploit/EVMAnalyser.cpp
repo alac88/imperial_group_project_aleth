@@ -15,6 +15,8 @@
 #define RESETTEXT "\x1B[0m"
 #define OUTPUT std::cout << "[Middleware]: " 
 
+int EVMAnalyser::transactionCount = 0;
+
 EVMAnalyser::EVMAnalyser() {
     executionTraceCount = 1;
 
@@ -38,24 +40,35 @@ void EVMAnalyser::initialiseJSON() {
     lockedEtherJSON.open("locked_ether.json", std::ios::app);
 }
 
-void EVMAnalyser::setTransactionHash(std::string _transactionHash) {
-    transactionHash = _transactionHash;
-}
-
 void EVMAnalyser::setAccount(std::string _account) {
     account = _account;
 }
 
-EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transactionHash) {
+EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transactionHash, int senderBalance, int receiverBalance) {
     static EVMAnalyser instance;
     if (_transactionHash != "UNDEFINED") {
-        instance.setTransactionHash(_transactionHash);
+        instance.setupTransaction(_transactionHash, senderBalance, receiverBalance);
     }
     if (_account != "UNDEFINED") {
         instance.setAccount(_account);
     }
     instance.initialiseJSON();
     return &instance; 
+}
+
+void EVMAnalyser::setupTransaction(std::string _transactionHash, int senderBalance, int receiverBalance) {
+    if (senderBalance != -1 && receiverBalance != -1) {
+        if (transactionHash != _transactionHash) {
+            transactionHash = _transactionHash;
+            transactionCount++;
+            initialSenderBalance = senderBalance;
+            initialTotalBalance = senderBalance + receiverBalance;
+        } else {
+            int totalDifference = (senderBalance + receiverBalance) - initialTotalBalance;
+            totalTransfer += initialSenderBalance - senderBalance + totalDifference;
+        }
+
+    }
 }
 
 bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace) {

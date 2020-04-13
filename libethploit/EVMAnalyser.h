@@ -8,6 +8,9 @@
 
 class EVMAnalyser {
     int executionTraceCount;
+    int initialSenderBalance = 0;
+    int initialTotalBalance = 0;
+    int totalTransfer = 0;
     /**
      * Example JSON for re-entrancy
      */ 
@@ -23,8 +26,8 @@ class EVMAnalyser {
     
     void initialiseJSON(); 
     void extractReentrancyAddresses();
-    void setTransactionHash(std::string _transactionHash);
     void setAccount(std::string _account);
+    void setupTransaction(std::string _transactionHash, int senderBalance, int receiverBalance);
 
     void swap(int pos); 
 
@@ -52,7 +55,9 @@ class EVMAnalyser {
 
   public:
     static EVMAnalyser* getInstance(std::string _account = "UNDEFINED", 
-        std::string _transactionHash = "UNDEFINED");
+        std::string _transactionHash = "UNDEFINED", int senderBalance = -1, int receiverBalance = -1);
+
+    static int transactionCount;
 
     bool populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace);
 
