@@ -28,7 +28,7 @@ set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
 
 if (APPLE)
     set(HUNTER_ROOT ${CMAKE_CURRENT_BINARY_DIR}/.hunter)
-else()
+elseif(LAB_MACHINE)
     set(HUNTER_ROOT /vol/project/2019/530/g1953010/.hunter/evmanalyser)
 endif()
 set(HUNTER_CONFIGURATION_TYPES Release CACHE STRING "Hunter configuration types")
