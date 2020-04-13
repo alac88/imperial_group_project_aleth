@@ -3,14 +3,16 @@
 #include "souffle/SouffleInterface.h"
 #include "libethploit/ExecutionTrace.h"
 
+#include "libdevcore/Common.h"
+
 #include <string>
 #include <vector>
 
 class EVMAnalyser {
     int executionTraceCount;
-    int initialSenderBalance = 0;
-    int initialTotalBalance = 0;
-    int totalTransfer = 0;
+    dev::u256 initialSenderBalance = 0;
+    dev::u256 initialTotalBalance = 0;
+    dev::u256 totalTransfer = 0;
     /**
      * Example JSON for re-entrancy
      */ 
@@ -27,7 +29,7 @@ class EVMAnalyser {
     void initialiseJSON(); 
     void extractReentrancyAddresses();
     void setAccount(std::string _account);
-    void setupTransaction(std::string _transactionHash, int senderBalance, int receiverBalance);
+    void setupTransaction(std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance);
 
     void swap(int pos); 
 
@@ -55,7 +57,7 @@ class EVMAnalyser {
 
   public:
     static EVMAnalyser* getInstance(std::string _account = "UNDEFINED", 
-        std::string _transactionHash = "UNDEFINED", int senderBalance = -1, int receiverBalance = -1);
+        std::string _transactionHash = "UNDEFINED", dev::u256 senderBalance = -1, dev::u256 receiverBalance = -1);
 
     static int transactionCount;
 

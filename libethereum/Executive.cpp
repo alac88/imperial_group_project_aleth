@@ -144,7 +144,7 @@ void Executive::initialize(Transaction const& _transaction)
     std::cout << "From's balance: " << m_s.balance(m_t.from()) << std::endl;
     std::cout << "To's balance: " << m_s.balance(m_t.to()) << std::endl;
 
-    EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), (int) m_s.balance(m_t.from()), (int) m_s.balance(m_t.to()));
+    EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()));
 
 }
 
@@ -480,7 +480,7 @@ bool Executive::finalize()
         std::cout << "To's balance: " << m_s.balance(m_t.to()) << std::endl;
 
 
-        EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), (int) m_s.balance(m_t.from()), (int) m_s.balance(m_t.to()));
+        EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()));
 
         analyser->queryExploit("reentrancy");
         analyser->queryExploit("locked_ether");
