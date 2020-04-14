@@ -27,13 +27,25 @@ MOCK_BASE_CLASS(ExecutionTraceMock, dev::eth::ExecutionTrace) {
 
 // Fixtures
 struct F {
+    std::string randAccount;
+    std::string randTransaction;
+
     F() {
-        // static factory_Sf_reentrancy __factory_Sf_reentrancy_instance;
-        analyser = EVMAnalyserTest::getInstance(std::to_string(rand()), std::to_string(rand()));
+        randAccount = std::to_string(rand());
+        randTransaction = std::to_string(rand());
+
+        analyser = EVMAnalyserTest::getInstance(randAccount, 
+            randTransaction,
+            rand(),
+            rand());
         BOOST_TEST_MESSAGE("setup fixture");
     }
 
     ~F() {
+        EVMAnalyserTest::getInstance(randAccount, 
+            randTransaction,
+            rand(),
+            rand());
         analyser->cleanExecutionTrace();
         BOOST_TEST_MESSAGE("teardown fixture"); 
     }
