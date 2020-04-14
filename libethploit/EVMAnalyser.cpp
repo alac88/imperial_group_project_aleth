@@ -333,11 +333,6 @@ int EVMAnalyser::getCallArgID(int callStackIndex, int argIndex) {
 
 void EVMAnalyser::extractReentrancyAddresses() {
     souffle::Relation *rel = prog->getRelation("reentrancy");
-    Json::Value json(Json::objectValue);
-
-    // Standard json fields
-    json["account"] = account;
-    json["transaction_hash"] = transactionHash;
 
     std::set<int> idSet;
     int count = 0;
@@ -368,6 +363,12 @@ void EVMAnalyser::extractReentrancyAddresses() {
             totalEther += etherOriginal;
 
             if ((senderAddrOriginal != receiverAddrPre && receiverAddrPre != "Null") || i == idSet.size()) {
+                Json::Value json(Json::objectValue);
+
+                // Standard json fields
+                json["account"] = account;
+                json["transaction_hash"] = transactionHash;
+
                 // Output the address chain
                 if (senderAddrOriginal != receiverAddrPre) {
                     chain.pop();
@@ -407,14 +408,15 @@ void EVMAnalyser::extractReentrancyAddresses() {
                 } else {
                     totalEther = 0;
                 }
+
+                // Save the new json tuple
+                reentrancyJSON << json << std::endl;
             }
         }
 
         receiverAddrPre = receiverAddrOriginal;
     }
 
-    // Save the new json tuple
-    reentrancyJSON << json << std::endl;
 }
 
 bool EVMAnalyser::queryExploit(std::string exploitName) {
