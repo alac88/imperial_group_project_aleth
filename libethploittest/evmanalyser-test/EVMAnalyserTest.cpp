@@ -535,11 +535,55 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         BOOST_TEST(analyser->queryExploit("reentrancy") == false);        
     }
 
-    // BOOST_AUTO_TEST_CASE(clean_all_execution_trace) {
-    //     addCall1();
+    BOOST_AUTO_TEST_CASE(clean_execution_trace_resets_state) {
+        addCall1();
+        BOOST_TEST(analyser->getRelationSize("direct_call") == 1);
+        
+        addCallEntry();
+        BOOST_TEST(analyser->getRelationSize("call_entry") == 1);
+        addCallExit();
+        BOOST_TEST(analyser->getRelationSize("call_exit") == 1);
 
-    //     analyser->cleanExecutionTrace(); 
 
-    //     BOOST_TEST(analyser->getRelationSize("direct_call") == 0);
-    // }
+        addInstruction(0, 1);
+        addInstruction(1, 1);
+
+        BOOST_TEST(getStackIDSize() > 0);
+        BOOST_TEST(analyser->getRelationSize("is_output") > 0);
+        
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addCallInstr();
+
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addCallInstr();
+        addCallResult(1);
+        addJumpIInstr();
+        BOOST_TEST(getCallStackSize() > 0);
+        BOOST_TEST(analyser->getRelationSize("call_result") > 0);
+        BOOST_TEST(analyser->getRelationSize("in_condition") > 0);
+        
+        analyser->cleanExecutionTrace(); 
+        
+        BOOST_TEST(getStackIDSize() == 0);
+        BOOST_TEST(getCallStackSize() == 0);
+
+        BOOST_TEST(analyser->getRelationSize("direct_call") == 0);
+        BOOST_TEST(analyser->getRelationSize("call_result") == 0);
+        BOOST_TEST(analyser->getRelationSize("in_condition") == 0);
+        BOOST_TEST(analyser->getRelationSize("call_entry") == 0);
+        BOOST_TEST(analyser->getRelationSize("call_exit") == 0);
+
+    }
 BOOST_AUTO_TEST_SUITE_END()
