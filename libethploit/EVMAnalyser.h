@@ -18,6 +18,7 @@ class EVMAnalyser {
      */ 
     std::ofstream reentrancyJSON;
     std::ofstream lockedEtherJSON;
+    std::ofstream logJSON;
     
     int latestID = 0;
     std::vector<int> stackIDs;
@@ -93,7 +94,9 @@ class EVMAnalyserTest : public EVMAnalyser {
     EVMAnalyserTest();
 
     static EVMAnalyserTest* getInstance(std::string _account = "UNDEFINED", 
-        std::string _transactionHash = "UNDEFINED");
+        std::string _transactionHash = "UNDEFINED", 
+        dev::u256 senderBalance = -1, 
+        dev::u256 receiverBalance = -1);
     
     int getRelationSize(std::string relationName);
 };

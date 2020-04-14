@@ -2,6 +2,7 @@
 #include <queue>
 #include <fstream>
 #include <json/json.h>
+#include <boost/algorithm/string.hpp>
 
 #include "EVMAnalyser.h"
 #include "souffle/SouffleInterface.h"
@@ -36,8 +37,9 @@ EVMAnalyser::~EVMAnalyser() {
 
 void EVMAnalyser::initialiseJSON() {
     // New JSON tuples default to be appended to the current files.
-    reentrancyJSON.open("reentrancy.json", std::ios::app);
-    lockedEtherJSON.open("locked_ether.json", std::ios::app);
+    reentrancyJSON.open("reentrancy.json", std::ofstream::app);
+    lockedEtherJSON.open("locked_ether.json", std::ofstream::app);
+    logJSON.open("log.json", std::ofstream::app);
 }
 
 void EVMAnalyser::setAccount(std::string _account) {
@@ -52,13 +54,13 @@ EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transac
     if (_account != "UNDEFINED") {
         instance.setAccount(_account);
     }
-    instance.initialiseJSON();
     return &instance; 
 }
 
 void EVMAnalyser::setupTransaction(std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance) {
     if (senderBalance != -1 && receiverBalance != -1) {
         if (transactionHash != _transactionHash) {
+            initialiseJSON();
             transactionHash = _transactionHash;
             transactionCount++;
             initialSenderBalance = senderBalance;
@@ -331,11 +333,6 @@ int EVMAnalyser::getCallArgID(int callStackIndex, int argIndex) {
 
 void EVMAnalyser::extractReentrancyAddresses() {
     souffle::Relation *rel = prog->getRelation("reentrancy");
-    Json::Value json(Json::objectValue);
-
-    // Standard json fields
-    json["account"] = account;
-    json["transaction_hash"] = transactionHash;
 
     std::set<int> idSet;
     int count = 0;
@@ -366,6 +363,12 @@ void EVMAnalyser::extractReentrancyAddresses() {
             totalEther += etherOriginal;
 
             if ((senderAddrOriginal != receiverAddrPre && receiverAddrPre != "Null") || i == idSet.size()) {
+                Json::Value json(Json::objectValue);
+
+                // Standard json fields
+                json["account"] = account;
+                json["transaction_hash"] = transactionHash;
+
                 // Output the address chain
                 if (senderAddrOriginal != receiverAddrPre) {
                     chain.pop();
@@ -405,14 +408,15 @@ void EVMAnalyser::extractReentrancyAddresses() {
                 } else {
                     totalEther = 0;
                 }
+
+                // Save the new json tuple
+                reentrancyJSON << json << std::endl;
             }
         }
 
         receiverAddrPre = receiverAddrOriginal;
     }
 
-    // Save the new json tuple
-    reentrancyJSON << json << std::endl;
 }
 
 bool EVMAnalyser::queryExploit(std::string exploitName) {
@@ -505,14 +509,23 @@ void EVMAnalyser::cleanExecutionTrace() {
     reentrancyJSON.close();
     lockedEtherJSON.close();
 
+    Json::Value json(Json::objectValue);
+    json["account"] = account;
+    json["transaction_hash"] = transactionHash;
+    json["transaction_count"] = transactionCount;
+    json["ether_checked"] = dev::toString(totalTransfer);
+    logJSON << json << std::endl;
+    logJSON.close();
+
     executionTraceCount = 1;
     latestID = 0;
     stackIDs.clear();
     callStack.clear();
 }
 
-EVMAnalyserTest* EVMAnalyserTest::getInstance(std::string _account, std::string _transactionHash) {
-    return (EVMAnalyserTest *) EVMAnalyser::getInstance(_account, _transactionHash); 
+EVMAnalyserTest* EVMAnalyserTest::getInstance(std::string _account, std::string _transactionHash,
+    dev::u256 _senderBalance, dev::u256 _receiverBalance) {
+    return (EVMAnalyserTest *) EVMAnalyser::getInstance(_account, _transactionHash, _senderBalance, _receiverBalance); 
 }
 
 int EVMAnalyserTest::getRelationSize(std::string relationName) {

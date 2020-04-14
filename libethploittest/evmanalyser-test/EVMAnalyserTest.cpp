@@ -27,13 +27,25 @@ MOCK_BASE_CLASS(ExecutionTraceMock, dev::eth::ExecutionTrace) {
 
 // Fixtures
 struct F {
+    std::string randAccount;
+    std::string randTransaction;
+
     F() {
-        // static factory_Sf_reentrancy __factory_Sf_reentrancy_instance;
-        analyser = EVMAnalyserTest::getInstance(std::to_string(rand()), std::to_string(rand()));
+        randAccount = std::to_string(rand());
+        randTransaction = std::to_string(rand());
+
+        analyser = EVMAnalyserTest::getInstance(randAccount, 
+            randTransaction,
+            rand(),
+            rand());
         BOOST_TEST_MESSAGE("setup fixture");
     }
 
     ~F() {
+        EVMAnalyserTest::getInstance(randAccount, 
+            randTransaction,
+            rand(),
+            rand());
         analyser->cleanExecutionTrace();
         BOOST_TEST_MESSAGE("teardown fixture"); 
     }
@@ -523,11 +535,11 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         BOOST_TEST(analyser->queryExploit("reentrancy") == false);        
     }
 
-    BOOST_AUTO_TEST_CASE(clean_all_execution_trace) {
-        addCall1();
+    // BOOST_AUTO_TEST_CASE(clean_all_execution_trace) {
+    //     addCall1();
 
-        analyser->cleanExecutionTrace(); 
+    //     analyser->cleanExecutionTrace(); 
 
-        BOOST_TEST(analyser->getRelationSize("direct_call") == 0);
-    }
+    //     BOOST_TEST(analyser->getRelationSize("direct_call") == 0);
+    // }
 BOOST_AUTO_TEST_SUITE_END()
