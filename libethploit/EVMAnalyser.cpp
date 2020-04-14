@@ -10,6 +10,8 @@
     #include "DetectionLogic.cpp"
 #endif
 #include <iostream>
+// #define EVMANALYSER_DEBUG
+// #define EVMANALYSER_RESULT
 
 // Output related marcros
 #define FORERED "\x1B[31m"
@@ -169,11 +171,6 @@ void EVMAnalyser::storeCallArgs(int nArgs) {
     // remove args used
     if (stackIDs.size() >= (unsigned) nArgs)
         stackIDs.erase(stackIDs.begin(), stackIDs.begin() + nArgs);
-
-    // std::cout << "New state: ";
-    // for (auto &i : stackIDs) 
-    //     std::cout << i << ", ";
-    // std::cout << std::endl;
 };
 
 void EVMAnalyser::argsRet(int nArgs, int nRet) {
@@ -187,7 +184,9 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
 
         // for each arg
         for (int i = 0; i < nArgs; i++) {
+#ifdef EVMANALYSER_DEBUG
             OUTPUT << "insert to is_output: " << latestID << " " << stackIDs[i] << std::endl;
+#endif
             // insert tuple to is_output
             souffle::tuple newTuple(relIsOutput);
             newTuple << latestID << stackIDs[i];
@@ -210,10 +209,6 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
         // push new ID
         stackIDs.insert(stackIDs.begin(), ++latestID);
     }
-    // std::cout << "New state: ";
-    // for (auto &i : stackIDs) 
-    //     std::cout << i << ", ";
-    // std::cout << std::endl;
 }
 
 void EVMAnalyser::callResult(int result) {
@@ -227,7 +222,9 @@ void EVMAnalyser::callResult(int result) {
     // take first callArgs in callStack
     auto callArgs = callStack[0];
     for (auto &arg : callArgs) {
+#ifdef EVMANALYSER_DEBUG
         OUTPUT << "insert to is_output: " << latestID << " " << arg << std::endl;
+#endif
         // insert tuple to is_output
         souffle::tuple newTuple(relIsOutput);
         newTuple << latestID << arg;
@@ -238,19 +235,15 @@ void EVMAnalyser::callResult(int result) {
     callStack.erase(callStack.begin());
     
     // insert tuple to call_result
+#ifdef EVMANALYSER_DEBUG
     OUTPUT << "insert to call_result: " << latestID << " " << result << std::endl;
+#endif
     souffle::tuple newTuple(relCallResult);
     newTuple << latestID << result;
     relCallResult->insert(newTuple); 
 
     // push new ID
     stackIDs.insert(stackIDs.begin(), latestID);
-
-    // std::cout << "New state: ";
-    // for (auto &i : stackIDs) 
-    //     std::cout << i << ", ";
-    // std::cout << std::endl;
-
 };
 
 void EVMAnalyser::swap(int pos) {
@@ -278,18 +271,15 @@ void EVMAnalyser::dup(int pos) {
 
     // take ID of the original position
     // insert tuple to is_output
+#ifdef EVMANALYSER_DEBUG
     OUTPUT << "insert to is_output: " << latestID << " " << stackIDs[pos - 1] << std::endl;
+#endif
     souffle::tuple newTuple(relIsOutput);
     newTuple << latestID << stackIDs[pos - 1];
     relIsOutput->insert(newTuple); 
 
     // push newID to stack
     stackIDs.insert(stackIDs.begin(), latestID);
-    // std::cout << "New state: ";
-    // for (auto &i : stackIDs) 
-    //     std::cout << i << ", ";
-    // std::cout << std::endl;
-
 }; // DUP2 = dup second(1) element on the stack
 
 void EVMAnalyser::jumpi() {
@@ -299,18 +289,15 @@ void EVMAnalyser::jumpi() {
     }
     // take second element on stack as condition 
     // insert tuple to in_condition
+#ifdef EVMANALYSER_DEBUG
     OUTPUT << "insert to in_condition: " << stackIDs[1] << std::endl;
+#endif
     souffle::tuple newTuple(relInCondition);
     newTuple << stackIDs[1];
     relInCondition->insert(newTuple); 
 
     // remove first two elements on stack
     stackIDs.erase(stackIDs.begin(), stackIDs.begin() + 2);
-    // std::cout << "New state: ";
-    // for (auto &i : stackIDs) 
-    //     std::cout << i << ", ";
-    // std::cout << std::endl;
-
 };
 
 int EVMAnalyser::getStackID(int index) {
@@ -375,24 +362,24 @@ void EVMAnalyser::extractReentrancyAddresses() {
                     totalEther -= etherOriginal;
                 }
 
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                 OUTPUT << FORERED <<"Query Result: " << " Re-entrancy: ";
 #endif
 
                 std::string reentrancyChain = chain.front();
                 std::string addrStart = chain.front();
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                 std::cout << addrStart;
 #endif                
                 chain.pop();
                 while (!chain.empty()) {
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                     std::cout << " => " << chain.front();
 #endif              
                     reentrancyChain += " => " + chain.front();
                     chain.pop();
                 }
-#ifdef EVMANALYSER_DEBUG        
+#ifdef EVMANALYSER_RESULT        
                 std::cout << " => " << addrStart << " has been detected with " << totalEther 
                     << " value transferred in total." << RESETTEXT
                     << std::endl;
@@ -429,7 +416,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                 extractReentrancyAddresses();
                 return true;
             } else {
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                 OUTPUT << "No re-entrancy has been detected." << std::endl;
 #endif
                 return false;
@@ -448,7 +435,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
 
                     count++;
                     output >> id >> gas >> contractAddress;
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                     OUTPUT << FORERED << "Query Result: " << count << " Contract in address: " 
                         << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
 #endif
@@ -460,7 +447,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                 }
                 return true; 
             } else {
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                 OUTPUT << "No locked ether has been detected." << std::endl;
 #endif
                 return false; 
@@ -480,14 +467,14 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
 
                     count++;
                     output >> stackID;
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                     OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " 
                         << "StackID: " << stackID << RESETTEXT << std::endl; 
 #endif
                 }
                 return true; 
             } else {
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                 OUTPUT << "No unhandled exception has been detected." << std::endl;
 #endif
                 return false;
@@ -495,7 +482,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
         }
     }
 
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
     OUTPUT << "Wrong exploit name!" << std::endl;
 #endif
     return false;
