@@ -39,9 +39,9 @@ EVMAnalyser::~EVMAnalyser() {
 
 void EVMAnalyser::initialiseJSON() {
     // New JSON tuples default to be appended to the current files.
-    reentrancyJSON.open("reentrancy.json", std::ios::app);
-    lockedEtherJSON.open("locked_ether.json", std::ios::app);
-    logJSON.open("log.json", std::ios::app);
+    reentrancyJSON.open("reentrancy.json", std::ofstream::app);
+    lockedEtherJSON.open("locked_ether.json", std::ofstream::app);
+    logJSON.open("log.json", std::ofstream::app);
 }
 
 void EVMAnalyser::setAccount(std::string _account) {
@@ -56,13 +56,13 @@ EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transac
     if (_account != "UNDEFINED") {
         instance.setAccount(_account);
     }
-    instance.initialiseJSON();
     return &instance; 
 }
 
 void EVMAnalyser::setupTransaction(std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance) {
     if (senderBalance != -1 && receiverBalance != -1) {
         if (transactionHash != _transactionHash) {
+            initialiseJSON();
             transactionHash = _transactionHash;
             transactionCount++;
             initialSenderBalance = senderBalance;

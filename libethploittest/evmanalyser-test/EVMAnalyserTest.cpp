@@ -535,11 +535,11 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         BOOST_TEST(analyser->queryExploit("reentrancy") == false);        
     }
 
-    BOOST_AUTO_TEST_CASE(clean_all_execution_trace) {
-        addCall1();
+    // BOOST_AUTO_TEST_CASE(clean_all_execution_trace) {
+    //     addCall1();
 
-        analyser->cleanExecutionTrace(); 
+    //     analyser->cleanExecutionTrace(); 
 
-        BOOST_TEST(analyser->getRelationSize("direct_call") == 0);
-    }
+    //     BOOST_TEST(analyser->getRelationSize("direct_call") == 0);
+    // }
 BOOST_AUTO_TEST_SUITE_END()
