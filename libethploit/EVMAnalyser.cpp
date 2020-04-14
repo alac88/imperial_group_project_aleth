@@ -2,6 +2,7 @@
 #include <queue>
 #include <fstream>
 #include <json/json.h>
+#include <boost/algorithm/string.hpp>
 
 #include "EVMAnalyser.h"
 #include "souffle/SouffleInterface.h"
@@ -38,6 +39,7 @@ void EVMAnalyser::initialiseJSON() {
     // New JSON tuples default to be appended to the current files.
     reentrancyJSON.open("reentrancy.json", std::ios::app);
     lockedEtherJSON.open("locked_ether.json", std::ios::app);
+    logJSON.open("log.json", std::ios::app);
 }
 
 void EVMAnalyser::setAccount(std::string _account) {
@@ -505,14 +507,23 @@ void EVMAnalyser::cleanExecutionTrace() {
     reentrancyJSON.close();
     lockedEtherJSON.close();
 
+    Json::Value json(Json::objectValue);
+    json["account"] = account;
+    json["transaction_hash"] = transactionHash;
+    json["transaction_count"] = transactionCount;
+    json["ether_checked"] = dev::toString(totalTransfer);
+    logJSON << json << std::endl;
+    logJSON.close();
+
     executionTraceCount = 1;
     latestID = 0;
     stackIDs.clear();
     callStack.clear();
 }
 
-EVMAnalyserTest* EVMAnalyserTest::getInstance(std::string _account, std::string _transactionHash) {
-    return (EVMAnalyserTest *) EVMAnalyser::getInstance(_account, _transactionHash); 
+EVMAnalyserTest* EVMAnalyserTest::getInstance(std::string _account, std::string _transactionHash,
+    dev::u256 _senderBalance, dev::u256 _receiverBalance) {
+    return (EVMAnalyserTest *) EVMAnalyser::getInstance(_account, _transactionHash, _senderBalance, _receiverBalance); 
 }
 
 int EVMAnalyserTest::getRelationSize(std::string relationName) {
