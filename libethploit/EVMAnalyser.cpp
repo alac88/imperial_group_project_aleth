@@ -37,9 +37,9 @@ EVMAnalyser::~EVMAnalyser() {
 
 void EVMAnalyser::initialiseJSON() {
     // New JSON tuples default to be appended to the current files.
-    reentrancyJSON.open("reentrancy.json", std::ios::app);
-    lockedEtherJSON.open("locked_ether.json", std::ios::app);
-    logJSON.open("log.json", std::ios::app);
+    reentrancyJSON.open("reentrancy.json", std::ofstream::app);
+    lockedEtherJSON.open("locked_ether.json", std::ofstream::app);
+    logJSON.open("log.json", std::ofstream::app);
 }
 
 void EVMAnalyser::setAccount(std::string _account) {
