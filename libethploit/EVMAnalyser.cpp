@@ -49,7 +49,6 @@ void EVMAnalyser::setAccount(std::string _account) {
 EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance) {
     static EVMAnalyser instance;
     if (_transactionHash != "UNDEFINED") {
-        instance.initialiseJSON();
         instance.setupTransaction(_transactionHash, senderBalance, receiverBalance);
     }
     if (_account != "UNDEFINED") {
@@ -61,6 +60,7 @@ EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transac
 void EVMAnalyser::setupTransaction(std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance) {
     if (senderBalance != -1 && receiverBalance != -1) {
         if (transactionHash != _transactionHash) {
+            initialiseJSON();
             transactionHash = _transactionHash;
             transactionCount++;
             initialSenderBalance = senderBalance;
