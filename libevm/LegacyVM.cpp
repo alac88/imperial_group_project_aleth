@@ -61,15 +61,13 @@ uint64_t LegacyVM::decodeJumpvDest(const byte* const _code, uint64_t& _pc, byte 
 //
 void LegacyVM::onOperation(Instruction _instr)
 {
-    std::cout << "onOperation: " << instructionInfo(_instr).name << std::endl;
     if (m_onOp)
         (m_onOp)(++m_nSteps, m_PC, _instr,
             m_newMemSize > m_mem.size() ? (m_newMemSize - m_mem.size()) / 32 : uint64_t(0),
             m_runGas, m_io_gas, this, m_ext);
 
     InstructionInfo iInfo = instructionInfo(_instr);
-    // @middleware: to be passed
-    std::cout << "OP " << iInfo.name << " Args " << iInfo.args << " Ret " << iInfo.ret << std::endl; 
+    // std::cout << "OP " << iInfo.name << " Args " << iInfo.args << " Ret " << iInfo.ret << std::endl; 
     EVMAnalyser* analyser = EVMAnalyser::getInstance();
     analyser->instruction(iInfo.name, iInfo.args, iInfo.ret);
 }
@@ -213,7 +211,6 @@ void LegacyVM::fetchInstruction()
 
 owning_bytes_ref LegacyVM::exec(u256& _io_gas, ExtVMFace& _ext, OnOpFunc const& _onOp)
 {
-    std::cout << "LegacyVM::exec\n";
     m_io_gas_p = &_io_gas;
     m_io_gas = uint64_t(_io_gas);
     m_ext = &_ext;
@@ -246,7 +243,6 @@ owning_bytes_ref LegacyVM::exec(u256& _io_gas, ExtVMFace& _ext, OnOpFunc const& 
 //
 void LegacyVM::interpretCases()
 {
-    std::cout << "interpretCases()\n";
     INIT_CASES
     DO_CASES
     {
@@ -281,20 +277,13 @@ void LegacyVM::interpretCases()
         CASE(CALL)
         CASE(CALLCODE)
         {
-            std::cout << "Case CALLS\n";
             ON_OP();
-            if (m_OP == Instruction::DELEGATECALL && !m_schedule->haveDelegateCall) {
-                std::cout << "1st bad instr\n";
+            if (m_OP == Instruction::DELEGATECALL && !m_schedule->haveDelegateCall)
                 throwBadInstruction();
-            }
-            if (m_OP == Instruction::STATICCALL && !m_schedule->haveStaticCall) {
-                std::cout << "2nd bad instr\n";
+            if (m_OP == Instruction::STATICCALL && !m_schedule->haveStaticCall)
                 throwBadInstruction();
-            }
-            if (m_OP == Instruction::CALL && m_ext->staticCall && m_SP[2] != 0) {
-                std::cout << "disallowed state change\n"; 
+            if (m_OP == Instruction::CALL && m_ext->staticCall && m_SP[2] != 0)
                 throwDisallowedStateChange();
-            }
             m_bounce = &LegacyVM::caseCall;
         }
         BREAK
