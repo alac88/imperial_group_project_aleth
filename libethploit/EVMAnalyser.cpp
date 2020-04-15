@@ -36,6 +36,7 @@ void EVMAnalyser::initialiseJSON() {
     // New JSON tuples default to be appended to the current files.
     reentrancyJSON.open("reentrancy.json", std::ios::app);
     lockedEtherJSON.open("locked_ether.json", std::ios::app);
+    unhandledExceptionJSON.open("unhandled_exception.json", std::ios::app);
 }
 
 void EVMAnalyser::setTransactionHash(std::string _transactionHash) {
@@ -413,6 +414,11 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                     OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " 
                         << "StackID: " << stackID << RESETTEXT << std::endl; 
 #endif
+                    Json::Value json(Json::objectValue);
+                    json["account"] = account;
+                    json["transaction_hash"] = transactionHash;
+                    json["stack_id"] = stackID; // StackID is meaningless outside the context
+                    unhandledExceptionJSON << json << std::endl;
                 }
                 return true; 
             } else {
@@ -436,6 +442,7 @@ void EVMAnalyser::cleanExecutionTrace() {
 
     reentrancyJSON.close();
     lockedEtherJSON.close();
+    unhandledExceptionJSON.close();
 
     executionTraceCount = 1;
     latestID = 0;
