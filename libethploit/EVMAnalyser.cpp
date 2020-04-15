@@ -45,10 +45,6 @@ void EVMAnalyser::initialiseJSON() {
     logJSON.open("log.json", std::ofstream::app);
 }
 
-void EVMAnalyser::setTransactionHash(std::string _transactionHash) {
-    transactionHash = _transactionHash;
-}
-
 void EVMAnalyser::setAccount(std::string _account) {
     account = _account;
 }
