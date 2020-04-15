@@ -9,6 +9,9 @@
 #include <vector>
 
 class EVMAnalyser {
+    static bool ethploitMode;
+    static int transactionCount;
+
     int executionTraceCount;
     dev::u256 initialSenderBalance = 0;
     dev::u256 initialTotalBalance = 0;
@@ -77,7 +80,10 @@ class EVMAnalyser {
     static EVMAnalyser* getInstance(std::string _account = "UNDEFINED", 
         std::string _transactionHash = "UNDEFINED", dev::u256 senderBalance = -1, dev::u256 receiverBalance = -1);
 
-    static int transactionCount;
+
+    static void setEthploitMode();
+    
+    static bool isEthploitModeEnabled();
 
     bool populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace);
 

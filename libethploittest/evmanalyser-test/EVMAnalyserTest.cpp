@@ -157,6 +157,13 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
     BOOST_AUTO_TEST_CASE(get_the_sigleton_of_libevmanalyser) {
         BOOST_TEST(analyser != nullptr);
     }
+    BOOST_AUTO_TEST_CASE(initial_ethploit_mode_is_off) {
+        BOOST_TEST(!EVMAnalyserTest::isEthploitModeEnabled());
+    } 
+    BOOST_AUTO_TEST_CASE(set_ethploit_mode_on) {
+        EVMAnalyserTest::setEthploitMode();
+        BOOST_TEST(EVMAnalyserTest::isEthploitModeEnabled());
+    }
 
     BOOST_AUTO_TEST_CASE(the_libevmanalyser_has_no_execution_trace_just_after_being_constructed) {
         BOOST_TEST(analyser->getRelationSize("reentrancy") == 0);
