@@ -24,24 +24,24 @@ BOOST_AUTO_TEST_SUITE(ExecutionTraceTestSuite)
     BOOST_TEST(execTrace.valueTransfer == valueTransfer);
   }
 
-  BOOST_AUTO_TEST_CASE(unknown_instruction_gives_error_message)
-  {
-    ExecutionTrace execTrace (instruction, sender, receiver, valueTransfer);
+  // BOOST_AUTO_TEST_CASE(unknown_instruction_gives_error_message)
+  // {
+  //   ExecutionTrace execTrace (instruction, sender, receiver, valueTransfer);
 
-    ostringstream buffer;
+  //   ostringstream buffer;
 
-    // Save cout's buffer here
-    auto cout_buff = cout.rdbuf();
+  //   // Save cout's buffer here
+  //   auto cout_buff = cout.rdbuf();
 
-    // Redirect cout to buffer
-    cout.rdbuf(buffer.rdbuf());
+  //   // Redirect cout to buffer
+  //   cout.rdbuf(buffer.rdbuf());
     
-    execTrace.print();
+  //   execTrace.print();
     
-    // When done redirect cout to its old self
-    cout.rdbuf(cout_buff);
+  //   // When done redirect cout to its old self
+  //   cout.rdbuf(cout_buff);
 
-    BOOST_TEST(string("CALL\n") == buffer.str(), boost::test_tools::per_element());
-  }
+  //   BOOST_TEST(string("CALL\n") == buffer.str(), boost::test_tools::per_element());
+  // }
 
 BOOST_AUTO_TEST_SUITE_END()
