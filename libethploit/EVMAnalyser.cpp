@@ -41,6 +41,7 @@ void EVMAnalyser::initialiseJSON() {
     // New JSON tuples default to be appended to the current files.
     reentrancyJSON.open("reentrancy.json", std::ofstream::app);
     lockedEtherJSON.open("locked_ether.json", std::ofstream::app);
+    unhandledExceptionJSON.open("unhandled_exception.json", std::ofstream::app);
     logJSON.open("log.json", std::ofstream::app);
 }
 
@@ -76,7 +77,8 @@ void EVMAnalyser::setupTransaction(std::string _transactionHash, dev::u256 sende
 }
 
 bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace) {
-    if (executionTrace->instruction == "CALL" || 
+    if (executionTrace->instruction == "CALL" ||
+        executionTrace->instruction == "DELEGATECALL" ||
         executionTrace->instruction == "STATICCALL") { // Treating three types of call as the same for now 
         souffle::tuple newTuple(relDirectCall); // create tuple for the relation
 #ifdef EVMANALYSER_DEBUG
@@ -87,17 +89,6 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
                 << executionTrace->receiveAddress
                 << (int) executionTrace->valueTransfer;
         relDirectCall->insert(newTuple);
-        executionTraceCount++;
-    } else if (executionTrace->instruction == "DELEGATECALL") {
-        souffle::tuple newTupleCall(relDirectCall);
-#ifdef EVMANALYSER_DEBUG
-        OUTPUT << "The populated instruction has ID number " << executionTraceCount << std::endl; 
-#endif
-        newTupleCall << executionTraceCount
-                << executionTrace->senderAddress
-                << executionTrace->receiveAddress
-                << (int) executionTrace->valueTransfer; // valueTransfer, receiveAddress not needed here
-        relDirectCall->insert(newTupleCall);
         executionTraceCount++;
     } else {
 #ifdef EVMANALYSER_DEBUG
@@ -471,6 +462,11 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                     OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " 
                         << "StackID: " << stackID << RESETTEXT << std::endl; 
 #endif
+                    Json::Value json(Json::objectValue);
+                    json["account"] = account;
+                    json["transaction_hash"] = transactionHash;
+                    json["stack_id"] = stackID; // StackID is meaningless outside the context
+                    unhandledExceptionJSON << json << std::endl;
                 }
                 return true; 
             } else {
@@ -495,6 +491,7 @@ void EVMAnalyser::cleanExecutionTrace() {
 
     reentrancyJSON.close();
     lockedEtherJSON.close();
+    unhandledExceptionJSON.close();
 
     Json::Value json(Json::objectValue);
     json["account"] = account;

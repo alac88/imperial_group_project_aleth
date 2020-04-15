@@ -14,10 +14,27 @@ class EVMAnalyser {
     dev::u256 initialTotalBalance = 0;
     dev::u256 totalTransfer = 0;
     /**
-     * Example JSON for re-entrancy
+     * Example JSON for re-entrancy:
+     * 
+     *  {
+     *    "account" : "1458777923",
+     *    "reentrancy_chain" : "0x60 => 0x70 => 0x60",
+     *    "total_ether" : 10,
+     *    "transaction_hash" : "2007237709"
+     *  }
      */ 
     std::ofstream reentrancyJSON;
+    /**
+     * Example JSON for locked ether:
+     * 
+     *   {
+     *     "account" : "1784484492",
+     *     "contract_address" : "0x60",
+     *     "transaction_hash" : "74243042"
+     *    }
+     */ 
     std::ofstream lockedEtherJSON;
+    std::ofstream unhandledExceptionJSON;
     std::ofstream logJSON;
     
     int latestID = 0;
