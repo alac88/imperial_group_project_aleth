@@ -16,12 +16,5 @@ namespace dev
             valueTransfer = _valueTransfer;
         }
 
-        void ExecutionTrace::print() {
-            std::cout << instruction << " ";
-            std::cout << "Sender: " << senderAddress << " ";
-            std::cout << "Receiver: " << receiveAddress << " ";
-            std::cout << "valueTransfer: " << valueTransfer << " ";
-        }
-
     }
 }// LCOV_EXCL_LINE

@@ -203,13 +203,13 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
 }
 
 void EVMAnalyser::callResult(int result) {
-    // create new ID when call result is received
-    latestID++;
-
     if (callStack.size() < 1) {
         std::cout << "Error: there is no pending call arguments on the call stack!\n";
         return;
     }
+    // create new ID when call result is received
+    latestID++;
+
     // take first callArgs in callStack
     auto callArgs = callStack[0];
     for (auto &arg : callArgs) {
@@ -238,17 +238,13 @@ void EVMAnalyser::callResult(int result) {
 };
 
 void EVMAnalyser::swap(int pos) {
-    if (stackIDs.size() < 2) {
+    if (stackIDs.size() < (unsigned)(pos + 1)) {
         std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
         return;
     }
     // no tuple insertion
     // swap IDs on stack
     std::swap(stackIDs[0], stackIDs[pos]);
-    // std::cout << "New state: ";
-    // for (auto &i : stackIDs) 
-    //     std::cout << i << ", ";
-    // std::cout << std::endl;
 
 }; // SWAP2 = swap first(0) and third(2) element
 
@@ -514,4 +510,4 @@ EVMAnalyserTest* EVMAnalyserTest::getInstance(std::string _account, std::string 
 
 int EVMAnalyserTest::getRelationSize(std::string relationName) {
     return prog->getRelationSize(relationName);
-}
+} // LCOV_EXCL_LINE

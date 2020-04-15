@@ -89,8 +89,16 @@ struct F {
         analyser->instruction("SWAP1", 2, 2);
     }
 
+    void addSwap5Instr() {
+        analyser->instruction("SWAP5", 6, 6);
+    }
+
     void addDup1Instr() {
         analyser->instruction("DUP1", 1, 2);
+    }
+
+    void addDup3Instr() {
+        analyser->instruction("DUP3", 3, 4);
     }
 
     void addJumpIInstr() {
@@ -288,13 +296,17 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         BOOST_TEST(getStackIDSize() == 0);
     }
 
-    BOOST_AUTO_TEST_CASE(do_nothing_if_no_of_args_more_than_available) {
+    BOOST_AUTO_TEST_CASE(do_nothing_if_nArgs_needed_is_more_than_available) {
         addInstruction(0, 1);
         int initialStackSize = getStackIDSize();
         BOOST_TEST(initialStackSize == 1);
         
         int nArgs = 2;
         addInstruction(nArgs, 0);
+        BOOST_TEST(getStackIDSize() == initialStackSize);
+        
+        nArgs = 3;
+        addInstruction(nArgs, 1);
         BOOST_TEST(getStackIDSize() == initialStackSize);
     }
 
@@ -373,6 +385,7 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         addCallCodeInstr();
 
         BOOST_TEST(getCallStackSize() == 3);        
+        BOOST_TEST(analyser->getRelationSize("is_output") == 0);        
     }
 
     BOOST_AUTO_TEST_CASE(call_instr_with_call_result_consumes_one_item_from_callStack) {
@@ -389,7 +402,9 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
 
         addCallResult(1);    
 
-        BOOST_TEST(getCallStackSize() == 0);        
+        BOOST_TEST(getCallStackSize() == 0);   
+        BOOST_TEST(analyser->getRelationSize("is_output") == 7);        
+        BOOST_TEST(analyser->getRelationSize("call_result") == 1);             
     }
 
     BOOST_AUTO_TEST_CASE(call_result_adds_one_item_to_stackID) {
@@ -406,7 +421,8 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
 
         addCallResult(1);    
 
-        BOOST_TEST(getStackIDSize() == 1);        
+        BOOST_TEST(getStackIDSize() == 1);       
+        BOOST_TEST(analyser->getRelationSize("call_result") == 1);         
     }
 
     BOOST_AUTO_TEST_CASE(call_result_takes_latest_callArgs_in_callStack) {
@@ -435,6 +451,16 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         BOOST_TEST(getCallArgID(0, 0) == firstCallID);        
     }
 
+    BOOST_AUTO_TEST_CASE(do_nothing_upon_call_result_if_no_item_in_callStack) {
+        
+        BOOST_TEST(getCallStackSize() == 0);        
+
+        addCallResult(1);
+
+        BOOST_TEST(getStackIDSize() == 0);        
+        BOOST_TEST(analyser->getRelationSize("call_result") == 0);        
+    }
+
     BOOST_AUTO_TEST_CASE(swap_exchanges_stackIDs_positions) {
         addInstruction(0, 1);
         addInstruction(0, 1);
@@ -445,6 +471,19 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
 
         BOOST_TEST(getStackID(0) == 1);
         BOOST_TEST(getStackID(1) == 2);
+        BOOST_TEST(analyser->getRelationSize("is_output") == 0);
+    }
+
+    BOOST_AUTO_TEST_CASE(swap_does_nothing_if_no_stackID_at_required_position) {
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        BOOST_TEST(getStackID(0) == 2);
+        BOOST_TEST(getStackID(1) == 1);
+
+        addSwap5Instr();
+
+        BOOST_TEST(getStackID(0) == 2);
+        BOOST_TEST(getStackID(1) == 1);
     }
 
     BOOST_AUTO_TEST_CASE(dup_adds_a_new_stackID) {
@@ -455,6 +494,18 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         addDup1Instr();
 
         BOOST_TEST(getStackIDSize() == 2);
+        BOOST_TEST(analyser->getRelationSize("is_output") == 1);
+    }
+
+    BOOST_AUTO_TEST_CASE(dup_does_nothing_if_no_stackID_at_required_position) {
+        addInstruction(0, 1);
+
+        BOOST_TEST(getStackIDSize() == 1);
+
+        addDup3Instr();
+
+        BOOST_TEST(getStackIDSize() == 1);
+        BOOST_TEST(analyser->getRelationSize("is_output") == 0);
     }
 
     BOOST_AUTO_TEST_CASE(jumpi_consumes_two_stackIDs) {
@@ -466,6 +517,8 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         addJumpIInstr();
 
         BOOST_TEST(getStackIDSize() == 0);
+        BOOST_TEST(analyser->getRelationSize("in_condition") == 1);
+
     }
 
     BOOST_AUTO_TEST_CASE(jumpif_consumes_two_stackIDs) {
@@ -477,6 +530,7 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         addJumpIFInstr();
 
         BOOST_TEST(getStackIDSize() == 0);
+        BOOST_TEST(analyser->getRelationSize("in_condition") == 1);
     }   
     
     BOOST_AUTO_TEST_CASE(jumpci_consumes_two_stackIDs) {
@@ -488,6 +542,18 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         addJumpCIInstr();
 
         BOOST_TEST(getStackIDSize() == 0);
+        BOOST_TEST(analyser->getRelationSize("in_condition") == 1);
+    }
+
+    BOOST_AUTO_TEST_CASE(jumpi_does_nothing_if_less_than_two_stackIDs) {
+        addInstruction(0, 1);
+
+        BOOST_TEST(getStackIDSize() == 1);
+
+        addJumpIInstr();
+
+        BOOST_TEST(getStackIDSize() == 1);
+        BOOST_TEST(analyser->getRelationSize("in_condition") == 0);
     }
 
     BOOST_AUTO_TEST_CASE(query_unhandled_exception) {
@@ -535,11 +601,55 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         BOOST_TEST(analyser->queryExploit("reentrancy") == false);        
     }
 
-    // BOOST_AUTO_TEST_CASE(clean_all_execution_trace) {
-    //     addCall1();
+    BOOST_AUTO_TEST_CASE(clean_execution_trace_resets_state) {
+        addCall1();
+        BOOST_TEST(analyser->getRelationSize("direct_call") == 1);
+        
+        addCallEntry();
+        BOOST_TEST(analyser->getRelationSize("call_entry") == 1);
+        addCallExit();
+        BOOST_TEST(analyser->getRelationSize("call_exit") == 1);
 
-    //     analyser->cleanExecutionTrace(); 
 
-    //     BOOST_TEST(analyser->getRelationSize("direct_call") == 0);
-    // }
+        addInstruction(0, 1);
+        addInstruction(1, 1);
+
+        BOOST_TEST(getStackIDSize() > 0);
+        BOOST_TEST(analyser->getRelationSize("is_output") > 0);
+        
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addCallInstr();
+
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addInstruction(0, 1);
+        addCallInstr();
+        addCallResult(1);
+        addJumpIInstr();
+        BOOST_TEST(getCallStackSize() > 0);
+        BOOST_TEST(analyser->getRelationSize("call_result") > 0);
+        BOOST_TEST(analyser->getRelationSize("in_condition") > 0);
+        
+        analyser->cleanExecutionTrace(); 
+
+        BOOST_TEST(getStackIDSize() == 0);
+        BOOST_TEST(getCallStackSize() == 0);
+
+        BOOST_TEST(analyser->getRelationSize("direct_call") == 0);
+        BOOST_TEST(analyser->getRelationSize("call_result") == 0);
+        BOOST_TEST(analyser->getRelationSize("in_condition") == 0);
+        BOOST_TEST(analyser->getRelationSize("call_entry") == 0);
+        BOOST_TEST(analyser->getRelationSize("call_exit") == 0);
+
+    }
 BOOST_AUTO_TEST_SUITE_END()

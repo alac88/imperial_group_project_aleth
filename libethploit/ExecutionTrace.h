@@ -57,8 +57,6 @@ struct ExecutionTrace
                     Address _receiveAddres,
                     u256 _valueTransfer);
 
-    void print();
-
 };
 
 

@@ -64,9 +64,9 @@ add_custom_target(evmanalyser_gcov
 )
 add_custom_command(TARGET evmanalyser_gcov
     COMMAND echo "=================== GCOV ===================="
-    COMMAND gcov -abcfu ${CMAKE_SOURCE_DIR}/EVMAnalyser.cpp -o ${OBJECT_DIR}
-    | grep -A 5 "EVMAnalyser.cpp" > CoverageSummary.tmp
-    COMMAND cat CoverageSummary.tmp
+    COMMAND gcov -abcfu ${CMAKE_SOURCE_DIR}/libethploit/EVMAnalyser.cpp -o ${OBJECT_DIR}
+    | grep -A 5 "EVMAnalyser.cpp" > EVMAnalyserCoverageSummary.tmp
+    COMMAND cat EVMAnalyserCoverageSummary.tmp
     COMMAND echo "-- Coverage files have been output to ${CMAKE_CURRENT_BINARY_DIR}/coverage"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/coverage
 )
@@ -78,9 +78,8 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES coverage)
 ## Create the lcov target. Create html coverage report with 'make lcov'
 ###############################################################################
 add_custom_target(evmanalyser_lcov
-    COMMAND lcov -c -d --rc lcov_branch_coverage=1 . -o coverage.info 
-    COMMAND lcov -e coverage.info ${CMAKE_SOURCE_DIR}'/EVMAnalyser.cpp' --rc lcov_branch_coverage=1 -o coverage_filtered.info
-    COMMAND genhtml --rc genhtml_branch_coverage=1 coverage_filtered.info --output-directory out
+    COMMAND lcov -c -d --rc lcov_branch_coverage=1 . -o evmanalyser_coverage.info 
+    COMMAND genhtml --rc genhtml_branch_coverage=1 evmanalyser_coverage.info --output-directory out
     WORKING_DIRECTORY ${OBJECT_DIR}
 )
 
