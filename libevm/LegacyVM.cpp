@@ -67,8 +67,7 @@ void LegacyVM::onOperation(Instruction _instr)
             m_runGas, m_io_gas, this, m_ext);
 
     InstructionInfo iInfo = instructionInfo(_instr);
-    // @middleware: to be passed
-    std::cout << "OP " << iInfo.name << " Args " << iInfo.args << " Ret " << iInfo.ret << std::endl; 
+    // std::cout << "OP " << iInfo.name << " Args " << iInfo.args << " Ret " << iInfo.ret << std::endl; 
     EVMAnalyser* analyser = EVMAnalyser::getInstance();
     analyser->instruction(iInfo.name, iInfo.args, iInfo.ret);
 }
@@ -671,8 +670,11 @@ void LegacyVM::interpretCases()
         CASE(SHR)
         {
             // Pre-constantinople
-            if (!m_schedule->haveBitwiseShifting)
+            std::cout << "Case SHR\n";
+            if (!m_schedule->haveBitwiseShifting) {
+                std::cout << "not haveBitwiseShifting\n";
                 throwBadInstruction();
+            }
 
             ON_OP();
             updateIOGas();

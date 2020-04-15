@@ -61,7 +61,6 @@ reentrancy(C2, A1, A2, P, P2) :- call(C2, A1, A2, P), call(C1, A2, A1, P2), A1 !
 
 locked_ether(ID, G1, A) :- call_entry(ID, G1, A), call_exit(ID, G2), G1=G2.
 
-
 /**************************************************************************************************/
 
 /* Facts - Unhandled Exceptions

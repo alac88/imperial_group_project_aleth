@@ -10,6 +10,7 @@
 #include "StandardTrace.h"
 #include "State.h"
 #include <libdevcore/CommonIO.h>
+#include <libdevcore/FixedHash.h>
 #include <libethcore/CommonJS.h>
 #include <libevm/LegacyVM.h>
 #include <libevm/VMFactory.h>
@@ -136,10 +137,14 @@ void Executive::initialize(Transaction const& _transaction)
     }
 
     // signal init
-    std::cout << "t-hash " << m_t.sha3() << " ";
-    std::cout << "starting @ " << m_t.from().hex() << " ";
-    std::cout << "sending to " << m_t.to().hex() << std::endl;
-    std::cout << m_t.gas() << std::endl;
+    // std::cout << "===================" << std::endl;
+    // std::cout << "starting @ " << m_t.from().hex() << " ";
+    // std::cout << "sending to " << m_t.to().hex() << std::endl;
+    // std::cout << m_t.gas() << std::endl;
+    // std::cout << "From's balance: " << m_s.balance(m_t.from()) << std::endl;
+    // std::cout << "To's balance: " << m_s.balance(m_t.to()) << std::endl;
+
+    EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()));
 
 }
 
@@ -168,6 +173,12 @@ bool Executive::call(Address const& _receiveAddress, Address const& _senderAddre
 bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address const& _origin)
 {
 
+    // DELETE   
+    // std::cout << "Executive::call()" << " ";
+    // std::cout << "Sender " << _p.senderAddress << " ";
+    // std::cout << "Receive Address" << _p.receiveAddress << " "; 
+    // std::cout << "Code Address " << _p.codeAddress << std::endl;
+
     // If external transaction.
     if (m_t)
     {
@@ -183,6 +194,9 @@ bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address co
 
     if (m_sealEngine.isPrecompiled(_p.codeAddress, m_envInfo.number()))
     {
+        // DELETE?   
+        // std::cout << "if(m_sealEngine.isPrecompiled)\n";
+        
         // Empty RIPEMD contract needs to be deleted even in case of OOG
         // because of the anomaly on the main net caused by buggy behavior by both Geth and Parity
         // https://github.com/ethereum/go-ethereum/pull/3341/files#diff-2433aa143ee4772026454b8abd76b9dd
@@ -190,8 +204,9 @@ bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address co
         // https://github.com/ethereum/aleth/pull/5664
         // We mark the account as touched here, so that is can be removed among other touched empty
         // accounts (after tx finalization)
-        if (_p.receiveAddress == c_RipemdPrecompiledAddress)
+        if (_p.receiveAddress == c_RipemdPrecompiledAddress) {
             m_s.unrevertableTouch(_p.codeAddress);
+        }
 
         bigint g = m_sealEngine.costOfPrecompiled(_p.codeAddress, _p.data, m_envInfo.number());
         if (_p.gas < g)
@@ -455,13 +470,19 @@ bool Executive::finalize()
         m_s.addBalance(m_envInfo.author(), feesEarned);
 
         // signal finalisation
-        std::cout << "finishing @" << m_t.from().hex() << std::endl;
-        std::cout << "gas now " << m_gas << " hence used " << gasUsed() << std::endl;
-        EVMAnalyser* analyser = EVMAnalyser::getInstance();
+        // std::cout << "finishing @" << m_t.from().hex() << std::endl;
+        // std::cout << "gas now " << m_gas << " hence used " << gasUsed() << std::endl;
+        // std::cout << "From's balance: " << m_s.balance(m_t.from()) << std::endl;
+        // std::cout << "To's balance: " << m_s.balance(m_t.to()) << std::endl;
+
+
+        EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()));
+
         analyser->queryExploit("reentrancy");
         analyser->queryExploit("locked_ether");
         analyser->queryExploit("unhandled_exception");
         analyser->cleanExecutionTrace();
+        std::cout << "===================" << std::endl;
     }
 
     // Selfdestructs...

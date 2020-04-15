@@ -2,6 +2,7 @@
 #include <queue>
 #include <fstream>
 #include <json/json.h>
+#include <boost/algorithm/string.hpp>
 
 #include "EVMAnalyser.h"
 #include "souffle/SouffleInterface.h"
@@ -9,11 +10,15 @@
     #include "DetectionLogic.cpp"
 #endif
 #include <iostream>
+// #define EVMANALYSER_DEBUG
+// #define EVMANALYSER_RESULT
 
 // Output related marcros
 #define FORERED "\x1B[31m"
 #define RESETTEXT "\x1B[0m"
 #define OUTPUT std::cout << "[Middleware]: " 
+
+int EVMAnalyser::transactionCount = 0;
 
 EVMAnalyser::EVMAnalyser() {
     executionTraceCount = 1;
@@ -34,9 +39,10 @@ EVMAnalyser::~EVMAnalyser() {
 
 void EVMAnalyser::initialiseJSON() {
     // New JSON tuples default to be appended to the current files.
-    reentrancyJSON.open("reentrancy.json", std::ios::app);
-    lockedEtherJSON.open("locked_ether.json", std::ios::app);
-    unhandledExceptionJSON.open("unhandled_exception.json", std::ios::app);
+    reentrancyJSON.open("reentrancy.json", std::ofstream::app);
+    lockedEtherJSON.open("locked_ether.json", std::ofstream::app);
+    unhandledExceptionJSON.open("unhandled_exception.json", std::ofstream::app);
+    logJSON.open("log.json", std::ofstream::app);
 }
 
 void EVMAnalyser::setTransactionHash(std::string _transactionHash) {
@@ -47,16 +53,31 @@ void EVMAnalyser::setAccount(std::string _account) {
     account = _account;
 }
 
-EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transactionHash) {
+EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance) {
     static EVMAnalyser instance;
     if (_transactionHash != "UNDEFINED") {
-        instance.setTransactionHash(_transactionHash);
+        instance.setupTransaction(_transactionHash, senderBalance, receiverBalance);
     }
     if (_account != "UNDEFINED") {
         instance.setAccount(_account);
     }
-    instance.initialiseJSON();
     return &instance; 
+}
+
+void EVMAnalyser::setupTransaction(std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance) {
+    if (senderBalance != -1 && receiverBalance != -1) {
+        if (transactionHash != _transactionHash) {
+            initialiseJSON();
+            transactionHash = _transactionHash;
+            transactionCount++;
+            initialSenderBalance = senderBalance;
+            initialTotalBalance = senderBalance + receiverBalance;
+        } else {
+            dev::u256 totalDifference = initialTotalBalance - (senderBalance + receiverBalance);
+            totalTransfer += initialSenderBalance - senderBalance + totalDifference;
+        }
+
+    }
 }
 
 bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace) {
@@ -143,22 +164,24 @@ void EVMAnalyser::storeCallArgs(int nArgs) {
     
     callStack.insert(callStack.begin(), callArgs);
     // remove args used
-    stackIDs.erase(stackIDs.begin(), stackIDs.begin() + nArgs);
-
-    // std::cout << "New state: ";
-    // for (auto &i : stackIDs) 
-    //     std::cout << i << ", ";
-    // std::cout << std::endl;
+    if (stackIDs.size() >= (unsigned) nArgs)
+        stackIDs.erase(stackIDs.begin(), stackIDs.begin() + nArgs);
 };
 
 void EVMAnalyser::argsRet(int nArgs, int nRet) {
     if (nArgs > 0 && nRet == 1) {
+        if (stackIDs.size() < (unsigned) nArgs) {
+            std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
+            return;
+        }
         // create new ID
         latestID++;
 
         // for each arg
         for (int i = 0; i < nArgs; i++) {
+#ifdef EVMANALYSER_DEBUG
             OUTPUT << "insert to is_output: " << latestID << " " << stackIDs[i] << std::endl;
+#endif
             // insert tuple to is_output
             souffle::tuple newTuple(relIsOutput);
             newTuple << latestID << stackIDs[i];
@@ -170,26 +193,33 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
         // push new ID
         stackIDs.insert(stackIDs.begin(), latestID);
     } else if (nArgs > 0) {
+        if (stackIDs.size() < (unsigned) nArgs) {
+            std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
+            return;
+        }
+
         // remove args used
         stackIDs.erase(stackIDs.begin(), stackIDs.begin() + nArgs);
     } else if (nRet == 1) {
         // push new ID
         stackIDs.insert(stackIDs.begin(), ++latestID);
     }
-    // std::cout << "New state: ";
-    // for (auto &i : stackIDs) 
-    //     std::cout << i << ", ";
-    // std::cout << std::endl;
 }
 
 void EVMAnalyser::callResult(int result) {
     // create new ID when call result is received
     latestID++;
 
+    if (callStack.size() < 1) {
+        std::cout << "Error: there is no pending call arguments on the call stack!\n";
+        return;
+    }
     // take first callArgs in callStack
     auto callArgs = callStack[0];
     for (auto &arg : callArgs) {
+#ifdef EVMANALYSER_DEBUG
         OUTPUT << "insert to is_output: " << latestID << " " << arg << std::endl;
+#endif
         // insert tuple to is_output
         souffle::tuple newTuple(relIsOutput);
         newTuple << latestID << arg;
@@ -200,22 +230,22 @@ void EVMAnalyser::callResult(int result) {
     callStack.erase(callStack.begin());
     
     // insert tuple to call_result
+#ifdef EVMANALYSER_DEBUG
     OUTPUT << "insert to call_result: " << latestID << " " << result << std::endl;
+#endif
     souffle::tuple newTuple(relCallResult);
     newTuple << latestID << result;
     relCallResult->insert(newTuple); 
 
     // push new ID
     stackIDs.insert(stackIDs.begin(), latestID);
-
-    // std::cout << "New state: ";
-    // for (auto &i : stackIDs) 
-    //     std::cout << i << ", ";
-    // std::cout << std::endl;
-
 };
 
 void EVMAnalyser::swap(int pos) {
+    if (stackIDs.size() < 2) {
+        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
+        return;
+    }
     // no tuple insertion
     // swap IDs on stack
     std::swap(stackIDs[0], stackIDs[pos]);
@@ -227,49 +257,64 @@ void EVMAnalyser::swap(int pos) {
 }; // SWAP2 = swap first(0) and third(2) element
 
 void EVMAnalyser::dup(int pos) {
+    if (stackIDs.size() < (unsigned) pos) {
+        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
+        return;
+    }
     // create newID
     latestID++;
 
     // take ID of the original position
     // insert tuple to is_output
+#ifdef EVMANALYSER_DEBUG
     OUTPUT << "insert to is_output: " << latestID << " " << stackIDs[pos - 1] << std::endl;
+#endif
     souffle::tuple newTuple(relIsOutput);
     newTuple << latestID << stackIDs[pos - 1];
     relIsOutput->insert(newTuple); 
 
     // push newID to stack
     stackIDs.insert(stackIDs.begin(), latestID);
-    // std::cout << "New state: ";
-    // for (auto &i : stackIDs) 
-    //     std::cout << i << ", ";
-    // std::cout << std::endl;
-
 }; // DUP2 = dup second(1) element on the stack
 
 void EVMAnalyser::jumpi() {
+    if (stackIDs.size() < 2) {
+        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
+        return;
+    }
     // take second element on stack as condition 
     // insert tuple to in_condition
+#ifdef EVMANALYSER_DEBUG
     OUTPUT << "insert to in_condition: " << stackIDs[1] << std::endl;
+#endif
     souffle::tuple newTuple(relInCondition);
     newTuple << stackIDs[1];
     relInCondition->insert(newTuple); 
 
     // remove first two elements on stack
     stackIDs.erase(stackIDs.begin(), stackIDs.begin() + 2);
-    // std::cout << "New state: ";
-    // for (auto &i : stackIDs) 
-    //     std::cout << i << ", ";
-    // std::cout << std::endl;
+};
 
+int EVMAnalyser::getStackID(int index) {
+    if (stackIDs.size() >= (unsigned) index)
+        return stackIDs[index];
+    return -1;
+};
+
+int EVMAnalyser::getStackIDSize() {
+    return stackIDs.size();
+};
+
+int EVMAnalyser::getCallStackSize() {
+    return callStack.size();
+};
+
+int EVMAnalyser::getCallArgID(int callStackIndex, int argIndex) {
+    return callStack[callStackIndex][argIndex];
 };
 
 void EVMAnalyser::extractReentrancyAddresses() {
     souffle::Relation *rel = prog->getRelation("reentrancy");
-    Json::Value json(Json::objectValue);
-
-    // Standard json fields
-    json["account"] = account;
-    json["transaction_hash"] = transactionHash;
 
     std::set<int> idSet;
     int count = 0;
@@ -300,30 +345,36 @@ void EVMAnalyser::extractReentrancyAddresses() {
             totalEther += etherOriginal;
 
             if ((senderAddrOriginal != receiverAddrPre && receiverAddrPre != "Null") || i == idSet.size()) {
+                Json::Value json(Json::objectValue);
+
+                // Standard json fields
+                json["account"] = account;
+                json["transaction_hash"] = transactionHash;
+
                 // Output the address chain
                 if (senderAddrOriginal != receiverAddrPre) {
                     chain.pop();
                     totalEther -= etherOriginal;
                 }
 
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                 OUTPUT << FORERED <<"Query Result: " << " Re-entrancy: ";
 #endif
 
                 std::string reentrancyChain = chain.front();
                 std::string addrStart = chain.front();
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                 std::cout << addrStart;
 #endif                
                 chain.pop();
                 while (!chain.empty()) {
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                     std::cout << " => " << chain.front();
 #endif              
                     reentrancyChain += " => " + chain.front();
                     chain.pop();
                 }
-#ifdef EVMANALYSER_DEBUG        
+#ifdef EVMANALYSER_RESULT        
                 std::cout << " => " << addrStart << " has been detected with " << totalEther 
                     << " value transferred in total." << RESETTEXT
                     << std::endl;
@@ -339,14 +390,15 @@ void EVMAnalyser::extractReentrancyAddresses() {
                 } else {
                     totalEther = 0;
                 }
+
+                // Save the new json tuple
+                reentrancyJSON << json << std::endl;
             }
         }
 
         receiverAddrPre = receiverAddrOriginal;
     }
 
-    // Save the new json tuple
-    reentrancyJSON << json << std::endl;
 }
 
 bool EVMAnalyser::queryExploit(std::string exploitName) {
@@ -359,7 +411,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                 extractReentrancyAddresses();
                 return true;
             } else {
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                 OUTPUT << "No re-entrancy has been detected." << std::endl;
 #endif
                 return false;
@@ -378,7 +430,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
 
                     count++;
                     output >> id >> gas >> contractAddress;
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                     OUTPUT << FORERED << "Query Result: " << count << " Contract in address: " 
                         << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
 #endif
@@ -390,7 +442,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                 }
                 return true; 
             } else {
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                 OUTPUT << "No locked ether has been detected." << std::endl;
 #endif
                 return false; 
@@ -410,7 +462,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
 
                     count++;
                     output >> stackID;
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                     OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " 
                         << "StackID: " << stackID << RESETTEXT << std::endl; 
 #endif
@@ -422,14 +474,15 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                 }
                 return true; 
             } else {
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
                 OUTPUT << "No unhandled exception has been detected." << std::endl;
 #endif
+                return false;
             }
         }
     }
 
-#ifdef EVMANALYSER_DEBUG
+#ifdef EVMANALYSER_RESULT
     OUTPUT << "Wrong exploit name!" << std::endl;
 #endif
     return false;
@@ -444,14 +497,23 @@ void EVMAnalyser::cleanExecutionTrace() {
     lockedEtherJSON.close();
     unhandledExceptionJSON.close();
 
+    Json::Value json(Json::objectValue);
+    json["account"] = account;
+    json["transaction_hash"] = transactionHash;
+    json["transaction_count"] = transactionCount;
+    json["ether_checked"] = dev::toString(totalTransfer);
+    logJSON << json << std::endl;
+    logJSON.close();
+
     executionTraceCount = 1;
     latestID = 0;
     stackIDs.clear();
     callStack.clear();
 }
 
-EVMAnalyserTest* EVMAnalyserTest::getInstance(std::string _account, std::string _transactionHash) {
-    return (EVMAnalyserTest *) EVMAnalyser::getInstance(_account, _transactionHash); 
+EVMAnalyserTest* EVMAnalyserTest::getInstance(std::string _account, std::string _transactionHash,
+    dev::u256 _senderBalance, dev::u256 _receiverBalance) {
+    return (EVMAnalyserTest *) EVMAnalyser::getInstance(_account, _transactionHash, _senderBalance, _receiverBalance); 
 }
 
 int EVMAnalyserTest::getRelationSize(std::string relationName) {

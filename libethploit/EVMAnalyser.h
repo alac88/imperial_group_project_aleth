@@ -3,11 +3,16 @@
 #include "souffle/SouffleInterface.h"
 #include "libethploit/ExecutionTrace.h"
 
+#include "libdevcore/Common.h"
+
 #include <string>
 #include <vector>
 
 class EVMAnalyser {
     int executionTraceCount;
+    dev::u256 initialSenderBalance = 0;
+    dev::u256 initialTotalBalance = 0;
+    dev::u256 totalTransfer = 0;
     /**
      * Example JSON for re-entrancy:
      * 
@@ -30,6 +35,7 @@ class EVMAnalyser {
      */ 
     std::ofstream lockedEtherJSON;
     std::ofstream unhandledExceptionJSON;
+    std::ofstream logJSON;
     
     int latestID = 0;
     std::vector<int> stackIDs;
@@ -40,8 +46,8 @@ class EVMAnalyser {
     
     void initialiseJSON(); 
     void extractReentrancyAddresses();
-    void setTransactionHash(std::string _transactionHash);
     void setAccount(std::string _account);
+    void setupTransaction(std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance);
 
     void swap(int pos); 
 
@@ -69,7 +75,9 @@ class EVMAnalyser {
 
   public:
     static EVMAnalyser* getInstance(std::string _account = "UNDEFINED", 
-        std::string _transactionHash = "UNDEFINED");
+        std::string _transactionHash = "UNDEFINED", dev::u256 senderBalance = -1, dev::u256 receiverBalance = -1);
+
+    static int transactionCount;
 
     bool populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace);
 
@@ -84,6 +92,15 @@ class EVMAnalyser {
     void instruction(std::string const& opcode, int nArgs, int nRet);
 
     void callResult(int result);
+
+    int getStackID(int index);
+
+    int getStackIDSize();
+
+    int getCallStackSize();
+
+    int getCallArgID(int callStackIndex, int argIndex);
+
 };
 
 /**
@@ -94,7 +111,9 @@ class EVMAnalyserTest : public EVMAnalyser {
     EVMAnalyserTest();
 
     static EVMAnalyserTest* getInstance(std::string _account = "UNDEFINED", 
-        std::string _transactionHash = "UNDEFINED");
+        std::string _transactionHash = "UNDEFINED", 
+        dev::u256 senderBalance = -1, 
+        dev::u256 receiverBalance = -1);
     
     int getRelationSize(std::string relationName);
 };
