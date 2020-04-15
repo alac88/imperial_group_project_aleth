@@ -482,7 +482,6 @@ bool Executive::finalize()
         analyser->queryExploit("locked_ether");
         analyser->queryExploit("unhandled_exception");
         analyser->cleanExecutionTrace();
-        std::cout << "===================" << std::endl;
     }
 
     // Selfdestructs...
