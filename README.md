@@ -145,6 +145,7 @@ CLIENT MODE (default):
   --mainnet                               Use the main network protocol
   --ropsten                               Use the Ropsten testnet
   --test                                  Testing mode; disable PoW and provide test rpc interface
+  --ethploit                              Ethploit mode; enables detection of potential exploitation (default: off)
   --config <file>                         Configure specialised blockchain using given JSON information
 
   --ipc                                   Enable IPC server (default: on)
