@@ -19,6 +19,7 @@
 #define OUTPUT std::cout << "[Middleware]: " 
 
 int EVMAnalyser::transactionCount = 0;
+bool EVMAnalyser::ethploitMode = false;
 
 EVMAnalyser::EVMAnalyser() {
     executionTraceCount = 1;
@@ -58,6 +59,14 @@ EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transac
         instance.setAccount(_account);
     }
     return &instance; 
+}
+
+void EVMAnalyser::setEthploitMode() {
+    ethploitMode = true;
+};
+
+bool EVMAnalyser::isEthploitModeEnabled() {
+    return ethploitMode;
 }
 
 void EVMAnalyser::setupTransaction(std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance) {

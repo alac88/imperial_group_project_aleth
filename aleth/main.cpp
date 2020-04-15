@@ -25,6 +25,7 @@
 #include <libethereum/SnapshotStorage.h>
 #include <libevm/VMFactory.h>
 #include <libwebthree/WebThree.h>
+#include <libethploit/EVMAnalyser.h>
 
 #include <libweb3jsonrpc/AccountHolder.h>
 #include <libweb3jsonrpc/Eth.h>
@@ -208,6 +209,7 @@ int main(int argc, char** argv)
     addClientOption("mainnet", "Use the main network protocol");
     addClientOption("ropsten", "Use the Ropsten testnet");
     addClientOption("test", "Testing mode; disable PoW and provide test rpc interface");
+    addClientOption("ethploit", "Ethploit mode; enables detection of potential exploitation (default: off)");
     addClientOption("config", po::value<string>()->value_name("<file>"),
         "Configure specialised blockchain using given JSON information\n");
     addClientOption("ipc", "Enable IPC server (default: on)");
@@ -390,6 +392,10 @@ int main(int argc, char** argv)
         testingMode = true;
         disableDiscovery = true;
         bootstrap = false;
+    }
+    if(vm.count("ethploit")) 
+    {
+        EVMAnalyser::setEthploitMode();
     }
     if (vm.count("peers"))
         peers = vm["peers"].as<int>();

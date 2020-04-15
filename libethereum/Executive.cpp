@@ -136,16 +136,8 @@ void Executive::initialize(Transaction const& _transaction)
         m_gasCost = (u256)gasCost;  // Convert back to 256-bit, safe now.
     }
 
-    // signal init
-    // std::cout << "===================" << std::endl;
-    // std::cout << "starting @ " << m_t.from().hex() << " ";
-    // std::cout << "sending to " << m_t.to().hex() << std::endl;
-    // std::cout << m_t.gas() << std::endl;
-    // std::cout << "From's balance: " << m_s.balance(m_t.from()) << std::endl;
-    // std::cout << "To's balance: " << m_s.balance(m_t.to()) << std::endl;
-
-    EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()));
-
+    if(EVMAnalyser::isEthploitModeEnabled())
+        EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()));
 }
 
 bool Executive::execute()
@@ -469,19 +461,15 @@ bool Executive::finalize()
         u256 feesEarned = (m_t.gas() - m_gas) * m_t.gasPrice();
         m_s.addBalance(m_envInfo.author(), feesEarned);
 
-        // signal finalisation
-        // std::cout << "finishing @" << m_t.from().hex() << std::endl;
-        // std::cout << "gas now " << m_gas << " hence used " << gasUsed() << std::endl;
-        // std::cout << "From's balance: " << m_s.balance(m_t.from()) << std::endl;
-        // std::cout << "To's balance: " << m_s.balance(m_t.to()) << std::endl;
+        if (EVMAnalyser::isEthploitModeEnabled()) {
+            EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()));
 
-
-        EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()));
-
-        analyser->queryExploit("reentrancy");
-        analyser->queryExploit("locked_ether");
-        analyser->queryExploit("unhandled_exception");
-        analyser->cleanExecutionTrace();
+            analyser->queryExploit("reentrancy");
+            analyser->queryExploit("locked_ether");
+            analyser->queryExploit("unhandled_exception");
+            analyser->cleanExecutionTrace();
+        }
+        
     }
 
     // Selfdestructs...

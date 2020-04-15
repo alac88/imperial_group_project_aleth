@@ -167,35 +167,29 @@ void LegacyVM::caseCall()
     bytesRef output;
     if (caseCallSetup(callParams.get(), output))
     {
-        ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer);
-        // execTrace.print();
-        EVMAnalyser* analyser = EVMAnalyser::getInstance();
-        if(analyser->populateExecutionTrace(&execTrace)) {
-            // std::cout << "Analyser populated\n";
-        } else {
-            // std::cout << "Analyser population failed\n";
-        }
-        if (m_OP == Instruction::DELEGATECALL) 
-            analyser->callEntry((int)callParams->gas, callParams->senderAddress.hex());
+        if (EVMAnalyser::isEthploitModeEnabled()) {
+            
+            ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer);
 
-        // std::cout << "Before call - Sender's balance: " << m_ext->balance(callParams->senderAddress);
-        // std::cout << "Receiver's balance: " << m_ext->balance(callParams->receiveAddress) << std::endl;
-        // std::cout << "callParams->gas: " << callParams->gas << std::endl;
+            EVMAnalyser* analyser = EVMAnalyser::getInstance();
+            if(!analyser->populateExecutionTrace(&execTrace)) {
+                std::cout << "Failed to populate EVM Analyser\n";
+            } 
+
+            if (m_OP == Instruction::DELEGATECALL) 
+                analyser->callEntry((int)callParams->gas, callParams->senderAddress.hex());
+
+        }
+
         
         CallResult result = m_ext->call(*callParams);
         
-        // std::cout << "After call - Sender's balance: " << m_ext->balance(callParams->senderAddress);
-        // std::cout << "Receiver's balance: " << m_ext->balance(callParams->receiveAddress) << std::endl;
-        // std::cout << "callParams->gas: " << callParams->gas << std::endl;
+        if (EVMAnalyser::isEthploitModeEnabled()) {
+            EVMAnalyser* analyser = EVMAnalyser::getInstance();
+            if (m_OP == Instruction::DELEGATECALL) 
+                analyser->callExit((int)callParams->gas);
+        }
 
-
-        if (m_OP == Instruction::DELEGATECALL) 
-            analyser->callExit((int)callParams->gas);
-
-        // std::cout << instructionInfo(m_OP).name << " ";
-        // std::cout << "Sender " << callParams.get()->senderAddress << " ";
-        // std::cout << "Receive Address" << callParams.get()->receiveAddress << "\n"; 
-        
         result.output.copyTo(output);
 
         // Here we have 2 options:
@@ -208,8 +202,10 @@ void LegacyVM::caseCall()
 
         m_SPP[0] = result.status == EVMC_SUCCESS ? 1 : 0;
 
-        // std::cout << "Call success " << m_SPP[0] << std::endl;
-        analyser->callResult((int)m_SPP[0]);
+        if (EVMAnalyser::isEthploitModeEnabled()) {
+            EVMAnalyser* analyser = EVMAnalyser::getInstance();
+            analyser->callResult((int)m_SPP[0]);
+        }
     }
     else
         m_SPP[0] = 0;

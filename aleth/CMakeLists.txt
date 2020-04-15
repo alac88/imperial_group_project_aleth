@@ -1,3 +1,10 @@
+add_compile_options(
+    -Wno-error=unused-but-set-variable 
+    -Wno-error=unused-parameter 
+    -Wno-error=unused-variable
+    -Wno-error=deprecated-declarations 
+)
+
 set(
     sources
     AccountManager.cpp AccountManager.h
@@ -7,8 +14,8 @@ set(
 
 add_executable(aleth ${sources})
 target_link_libraries(
-    aleth
-    PRIVATE ethereum ethashseal evm web3jsonrpc webthree devcore Boost::program_options
+    aleth 
+    PRIVATE ethereum ethashseal evm web3jsonrpc webthree devcore Boost::program_options evmanalyser
 )
 
 target_include_directories(aleth PRIVATE ../utils)
