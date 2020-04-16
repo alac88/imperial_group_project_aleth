@@ -59,7 +59,10 @@ class EVMAnalyser {
     void addJSONHeader(Json::Value &json);
     void extractReentrancyAddresses();
     void setAccount(std::string _account);
-    void setupTransaction(std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance, int64_t blockNumber);
+    void setupTransaction(std::string _transactionHash, 
+                          dev::u256 senderBalance, 
+                          dev::u256 receiverBalance, 
+                          int64_t blockNumber);
 
     void swap(int pos); 
 
@@ -84,9 +87,10 @@ class EVMAnalyser {
 
   public:
     static EVMAnalyser* getInstance(std::string _account = "UNDEFINED", 
-        std::string _transactionHash = "UNDEFINED", dev::u256 senderBalance = -1, dev::u256 receiverBalance = -1,
-        int64_t _blockNum = -1);
-
+                                    std::string _transactionHash = "UNDEFINED", 
+                                    dev::u256 senderBalance = -1, 
+                                    dev::u256 receiverBalance = -1,
+                                    int64_t _blockNum = -1);
 
     static void setEthploitMode();
     
