@@ -1,7 +1,6 @@
 #include <set>
 #include <queue>
 #include <fstream>
-#include <json/json.h>
 #include <boost/algorithm/string.hpp>
 
 #include "EVMAnalyser.h"
@@ -50,10 +49,14 @@ void EVMAnalyser::setAccount(std::string _account) {
     account = _account;
 }
 
-EVMAnalyser* EVMAnalyser::getInstance(std::string _account, std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance) {
+EVMAnalyser* EVMAnalyser::getInstance(std::string _account, 
+                                      std::string _transactionHash, 
+                                      dev::u256 senderBalance, 
+                                      dev::u256 receiverBalance,
+                                      int64_t _blockNumber) {
     static EVMAnalyser instance;
     if (_transactionHash != "UNDEFINED") {
-        instance.setupTransaction(_transactionHash, senderBalance, receiverBalance);
+        instance.setupTransaction(_transactionHash, senderBalance, receiverBalance, _blockNumber);
     }
     if (_account != "UNDEFINED") {
         instance.setAccount(_account);
@@ -69,15 +72,21 @@ bool EVMAnalyser::isEthploitModeEnabled() {
     return ethploitMode;
 }
 
-void EVMAnalyser::setupTransaction(std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance) {
+void EVMAnalyser::setupTransaction(std::string _transactionHash, 
+                                   dev::u256 senderBalance, 
+                                   dev::u256 receiverBalance,
+                                   int64_t _blockNumber) {
     if (senderBalance != -1 && receiverBalance != -1) {
-        if (transactionHash != _transactionHash) {
+        if (transactionHash != _transactionHash) {// New transaction
             initialiseJSON();
+
+            // Update transaction information
             transactionHash = _transactionHash;
+            blockNumber = _blockNumber;
             transactionCount++;
             initialSenderBalance = senderBalance;
             initialTotalBalance = senderBalance + receiverBalance;
-        } else {
+        } else {// Same transaction
             dev::u256 totalDifference = initialTotalBalance - (senderBalance + receiverBalance);
             totalTransfer += initialSenderBalance - senderBalance + totalDifference;
         }
@@ -346,11 +355,9 @@ void EVMAnalyser::extractReentrancyAddresses() {
             totalEther += etherOriginal;
 
             if ((senderAddrOriginal != receiverAddrPre && receiverAddrPre != "Null") || i == idSet.size()) {
-                Json::Value json(Json::objectValue);
-
                 // Standard json fields
-                json["account"] = account;
-                json["transaction_hash"] = transactionHash;
+                Json::Value json(Json::objectValue);
+                addJSONHeader(json);
 
                 // Output the address chain
                 if (senderAddrOriginal != receiverAddrPre) {
@@ -436,8 +443,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                         << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
 #endif
                     Json::Value json(Json::objectValue);
-                    json["account"] = account;
-                    json["transaction_hash"] = transactionHash;
+                    addJSONHeader(json);
                     json["contract_address"] = contractAddress;
                     lockedEtherJSON << json << std::endl;
                 }
@@ -468,8 +474,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                         << "StackID: " << stackID << RESETTEXT << std::endl; 
 #endif
                     Json::Value json(Json::objectValue);
-                    json["account"] = account;
-                    json["transaction_hash"] = transactionHash;
+                    addJSONHeader(json);
                     json["stack_id"] = stackID; // StackID is meaningless outside the context
                     unhandledExceptionJSON << json << std::endl;
                 }
@@ -499,8 +504,7 @@ void EVMAnalyser::cleanExecutionTrace() {
     unhandledExceptionJSON.close();
 
     Json::Value json(Json::objectValue);
-    json["account"] = account;
-    json["transaction_hash"] = transactionHash;
+    addJSONHeader(json);
     json["transaction_count"] = transactionCount;
     json["ether_checked"] = dev::toString(totalTransfer);
     logJSON << json << std::endl;
@@ -512,8 +516,16 @@ void EVMAnalyser::cleanExecutionTrace() {
     callStack.clear();
 }
 
-EVMAnalyserTest* EVMAnalyserTest::getInstance(std::string _account, std::string _transactionHash,
-    dev::u256 _senderBalance, dev::u256 _receiverBalance) {
+void EVMAnalyser::addJSONHeader(Json::Value &json) {
+    json["account"] = account;
+    json["transaction_hash"] = transactionHash;
+    json["block_number"] = blockNumber;
+}
+
+EVMAnalyserTest* EVMAnalyserTest::getInstance(std::string _account, 
+                                              std::string _transactionHash,
+                                              dev::u256 _senderBalance, 
+                                              dev::u256 _receiverBalance) {
     return (EVMAnalyserTest *) EVMAnalyser::getInstance(_account, _transactionHash, _senderBalance, _receiverBalance); 
 }
 
