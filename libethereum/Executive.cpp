@@ -136,10 +136,8 @@ void Executive::initialize(Transaction const& _transaction)
         m_gasCost = (u256)gasCost;  // Convert back to 256-bit, safe now.
     }
 
-    // @Zijian: to be passed
-    // std::cout << m_envInfo.number() << std::endl;
     if(EVMAnalyser::isEthploitModeEnabled())
-        EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()));
+        EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()), m_envInfo.number());
 }
 
 bool Executive::execute()
