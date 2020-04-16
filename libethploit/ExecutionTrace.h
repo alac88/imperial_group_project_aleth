@@ -20,33 +20,7 @@ namespace eth
 struct ExecutionTrace 
 {
 
-    /**
-     * get access to:
-     * char const* const name;
-     * int const args; 
-     * int const ret;
-     * Tier const gasPriceTier
-     */     
-    // Instruction instruction;
-    
     std::string instruction;
-
-    /**
-     * contains
-     * Address senderAddress
-     * Address codeAddress
-     * Address receiveAddress
-     * u256 valueTransfer
-     * u256 apparentValue
-     * u256 gas
-     * bytesConstRef data
-     * bool staticCall 
-     * OnOpFunc onOp
-     */
-    // CallParameters callParams;
-    // Address senderAddress;
-    // Address receiveAddress;
-
     std::string senderAddress;
     std::string receiveAddress;
     u256 valueTransfer;

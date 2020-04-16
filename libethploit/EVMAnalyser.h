@@ -7,15 +7,21 @@
 
 #include <string>
 #include <vector>
+#include <json/json.h>
 
 class EVMAnalyser {
     static bool ethploitMode;
-    static int transactionCount;
 
-    int executionTraceCount;
+    // Trasaction information
+    int64_t blockNumber;
+    static int transactionCount;
+    std::string transactionHash;
+    std::string account;
     dev::u256 initialSenderBalance = 0;
     dev::u256 initialTotalBalance = 0;
     dev::u256 totalTransfer = 0;
+
+    // Json files    
     /**
      * Example JSON for re-entrancy:
      * 
@@ -40,6 +46,8 @@ class EVMAnalyser {
     std::ofstream unhandledExceptionJSON;
     std::ofstream logJSON;
     
+    // Analysis-related
+    int executionTraceCount;
     int latestID = 0;
     std::vector<int> stackIDs;
     std::vector<std::vector<int>> callStack;
@@ -47,10 +55,11 @@ class EVMAnalyser {
     EVMAnalyser();
     ~EVMAnalyser(); 
     
-    void initialiseJSON(); 
+    void initialiseJSON();
+    void addJSONHeader(Json::Value &json);
     void extractReentrancyAddresses();
     void setAccount(std::string _account);
-    void setupTransaction(std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance);
+    void setupTransaction(std::string _transactionHash, dev::u256 senderBalance, dev::u256 receiverBalance, int64_t blockNumber);
 
     void swap(int pos); 
 
@@ -63,9 +72,6 @@ class EVMAnalyser {
     void storeCallArgs(int nArgs);
 
   protected:
-    std::string transactionHash;
-    std::string account;
-
     souffle::SouffleProgram *prog;
 
     souffle::Relation *relDirectCall;
@@ -78,7 +84,8 @@ class EVMAnalyser {
 
   public:
     static EVMAnalyser* getInstance(std::string _account = "UNDEFINED", 
-        std::string _transactionHash = "UNDEFINED", dev::u256 senderBalance = -1, dev::u256 receiverBalance = -1);
+        std::string _transactionHash = "UNDEFINED", dev::u256 senderBalance = -1, dev::u256 receiverBalance = -1,
+        int64_t _blockNum = -1);
 
 
     static void setEthploitMode();
@@ -117,9 +124,9 @@ class EVMAnalyserTest : public EVMAnalyser {
     EVMAnalyserTest();
 
     static EVMAnalyserTest* getInstance(std::string _account = "UNDEFINED", 
-        std::string _transactionHash = "UNDEFINED", 
-        dev::u256 senderBalance = -1, 
-        dev::u256 receiverBalance = -1);
+                                        std::string _transactionHash = "UNDEFINED", 
+                                        dev::u256 senderBalance = -1, 
+                                        dev::u256 receiverBalance = -1);
     
     int getRelationSize(std::string relationName);
 };

@@ -137,7 +137,7 @@ void Executive::initialize(Transaction const& _transaction)
     }
 
     if(EVMAnalyser::isEthploitModeEnabled())
-        EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()));
+        EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()), m_envInfo.number());
 }
 
 bool Executive::execute()
