@@ -1,14 +1,16 @@
 #include <set>
 #include <queue>
+#include <iostream>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 
+#include "type.h"
 #include "EVMAnalyser.h"
 #include "souffle/SouffleInterface.h"
 #ifndef EVMANALYSER_TEST
     #include "DetectionLogic.cpp"
 #endif
-#include <iostream>
+
 // #define EVMANALYSER_DEBUG
 // #define EVMANALYSER_RESULT
 
@@ -16,20 +18,6 @@
 #define FORERED "\x1B[31m"
 #define RESETTEXT "\x1B[0m"
 #define OUTPUT std::cout << "[Middleware]: " 
-
-namespace dev {
-
-u256 toU256(std::string str) {
-    u256 ret = 0;
-    for (char ch : str) {
-        ret += ch - '0';
-        ret *= 10;
-    }
-    ret /= 10;
-    
-    return ret;
-}
-}
 
 int EVMAnalyser::transactionCount = 0;
 bool EVMAnalyser::ethploitMode = false;
