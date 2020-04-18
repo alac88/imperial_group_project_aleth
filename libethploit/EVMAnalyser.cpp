@@ -17,6 +17,20 @@
 #define RESETTEXT "\x1B[0m"
 #define OUTPUT std::cout << "[Middleware]: " 
 
+namespace dev {
+
+u256 toU256(std::string str) {
+    u256 ret = 0;
+    for (char ch : str) {
+        ret += ch - '0';
+        ret *= 10;
+    }
+    ret /= 10;
+    
+    return ret;
+}
+}
+
 int EVMAnalyser::transactionCount = 0;
 bool EVMAnalyser::ethploitMode = false;
 
@@ -105,7 +119,7 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
         newTuple << executionTraceCount
                 << executionTrace->senderAddress
                 << executionTrace->receiveAddress
-                << (int) executionTrace->valueTransfer;
+                << dev::toString(executionTrace->valueTransfer);
         relDirectCall->insert(newTuple);
         executionTraceCount++;
     } else {
@@ -331,23 +345,25 @@ void EVMAnalyser::extractReentrancyAddresses() {
     for (auto &output : *rel ) {
         int id;
         std::string senderAddr, receiverAddr;
-        int ether1, ether2;
+        std::string ether1, ether2;
 
         count++;
         output >> id >> senderAddr >> receiverAddr >> ether1 >> ether2;
         idSet.insert(id);
     }
 
-    int totalEther = 0;
+    dev::u256 totalEther = 0;
     unsigned long i = 0;
     std::queue<std::string> chain;
     std::string receiverAddrPre = "Null";
     for (auto &output : *relDirectCall) {
         int idOriginal;
         std::string senderAddrOriginal, receiverAddrOriginal;
-        int etherOriginal;
+        std::string etherOriginalStr;  // Ether transferred is passed as u256 via executionTrace
+        dev::u256 etherOriginal;
 
-        output >> idOriginal >> senderAddrOriginal >> receiverAddrOriginal >> etherOriginal;
+        output >> idOriginal >> senderAddrOriginal >> receiverAddrOriginal >> etherOriginalStr;
+        etherOriginal = dev::toU256(etherOriginalStr);
 
         if (idSet.find(idOriginal) != idSet.end()) {
             i++;
@@ -389,7 +405,7 @@ void EVMAnalyser::extractReentrancyAddresses() {
 #endif
                 reentrancyChain += " => " + addrStart;
                 json["reentrancy_chain"] = reentrancyChain;
-                json["total_ether"] = totalEther;
+                json["total_ether"] = dev::toString(totalEther);
 
                 // Reset
                 if (senderAddrOriginal != receiverAddrPre) {
