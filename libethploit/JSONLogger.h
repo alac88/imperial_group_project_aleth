@@ -15,6 +15,9 @@ class JSONLogger {
 
     void addJSONHeader(Json::Value &json);
 
+  public:
+    JSONLogger(std::string _account, std::string _transactionHash, int64_t _blockNumber);
+    
     /**
      * Example JSON for re-entrancy:
      * 
@@ -25,7 +28,7 @@ class JSONLogger {
      *    "transaction_hash" : "2007237709"
      *  }
      */ 
-    std::ofstream reentrancyJSON;
+    void logReentrancy(std::string reentrancyChain, std::string totalEther);
     /**
      * Example JSON for locked ether:
      * 
@@ -35,14 +38,6 @@ class JSONLogger {
      *     "transaction_hash" : "74243042"
      *    }
      */ 
-    std::ofstream lockedEtherJSON;
-    std::ofstream unhandledExceptionJSON;
-    std::ofstream logJSON;
-
-  public:
-    JSONLogger(std::string _account, std::string _transactionHash, int64_t _blockNumber);
-    
-    void logReentrancy(std::string reentrancyChain, std::string totalEther);
     void logLockedEther(std::string contractAddress);
     void logUnhandledException(int stackID);
 

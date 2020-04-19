@@ -13,6 +13,7 @@ void JSONLogger::addJSONHeader(Json::Value &json) {
 }
 
 void JSONLogger::logReentrancy(std::string reentrancyChain, std::string totalEther) {
+    fstream reentrancyJSON;
     Json::Value json(Json::objectValue);
 
     addJSONHeader(json);
@@ -25,6 +26,7 @@ void JSONLogger::logReentrancy(std::string reentrancyChain, std::string totalEth
 }
 
 void JSONLogger::logLockedEther(string contractAddress) {
+    fstream lockedEtherJSON;
     Json::Value json(Json::objectValue);
 
     addJSONHeader(json);
@@ -36,17 +38,19 @@ void JSONLogger::logLockedEther(string contractAddress) {
 }
 
 void JSONLogger::logUnhandledException(int stackID) {
+    fstream unhandledExceptionJSON;
     Json::Value json(Json::objectValue);
 
     addJSONHeader(json);
     json["stack_id"] = stackID; // StackID is meaningless outside the context
     
     unhandledExceptionJSON.open(UNHANDLED_EXCEPTION_JSON, std::ofstream::app);
-    reentrancyJSON << json << endl;
+    unhandledExceptionJSON << json << endl;
     unhandledExceptionJSON.close();
 }
 
 void JSONLogger::logTransaction(int transactionCount, string totalTransfer) {
+    fstream logJSON;
     Json::Value json(Json::objectValue);
 
     addJSONHeader(json);
