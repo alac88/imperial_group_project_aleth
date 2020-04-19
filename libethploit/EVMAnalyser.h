@@ -13,10 +13,8 @@ class EVMAnalyser {
     static bool ethploitMode;
 
     // Trasaction information
-    int64_t blockNumber;
     static int transactionCount;
     std::string transactionHash;
-    std::string account;
     dev::u256 initialSenderBalance = 0;
     dev::u256 initialTotalBalance = 0;
     dev::u256 totalTransfer = 0;
@@ -34,8 +32,8 @@ class EVMAnalyser {
     ~EVMAnalyser(); 
     
     void extractReentrancyAddresses();
-    void setAccount(std::string _account);
-    void setupTransaction(std::string _transactionHash, 
+    void setupTransaction(std::string account,
+                          std::string _transactionHash, 
                           dev::u256 senderBalance, 
                           dev::u256 receiverBalance, 
                           int64_t blockNumber);

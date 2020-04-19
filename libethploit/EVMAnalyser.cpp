@@ -41,21 +41,14 @@ EVMAnalyser::~EVMAnalyser() {
     }
 }
 
-void EVMAnalyser::setAccount(std::string _account) {
-    account = _account;
-}
-
-EVMAnalyser* EVMAnalyser::getInstance(std::string _account, 
-                                      std::string _transactionHash, 
+EVMAnalyser* EVMAnalyser::getInstance(std::string account, 
+                                      std::string transactionHash, 
                                       dev::u256 senderBalance, 
                                       dev::u256 receiverBalance,
-                                      int64_t _blockNumber) {
+                                      int64_t blockNumber) {
     static EVMAnalyser instance;
-    if (_transactionHash != "UNDEFINED") {
-        instance.setupTransaction(_transactionHash, senderBalance, receiverBalance, _blockNumber);
-    }
-    if (_account != "UNDEFINED") {
-        instance.setAccount(_account);
+    if (transactionHash != "UNDEFINED" && account != "UNDEFINED") {
+        instance.setupTransaction(account, transactionHash, senderBalance, receiverBalance, blockNumber);
     }
     return &instance; 
 }
@@ -68,20 +61,20 @@ bool EVMAnalyser::isEthploitModeEnabled() {
     return ethploitMode;
 }
 
-void EVMAnalyser::setupTransaction(std::string _transactionHash, 
+void EVMAnalyser::setupTransaction(std::string account,
+                                   std::string _transactionHash, 
                                    dev::u256 senderBalance, 
                                    dev::u256 receiverBalance,
-                                   int64_t _blockNumber) {
+                                   int64_t blockNumber) {
     if (senderBalance != -1 && receiverBalance != -1) {
         if (transactionHash != _transactionHash) {// New transaction
+            // Create a new json logger
             if (logger) { // If there was a previous transaction
                 delete logger;
             }
-            logger = new JSONLogger(account, _transactionHash, _blockNumber);
+            logger = new JSONLogger(account, _transactionHash, blockNumber);
 
             // Update transaction information
-            transactionHash = _transactionHash;
-            blockNumber = _blockNumber;
             transactionCount++;
             initialSenderBalance = senderBalance;
             initialTotalBalance = senderBalance + receiverBalance;
