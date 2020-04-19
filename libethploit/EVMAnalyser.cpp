@@ -36,32 +36,19 @@ EVMAnalyser::EVMAnalyser() {
 }
 
 EVMAnalyser::~EVMAnalyser() {
-    // An default constructor for testing
+    if (logger) {
+        delete logger;
+    }
 }
 
-void EVMAnalyser::initialiseJSON() {
-    // New JSON tuples default to be appended to the current files.
-    reentrancyJSON.open("reentrancy.json", std::ofstream::app);
-    lockedEtherJSON.open("locked_ether.json", std::ofstream::app);
-    unhandledExceptionJSON.open("unhandled_exception.json", std::ofstream::app);
-    logJSON.open("log.json", std::ofstream::app);
-}
-
-void EVMAnalyser::setAccount(std::string _account) {
-    account = _account;
-}
-
-EVMAnalyser* EVMAnalyser::getInstance(std::string _account, 
+EVMAnalyser* EVMAnalyser::getInstance(std::string account, 
                                       std::string _transactionHash, 
                                       dev::u256 senderBalance, 
                                       dev::u256 receiverBalance,
-                                      int64_t _blockNumber) {
+                                      int64_t blockNumber) {
     static EVMAnalyser instance;
-    if (_transactionHash != "UNDEFINED") {
-        instance.setupTransaction(_transactionHash, senderBalance, receiverBalance, _blockNumber);
-    }
-    if (_account != "UNDEFINED") {
-        instance.setAccount(_account);
+    if (_transactionHash != "UNDEFINED" && account != "UNDEFINED") {
+        instance.setupTransaction(account, _transactionHash, senderBalance, receiverBalance, blockNumber);
     }
     return &instance; 
 }
@@ -74,17 +61,20 @@ bool EVMAnalyser::isEthploitModeEnabled() {
     return ethploitMode;
 }
 
-void EVMAnalyser::setupTransaction(std::string _transactionHash, 
+void EVMAnalyser::setupTransaction(std::string account,
+                                   std::string _transactionHash, 
                                    dev::u256 senderBalance, 
                                    dev::u256 receiverBalance,
-                                   int64_t _blockNumber) {
+                                   int64_t blockNumber) {
     if (senderBalance != -1 && receiverBalance != -1) {
         if (transactionHash != _transactionHash) {// New transaction
-            initialiseJSON();
+            // Create a new json logger
+            if (logger) { // If there was a previous transaction
+                delete logger;
+            }
+            logger = new JSONLogger(account, _transactionHash, blockNumber);
 
             // Update transaction information
-            transactionHash = _transactionHash;
-            blockNumber = _blockNumber;
             transactionCount++;
             initialSenderBalance = senderBalance;
             initialTotalBalance = senderBalance + receiverBalance;
@@ -359,10 +349,6 @@ void EVMAnalyser::extractReentrancyAddresses() {
             totalEther += etherOriginal;
 
             if ((senderAddrOriginal != receiverAddrPre && receiverAddrPre != "Null") || i == idSet.size()) {
-                // Standard json fields
-                Json::Value json(Json::objectValue);
-                addJSONHeader(json);
-
                 // Output the address chain
                 if (senderAddrOriginal != receiverAddrPre) {
                     chain.pop();
@@ -392,8 +378,9 @@ void EVMAnalyser::extractReentrancyAddresses() {
                     << std::endl;
 #endif
                 reentrancyChain += " => " + addrStart;
-                json["reentrancy_chain"] = reentrancyChain;
-                json["total_ether_in_wei"] = dev::toString(totalEther);
+
+                // Save the new json tuple
+                logger->logReentrancy(reentrancyChain, dev::toString(totalEther));
 
                 // Reset
                 if (senderAddrOriginal != receiverAddrPre) {
@@ -402,9 +389,6 @@ void EVMAnalyser::extractReentrancyAddresses() {
                 } else {
                     totalEther = 0;
                 }
-
-                // Save the new json tuple
-                reentrancyJSON << json << std::endl;
             }
         }
 
@@ -446,10 +430,8 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                     OUTPUT << FORERED << "Query Result: " << count << " Contract in address: " 
                         << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
 #endif
-                    Json::Value json(Json::objectValue);
-                    addJSONHeader(json);
-                    json["contract_address"] = contractAddress;
-                    lockedEtherJSON << json << std::endl;
+
+                    logger->logLockedEther(contractAddress);
                 }
                 return true; 
             } else {
@@ -477,10 +459,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                     OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " 
                         << "StackID: " << stackID << RESETTEXT << std::endl; 
 #endif
-                    Json::Value json(Json::objectValue);
-                    addJSONHeader(json);
-                    json["stack_id"] = stackID; // StackID is meaningless outside the context
-                    unhandledExceptionJSON << json << std::endl;
+                    logger->logUnhandledException(stackID);
                 }
                 return true; 
             } else {
@@ -503,27 +482,12 @@ void EVMAnalyser::cleanExecutionTrace() {
     prog->purgeInternalRelations(); // Remenber to clean the internal relations e.g. call in the re-entrancy
     prog->purgeOutputRelations();
 
-    reentrancyJSON.close();
-    lockedEtherJSON.close();
-    unhandledExceptionJSON.close();
-
-    Json::Value json(Json::objectValue);
-    addJSONHeader(json);
-    json["transaction_count"] = transactionCount;
-    json["ether_checked_in_wei"] = dev::toString(totalTransfer);
-    logJSON << json << std::endl;
-    logJSON.close();
+    logger->logTransaction(transactionCount, dev::toString(totalTransfer));
 
     executionTraceCount = 1;
     latestID = 0;
     stackIDs.clear();
     callStack.clear();
-}
-
-void EVMAnalyser::addJSONHeader(Json::Value &json) {
-    json["account"] = account;
-    json["transaction_hash"] = transactionHash;
-    json["block_number"] = blockNumber;
 }
 
 EVMAnalyserTest* EVMAnalyserTest::getInstance(std::string _account, 
