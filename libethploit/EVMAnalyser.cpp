@@ -2,7 +2,6 @@
 #include <queue>
 #include <iostream>
 #include <fstream>
-#include <json/json.h>
 #include <boost/algorithm/string.hpp>
 
 #include "type.h"
@@ -438,9 +437,8 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                     OUTPUT << FORERED << "Query Result: " << count << " Contract in address: " 
                         << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
 #endif
-                    Json::Value json(Json::objectValue);
-                    json["contract_address"] = contractAddress;
-                    logger->logLockedEther(json);
+
+                    logger->logLockedEther(contractAddress);
                 }
                 return true; 
             } else {
@@ -468,9 +466,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                     OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " 
                         << "StackID: " << stackID << RESETTEXT << std::endl; 
 #endif
-                    Json::Value json(Json::objectValue);
-                    json["stack_id"] = stackID; // StackID is meaningless outside the context
-                    logger->logUnhandledException(json);
+                    logger->logUnhandledException(stackID);
                 }
                 return true; 
             } else {
@@ -493,10 +489,7 @@ void EVMAnalyser::cleanExecutionTrace() {
     prog->purgeInternalRelations(); // Remenber to clean the internal relations e.g. call in the re-entrancy
     prog->purgeOutputRelations();
 
-    Json::Value json(Json::objectValue);
-    json["transaction_count"] = transactionCount;
-    json["ether_checked_in_wei"] = dev::toString(totalTransfer);
-    logger->logTransaction(json);
+    logger->logTransaction(transactionCount, dev::toString(totalTransfer));
 
     executionTraceCount = 1;
     latestID = 0;

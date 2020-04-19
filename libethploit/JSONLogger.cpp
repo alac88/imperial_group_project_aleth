@@ -24,23 +24,36 @@ void JSONLogger::logReentrancy(std::string reentrancyChain, std::string totalEth
     reentrancyJSON.close();
 }
 
-void JSONLogger::logLockedEther(Json::Value json) {
-    lockedEtherJSON.open(LOCKED_ETHER_JSON, std::ofstream::app);
+void JSONLogger::logLockedEther(string contractAddress) {
+    Json::Value json(Json::objectValue);
+
     addJSONHeader(json);
+    json["contract_address"] = contractAddress;
+
+    lockedEtherJSON.open(LOCKED_ETHER_JSON, std::ofstream::app);
     lockedEtherJSON << json << endl;
     lockedEtherJSON.close();
 }
 
-void JSONLogger::logUnhandledException(Json::Value json) {
-    unhandledExceptionJSON.open(UNHANDLED_EXCEPTION_JSON, std::ofstream::app);
+void JSONLogger::logUnhandledException(int stackID) {
+    Json::Value json(Json::objectValue);
+
     addJSONHeader(json);
+    json["stack_id"] = stackID; // StackID is meaningless outside the context
+    
+    unhandledExceptionJSON.open(UNHANDLED_EXCEPTION_JSON, std::ofstream::app);
     reentrancyJSON << json << endl;
     unhandledExceptionJSON.close();
 }
 
-void JSONLogger::logTransaction(Json::Value json) {
-    logJSON.open(TRANSACTION_JSON, std::ofstream::app);
+void JSONLogger::logTransaction(int transactionCount, string totalTransfer) {
+    Json::Value json(Json::objectValue);
+
     addJSONHeader(json);
+    json["transaction_count"] = transactionCount;
+    json["ether_checked_in_wei"] = totalTransfer;
+    
+    logJSON.open(TRANSACTION_JSON, std::ofstream::app);
     logJSON << json << endl;
     logJSON.close();
 }

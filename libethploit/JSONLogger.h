@@ -43,9 +43,9 @@ class JSONLogger {
     JSONLogger(std::string _account, std::string _transactionHash, int64_t _blockNumber);
     
     void logReentrancy(std::string reentrancyChain, std::string totalEther);
-    void logLockedEther(Json::Value json);
-    void logUnhandledException(Json::Value json);
+    void logLockedEther(std::string contractAddress);
+    void logUnhandledException(int stackID);
 
-    void logTransaction(Json::Value json);
+    void logTransaction(int transactionCount, std::string totalTransfer);
 
 };
