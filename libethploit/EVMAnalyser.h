@@ -24,9 +24,6 @@ class EVMAnalyser {
 
     // Json files
     JSONLogger * logger;
-    std::ofstream lockedEtherJSON;
-    std::ofstream unhandledExceptionJSON;
-    std::ofstream logJSON;
     
     // Analysis-related
     int executionTraceCount;
@@ -37,8 +34,6 @@ class EVMAnalyser {
     EVMAnalyser();
     ~EVMAnalyser(); 
     
-    void initialiseJSON();
-    void addJSONHeader(Json::Value &json);
     void extractReentrancyAddresses();
     void setAccount(std::string _account);
     void setupTransaction(std::string _transactionHash, 

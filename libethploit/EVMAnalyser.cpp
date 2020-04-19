@@ -36,13 +36,9 @@ EVMAnalyser::EVMAnalyser() {
 }
 
 EVMAnalyser::~EVMAnalyser() {
-    // An default constructor for testing
-}
-
-void EVMAnalyser::initialiseJSON() {
-    // New JSON tuples default to be appended to the current files.
-    unhandledExceptionJSON.open("unhandled_exception.json", std::ofstream::app);
-    logJSON.open("log.json", std::ofstream::app);
+    if (logger) {
+        delete logger;
+    }
 }
 
 void EVMAnalyser::setAccount(std::string _account) {
@@ -78,7 +74,9 @@ void EVMAnalyser::setupTransaction(std::string _transactionHash,
                                    int64_t _blockNumber) {
     if (senderBalance != -1 && receiverBalance != -1) {
         if (transactionHash != _transactionHash) {// New transaction
-            initialiseJSON();
+            if (logger) { // If there was a previous transaction
+                delete logger;
+            }
             logger = new JSONLogger(account, _transactionHash, _blockNumber);
 
             // Update transaction information
@@ -474,9 +472,8 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                         << "StackID: " << stackID << RESETTEXT << std::endl; 
 #endif
                     Json::Value json(Json::objectValue);
-                    addJSONHeader(json);
                     json["stack_id"] = stackID; // StackID is meaningless outside the context
-                    unhandledExceptionJSON << json << std::endl;
+                    logger->logUnhandledException(json);
                 }
                 return true; 
             } else {
@@ -499,25 +496,15 @@ void EVMAnalyser::cleanExecutionTrace() {
     prog->purgeInternalRelations(); // Remenber to clean the internal relations e.g. call in the re-entrancy
     prog->purgeOutputRelations();
 
-    unhandledExceptionJSON.close();
-
     Json::Value json(Json::objectValue);
-    addJSONHeader(json);
     json["transaction_count"] = transactionCount;
     json["ether_checked_in_wei"] = dev::toString(totalTransfer);
-    logJSON << json << std::endl;
-    logJSON.close();
+    logger->logTransaction(json);
 
     executionTraceCount = 1;
     latestID = 0;
     stackIDs.clear();
     callStack.clear();
-}
-
-void EVMAnalyser::addJSONHeader(Json::Value &json) {
-    json["account"] = account;
-    json["transaction_hash"] = transactionHash;
-    json["block_number"] = blockNumber;
 }
 
 EVMAnalyserTest* EVMAnalyserTest::getInstance(std::string _account, 

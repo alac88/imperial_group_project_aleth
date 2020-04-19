@@ -4,8 +4,6 @@ using namespace std;
 
 JSONLogger::JSONLogger(string _account, string _transactionHash, int64_t _blockNumber) :
     account(_account), transactionHash(_transactionHash), blockNumber(_blockNumber) {
-    // New JSON tuples default to be appended to the current files.
-    logJSON.open("log.json", std::ofstream::app);
 }
 
 void JSONLogger::addJSONHeader(Json::Value &json) {
@@ -33,4 +31,11 @@ void JSONLogger::logUnhandledException(Json::Value json) {
     addJSONHeader(json);
     reentrancyJSON << json << endl;
     unhandledExceptionJSON.close();
+}
+
+void JSONLogger::logTransaction(Json::Value json) {
+    logJSON.open("log.json", std::ofstream::app);
+    addJSONHeader(json);
+    logJSON << json << endl;
+    logJSON.close();
 }
