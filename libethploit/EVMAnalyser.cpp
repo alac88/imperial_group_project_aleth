@@ -41,8 +41,6 @@ EVMAnalyser::~EVMAnalyser() {
 
 void EVMAnalyser::initialiseJSON() {
     // New JSON tuples default to be appended to the current files.
-    reentrancyJSON.open("reentrancy.json", std::ofstream::app);
-    lockedEtherJSON.open("locked_ether.json", std::ofstream::app);
     unhandledExceptionJSON.open("unhandled_exception.json", std::ofstream::app);
     logJSON.open("log.json", std::ofstream::app);
 }
@@ -446,9 +444,8 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                         << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
 #endif
                     Json::Value json(Json::objectValue);
-                    addJSONHeader(json);
                     json["contract_address"] = contractAddress;
-                    lockedEtherJSON << json << std::endl;
+                    logger->logLockedEther(json);
                 }
                 return true; 
             } else {
@@ -502,7 +499,6 @@ void EVMAnalyser::cleanExecutionTrace() {
     prog->purgeInternalRelations(); // Remenber to clean the internal relations e.g. call in the re-entrancy
     prog->purgeOutputRelations();
 
-    lockedEtherJSON.close();
     unhandledExceptionJSON.close();
 
     Json::Value json(Json::objectValue);
