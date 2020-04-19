@@ -393,7 +393,7 @@ void EVMAnalyser::extractReentrancyAddresses() {
 #endif
                 reentrancyChain += " => " + addrStart;
                 json["reentrancy_chain"] = reentrancyChain;
-                json["total_ether"] = dev::toString(totalEther);
+                json["total_ether_in_wei"] = dev::toString(totalEther);
 
                 // Reset
                 if (senderAddrOriginal != receiverAddrPre) {
@@ -510,7 +510,7 @@ void EVMAnalyser::cleanExecutionTrace() {
     Json::Value json(Json::objectValue);
     addJSONHeader(json);
     json["transaction_count"] = transactionCount;
-    json["ether_checked"] = dev::toString(totalTransfer);
+    json["ether_checked_in_wei"] = dev::toString(totalTransfer);
     logJSON << json << std::endl;
     logJSON.close();
 
