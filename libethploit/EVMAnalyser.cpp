@@ -81,6 +81,7 @@ void EVMAnalyser::setupTransaction(std::string _transactionHash,
     if (senderBalance != -1 && receiverBalance != -1) {
         if (transactionHash != _transactionHash) {// New transaction
             initialiseJSON();
+            logger = new JSONLogger(account, _transactionHash, _blockNumber);
 
             // Update transaction information
             transactionHash = _transactionHash;
@@ -359,10 +360,6 @@ void EVMAnalyser::extractReentrancyAddresses() {
             totalEther += etherOriginal;
 
             if ((senderAddrOriginal != receiverAddrPre && receiverAddrPre != "Null") || i == idSet.size()) {
-                // Standard json fields
-                Json::Value json(Json::objectValue);
-                addJSONHeader(json);
-
                 // Output the address chain
                 if (senderAddrOriginal != receiverAddrPre) {
                     chain.pop();
@@ -391,9 +388,14 @@ void EVMAnalyser::extractReentrancyAddresses() {
                     << " value transferred in total." << RESETTEXT
                     << std::endl;
 #endif
+
+                // Standard json fields
+                Json::Value json(Json::objectValue);
                 reentrancyChain += " => " + addrStart;
                 json["reentrancy_chain"] = reentrancyChain;
                 json["total_ether_in_wei"] = dev::toString(totalEther);
+                // Save the new json tuple
+                logger->logReentrancy(json);
 
                 // Reset
                 if (senderAddrOriginal != receiverAddrPre) {
@@ -402,9 +404,6 @@ void EVMAnalyser::extractReentrancyAddresses() {
                 } else {
                     totalEther = 0;
                 }
-
-                // Save the new json tuple
-                reentrancyJSON << json << std::endl;
             }
         }
 
@@ -503,7 +502,6 @@ void EVMAnalyser::cleanExecutionTrace() {
     prog->purgeInternalRelations(); // Remenber to clean the internal relations e.g. call in the re-entrancy
     prog->purgeOutputRelations();
 
-    reentrancyJSON.close();
     lockedEtherJSON.close();
     unhandledExceptionJSON.close();
 

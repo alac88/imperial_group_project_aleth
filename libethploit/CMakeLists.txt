@@ -35,6 +35,8 @@ add_library(evmanalyser
     EVMAnalyser.h
     type.cpp
     type.h
+    JSONLogger.cpp
+    JSONLogger.h
 )
 target_link_libraries(evmanalyser
     ethploit

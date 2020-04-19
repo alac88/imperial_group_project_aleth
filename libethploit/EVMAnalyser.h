@@ -2,6 +2,7 @@
 
 #include "souffle/SouffleInterface.h"
 #include "libethploit/ExecutionTrace.h"
+#include "JSONLogger.h"
 
 #include "libdevcore/Common.h"
 
@@ -21,7 +22,8 @@ class EVMAnalyser {
     dev::u256 initialTotalBalance = 0;
     dev::u256 totalTransfer = 0;
 
-    // Json files    
+    // Json files
+    JSONLogger * logger;
     /**
      * Example JSON for re-entrancy:
      * 
