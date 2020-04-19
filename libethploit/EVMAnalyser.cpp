@@ -2,6 +2,7 @@
 #include <queue>
 #include <iostream>
 #include <fstream>
+#include <json/json.h>
 #include <boost/algorithm/string.hpp>
 
 #include "type.h"
@@ -384,14 +385,10 @@ void EVMAnalyser::extractReentrancyAddresses() {
                     << " value transferred in total." << RESETTEXT
                     << std::endl;
 #endif
-
-                // Standard json fields
-                Json::Value json(Json::objectValue);
                 reentrancyChain += " => " + addrStart;
-                json["reentrancy_chain"] = reentrancyChain;
-                json["total_ether_in_wei"] = dev::toString(totalEther);
+
                 // Save the new json tuple
-                logger->logReentrancy(json);
+                logger->logReentrancy(reentrancyChain, dev::toString(totalEther));
 
                 // Reset
                 if (senderAddrOriginal != receiverAddrPre) {

@@ -8,7 +8,6 @@
 
 #include <string>
 #include <vector>
-#include <json/json.h>
 
 class EVMAnalyser {
     static bool ethploitMode;

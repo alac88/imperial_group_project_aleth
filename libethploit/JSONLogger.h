@@ -6,6 +6,7 @@
 #define REENTRANCY_JSON "reentrancy.json"
 #define LOCKED_ETHER_JSON "locked_ether.json"
 #define UNHANDLED_EXCEPTION_JSON "unhandled_exception.json"
+#define TRANSACTION_JSON "log.json"
 
 class JSONLogger {
     std::string account;
@@ -41,7 +42,7 @@ class JSONLogger {
   public:
     JSONLogger(std::string _account, std::string _transactionHash, int64_t _blockNumber);
     
-    void logReentrancy(Json::Value json);
+    void logReentrancy(std::string reentrancyChain, std::string totalEther);
     void logLockedEther(Json::Value json);
     void logUnhandledException(Json::Value json);
 

@@ -12,9 +12,14 @@ void JSONLogger::addJSONHeader(Json::Value &json) {
     json["block_number"] = blockNumber;
 }
 
-void JSONLogger::logReentrancy(Json::Value json) {
-    reentrancyJSON.open(REENTRANCY_JSON, std::ofstream::app);
+void JSONLogger::logReentrancy(std::string reentrancyChain, std::string totalEther) {
+    Json::Value json(Json::objectValue);
+
     addJSONHeader(json);
+    json["reentrancy_chain"] = reentrancyChain;
+    json["total_ether_in_wei"] = totalEther;
+    
+    reentrancyJSON.open(REENTRANCY_JSON, std::ofstream::app);
     reentrancyJSON << json << endl;
     reentrancyJSON.close();
 }
@@ -34,7 +39,7 @@ void JSONLogger::logUnhandledException(Json::Value json) {
 }
 
 void JSONLogger::logTransaction(Json::Value json) {
-    logJSON.open("log.json", std::ofstream::app);
+    logJSON.open(TRANSACTION_JSON, std::ofstream::app);
     addJSONHeader(json);
     logJSON << json << endl;
     logJSON.close();
