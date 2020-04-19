@@ -42,13 +42,13 @@ EVMAnalyser::~EVMAnalyser() {
 }
 
 EVMAnalyser* EVMAnalyser::getInstance(std::string account, 
-                                      std::string transactionHash, 
+                                      std::string _transactionHash, 
                                       dev::u256 senderBalance, 
                                       dev::u256 receiverBalance,
                                       int64_t blockNumber) {
     static EVMAnalyser instance;
-    if (transactionHash != "UNDEFINED" && account != "UNDEFINED") {
-        instance.setupTransaction(account, transactionHash, senderBalance, receiverBalance, blockNumber);
+    if (_transactionHash != "UNDEFINED" && account != "UNDEFINED") {
+        instance.setupTransaction(account, _transactionHash, senderBalance, receiverBalance, blockNumber);
     }
     return &instance; 
 }
