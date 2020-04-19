@@ -983,7 +983,7 @@ std::unique_ptr<t_btree_1__0__1> rel_16_unhandled_exception = std::make_unique<t
 souffle::RelationWrapper<11,t_btree_1__0__1,Tuple<RamDomain,1>,1,1> wrapper_rel_16_unhandled_exception;
 public:
 Sf_DetectionLogic() : 
-wrapper_rel_5_call(*rel_5_call,symTable,"call",std::array<const char *,4>{{"i:CallNum","s:EthAddress","s:EthAddress","i:IntSet[i:number]"}},std::array<const char *,4>{{"c","a1","a2","p"}}),
+wrapper_rel_5_call(*rel_5_call,symTable,"call",std::array<const char *,4>{{"i:CallNum","s:EthAddress","s:EthAddress","s:IntSet[s:symbol]"}},std::array<const char *,4>{{"c","a1","a2","p"}}),
 
 wrapper_rel_6_call_entry(*rel_6_call_entry,symTable,"call_entry",std::array<const char *,3>{{"i:identifier","i:gas","s:EthAddress"}},std::array<const char *,3>{{"id","g1","a"}}),
 
@@ -993,7 +993,7 @@ wrapper_rel_8_call_result(*rel_8_call_result,symTable,"call_result",std::array<c
 
 wrapper_rel_9_depends(*rel_9_depends,symTable,"depends",std::array<const char *,2>{{"i:result[i:number]","i:opcodeArg[i:number]"}},std::array<const char *,2>{{"a","b"}}),
 
-wrapper_rel_10_direct_call(*rel_10_direct_call,symTable,"direct_call",std::array<const char *,4>{{"i:CallNum","s:EthAddress","s:EthAddress","i:NatNum[i:number]"}},std::array<const char *,4>{{"c","a1","a2","p"}}),
+wrapper_rel_10_direct_call(*rel_10_direct_call,symTable,"direct_call",std::array<const char *,4>{{"i:CallNum","s:EthAddress","s:EthAddress","s:IntSet[s:symbol]"}},std::array<const char *,4>{{"c","a1","a2","p"}}),
 
 wrapper_rel_11_in_condition(*rel_11_in_condition,symTable,"in_condition",std::array<const char *,1>{{"i:result[i:number]"}},std::array<const char *,1>{{"a"}}),
 
@@ -1003,7 +1003,7 @@ wrapper_rel_13_is_output(*rel_13_is_output,symTable,"is_output",std::array<const
 
 wrapper_rel_14_locked_ether(*rel_14_locked_ether,symTable,"locked_ether",std::array<const char *,3>{{"i:identifier","i:gas","s:EthAddress"}},std::array<const char *,3>{{"id","g1","a"}}),
 
-wrapper_rel_15_reentrancy(*rel_15_reentrancy,symTable,"reentrancy",std::array<const char *,5>{{"i:CallNum","s:EthAddress","s:EthAddress","i:IntSet[i:number]","i:IntSet[i:number]"}},std::array<const char *,5>{{"c","a1","a2","p","p2"}}),
+wrapper_rel_15_reentrancy(*rel_15_reentrancy,symTable,"reentrancy",std::array<const char *,5>{{"i:CallNum","s:EthAddress","s:EthAddress","s:IntSet[s:symbol]","s:IntSet[s:symbol]"}},std::array<const char *,5>{{"c","a1","a2","p","p2"}}),
 
 wrapper_rel_16_unhandled_exception(*rel_16_unhandled_exception,symTable,"unhandled_exception",std::array<const char *,1>{{"i:opcodeArg[i:number]"}},std::array<const char *,1>{{"a"}}){
 addRelation("call",&wrapper_rel_5_call,false,false);
@@ -1037,7 +1037,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./direct_call.facts"},{"name","direct_call"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,0}), symTable, ioDirectives, false, 1)->readAll(*rel_10_direct_call);
+IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_10_direct_call);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 }
 }();
@@ -1049,8 +1049,8 @@ SignalHandler::instance()->setMsg(R"_(call(C,A1,A2,P) :-
 in file /Users/zijian/Code/group_project/souffle-repo/souffle/src/DetectionLogic.dl [30:1-30:49])_");
 if(!(rel_10_direct_call->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_10_direct_call_op_ctxt,rel_10_direct_call->createContext());
 CREATE_OP_CONTEXT(rel_5_call_op_ctxt,rel_5_call->createContext());
+CREATE_OP_CONTEXT(rel_10_direct_call_op_ctxt,rel_10_direct_call->createContext());
 for(const auto& env0 : *rel_10_direct_call) {
 Tuple<RamDomain,4> tuple{{static_cast<RamDomain>(env0[0]),static_cast<RamDomain>(env0[1]),static_cast<RamDomain>(env0[2]),static_cast<RamDomain>(env0[3])}};
 rel_5_call->insert(tuple,READ_OP_CONTEXT(rel_5_call_op_ctxt));
@@ -1066,10 +1066,10 @@ SignalHandler::instance()->setMsg(R"_(call(C,A1,A2,P) :-
 in file /Users/zijian/Code/group_project/souffle-repo/souffle/src/DetectionLogic.dl [31:1-31:71])_");
 if(!(rel_10_direct_call->empty()) && !(rel_1_delta_call->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_10_direct_call_op_ctxt,rel_10_direct_call->createContext());
-CREATE_OP_CONTEXT(rel_5_call_op_ctxt,rel_5_call->createContext());
 CREATE_OP_CONTEXT(rel_1_delta_call_op_ctxt,rel_1_delta_call->createContext());
+CREATE_OP_CONTEXT(rel_5_call_op_ctxt,rel_5_call->createContext());
 CREATE_OP_CONTEXT(rel_3_new_call_op_ctxt,rel_3_new_call->createContext());
+CREATE_OP_CONTEXT(rel_10_direct_call_op_ctxt,rel_10_direct_call->createContext());
 for(const auto& env0 : *rel_10_direct_call) {
 const Tuple<RamDomain,4> key{{0,env0[2],0,0}};
 auto range = rel_1_delta_call->equalRange_2(key,READ_OP_CONTEXT(rel_1_delta_call_op_ctxt));
@@ -1103,8 +1103,8 @@ SignalHandler::instance()->setMsg(R"_(reentrancy(C2,A1,A2,P,P2) :-
 in file /Users/zijian/Code/group_project/souffle-repo/souffle/src/DetectionLogic.dl [33:1-33:86])_");
 if(!(rel_5_call->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_15_reentrancy_op_ctxt,rel_15_reentrancy->createContext());
 CREATE_OP_CONTEXT(rel_5_call_op_ctxt,rel_5_call->createContext());
+CREATE_OP_CONTEXT(rel_15_reentrancy_op_ctxt,rel_15_reentrancy->createContext());
 for(const auto& env0 : *rel_5_call) {
 if( ((env0[1]) != (env0[2]))) {
 const Tuple<RamDomain,4> key{{0,env0[2],env0[1],0}};
@@ -1121,7 +1121,7 @@ if (performIO) {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","c\ta1\ta2\tp\tp2"},{"filename","./reentrancy.csv"},{"name","reentrancy"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,0,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_15_reentrancy);
+IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_15_reentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
 if (!isHintsProfilingEnabled()&& performIO) rel_5_call->purge();
@@ -1157,9 +1157,9 @@ SignalHandler::instance()->setMsg(R"_(locked_ether(ID,G2,A) :-
 in file /Users/zijian/Code/group_project/souffle-repo/souffle/src/DetectionLogic.dl [62:1-62:76])_");
 if(!(rel_6_call_entry->empty()) && !(rel_7_call_exit->empty())) {
 [&](){
+CREATE_OP_CONTEXT(rel_6_call_entry_op_ctxt,rel_6_call_entry->createContext());
 CREATE_OP_CONTEXT(rel_7_call_exit_op_ctxt,rel_7_call_exit->createContext());
 CREATE_OP_CONTEXT(rel_14_locked_ether_op_ctxt,rel_14_locked_ether->createContext());
-CREATE_OP_CONTEXT(rel_6_call_entry_op_ctxt,rel_6_call_entry->createContext());
 for(const auto& env0 : *rel_6_call_entry) {
 if( rel_7_call_exit->contains(Tuple<RamDomain,2>{{env0[0],env0[1]}},READ_OP_CONTEXT(rel_7_call_exit_op_ctxt))) {
 Tuple<RamDomain,3> tuple{{static_cast<RamDomain>(env0[0]),static_cast<RamDomain>(env0[1]),static_cast<RamDomain>(env0[2])}};
@@ -1175,8 +1175,8 @@ IODirectives ioDirectives(directiveMap);
 IOSystem::getInstance().getWriter(std::vector<bool>({0,0,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_14_locked_ether);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 }
-if (!isHintsProfilingEnabled()&& performIO) rel_7_call_exit->purge();
 if (!isHintsProfilingEnabled()&& performIO) rel_6_call_entry->purge();
+if (!isHintsProfilingEnabled()&& performIO) rel_7_call_exit->purge();
 }();
 /* END STRATUM 5 */
 /* BEGIN STRATUM 6 */
@@ -1205,7 +1205,7 @@ IOSystem::getInstance().getReader(std::vector<bool>({0,0}), symTable, ioDirectiv
 [&]() {
 SignalHandler::instance()->setMsg(R"_(depends(A,B) :- 
    is_output(A,B).
-in file /Users/zijian/Code/group_project/souffle-repo/souffle/src/DetectionLogic.dl [110:1-110:34])_");
+in file /Users/zijian/Code/group_project/souffle-repo/souffle/src/DetectionLogic.dl [109:1-109:34])_");
 if(!(rel_13_is_output->empty())) {
 [&](){
 CREATE_OP_CONTEXT(rel_13_is_output_op_ctxt,rel_13_is_output->createContext());
@@ -1222,7 +1222,7 @@ for(;;) {
 SignalHandler::instance()->setMsg(R"_(depends(A,B) :- 
    is_output(A,C),
    depends(C,B).
-in file /Users/zijian/Code/group_project/souffle-repo/souffle/src/DetectionLogic.dl [111:1-111:49])_");
+in file /Users/zijian/Code/group_project/souffle-repo/souffle/src/DetectionLogic.dl [110:1-110:49])_");
 if(!(rel_13_is_output->empty()) && !(rel_2_delta_depends->empty())) {
 [&](){
 CREATE_OP_CONTEXT(rel_13_is_output_op_ctxt,rel_13_is_output->createContext());
@@ -1268,11 +1268,11 @@ IOSystem::getInstance().getReader(std::vector<bool>({0}), symTable, ioDirectives
 [&]() {
 SignalHandler::instance()->setMsg(R"_(influences_condition(A) :- 
    in_condition(A).
-in file /Users/zijian/Code/group_project/souffle-repo/souffle/src/DetectionLogic.dl [115:1-115:44])_");
+in file /Users/zijian/Code/group_project/souffle-repo/souffle/src/DetectionLogic.dl [114:1-114:44])_");
 if(!(rel_11_in_condition->empty())) {
 [&](){
-CREATE_OP_CONTEXT(rel_12_influences_condition_op_ctxt,rel_12_influences_condition->createContext());
 CREATE_OP_CONTEXT(rel_11_in_condition_op_ctxt,rel_11_in_condition->createContext());
+CREATE_OP_CONTEXT(rel_12_influences_condition_op_ctxt,rel_12_influences_condition->createContext());
 for(const auto& env0 : *rel_11_in_condition) {
 Tuple<RamDomain,1> tuple{{static_cast<RamDomain>(env0[0])}};
 rel_12_influences_condition->insert(tuple,READ_OP_CONTEXT(rel_12_influences_condition_op_ctxt));
@@ -1282,12 +1282,12 @@ rel_12_influences_condition->insert(tuple,READ_OP_CONTEXT(rel_12_influences_cond
 SignalHandler::instance()->setMsg(R"_(influences_condition(A) :- 
    depends(B,A),
    in_condition(B).
-in file /Users/zijian/Code/group_project/souffle-repo/souffle/src/DetectionLogic.dl [116:1-116:59])_");
+in file /Users/zijian/Code/group_project/souffle-repo/souffle/src/DetectionLogic.dl [115:1-115:59])_");
 if(!(rel_9_depends->empty()) && !(rel_11_in_condition->empty())) {
 [&](){
 CREATE_OP_CONTEXT(rel_9_depends_op_ctxt,rel_9_depends->createContext());
-CREATE_OP_CONTEXT(rel_12_influences_condition_op_ctxt,rel_12_influences_condition->createContext());
 CREATE_OP_CONTEXT(rel_11_in_condition_op_ctxt,rel_11_in_condition->createContext());
+CREATE_OP_CONTEXT(rel_12_influences_condition_op_ctxt,rel_12_influences_condition->createContext());
 for(const auto& env0 : *rel_9_depends) {
 if( rel_11_in_condition->contains(Tuple<RamDomain,1>{{env0[0]}},READ_OP_CONTEXT(rel_11_in_condition_op_ctxt))) {
 Tuple<RamDomain,1> tuple{{static_cast<RamDomain>(env0[1])}};
@@ -1305,12 +1305,12 @@ if (!isHintsProfilingEnabled()&& performIO) rel_9_depends->purge();
 SignalHandler::instance()->setMsg(R"_(unhandled_exception(A) :- 
    call_result(A,0),
    !influences_condition(A).
-in file /Users/zijian/Code/group_project/souffle-repo/souffle/src/DetectionLogic.dl [120:1-120:71])_");
+in file /Users/zijian/Code/group_project/souffle-repo/souffle/src/DetectionLogic.dl [119:1-119:71])_");
 if(!(rel_8_call_result->empty())) {
 [&](){
+CREATE_OP_CONTEXT(rel_16_unhandled_exception_op_ctxt,rel_16_unhandled_exception->createContext());
 CREATE_OP_CONTEXT(rel_8_call_result_op_ctxt,rel_8_call_result->createContext());
 CREATE_OP_CONTEXT(rel_12_influences_condition_op_ctxt,rel_12_influences_condition->createContext());
-CREATE_OP_CONTEXT(rel_16_unhandled_exception_op_ctxt,rel_16_unhandled_exception->createContext());
 const Tuple<RamDomain,2> key{{0,RamDomain(0)}};
 auto range = rel_8_call_result->equalRange_2(key,READ_OP_CONTEXT(rel_8_call_result_op_ctxt));
 for(const auto& env0 : range) {
@@ -1397,7 +1397,7 @@ void printAll(std::string outputDirectory = ".") override {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","c\ta1\ta2\tp\tp2"},{"filename","./reentrancy.csv"},{"name","reentrancy"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,0,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_15_reentrancy);
+IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_15_reentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"attributeNames","id\tg1\ta"},{"filename","./locked_ether.csv"},{"name","locked_ether"}});
 if (!outputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = outputDirectory + "/" + directiveMap["filename"];}
@@ -1415,7 +1415,7 @@ void loadAll(std::string inputDirectory = ".") override {
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./direct_call.facts"},{"name","direct_call"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
 IODirectives ioDirectives(directiveMap);
-IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,0}), symTable, ioDirectives, false, 1)->readAll(*rel_10_direct_call);
+IOSystem::getInstance().getReader(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->readAll(*rel_10_direct_call);
 } catch (std::exception& e) {std::cerr << "Error loading data: " << e.what() << '\n';}
 try {std::map<std::string, std::string> directiveMap({{"IO","file"},{"filename","./call_entry.facts"},{"name","call_entry"}});
 if (!inputDirectory.empty() && directiveMap["IO"] == "file" && directiveMap["filename"].front() != '/') {directiveMap["filename"] = inputDirectory + "/" + directiveMap["filename"];}
@@ -1448,7 +1448,7 @@ void dumpInputs(std::ostream& out = std::cout) override {
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
 ioDirectives.setRelationName("direct_call");
-IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_10_direct_call);
+IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_10_direct_call);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
@@ -1481,7 +1481,7 @@ void dumpOutputs(std::ostream& out = std::cout) override {
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");
 ioDirectives.setRelationName("reentrancy");
-IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,0,0}), symTable, ioDirectives, false, 1)->writeAll(*rel_15_reentrancy);
+IOSystem::getInstance().getWriter(std::vector<bool>({0,1,1,1,1}), symTable, ioDirectives, false, 1)->writeAll(*rel_15_reentrancy);
 } catch (std::exception& e) {std::cerr << e.what();exit(1);}
 try {IODirectives ioDirectives;
 ioDirectives.setIOType("stdout");

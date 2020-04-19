@@ -17,9 +17,9 @@
 .number_type CallNum
 .symbol_type EthAddress		//Ethereum address for caller and called contracts
 .type NatNum = number
-.type IntSet = number
+.type IntSet = symbol
 
-.decl direct_call(c:CallNum, a1:EthAddress, a2:EthAddress, p:NatNum)
+.decl direct_call(c:CallNum, a1:EthAddress, a2:EthAddress, p:IntSet)
 .input direct_call
 
 .decl call(c:CallNum, a1:EthAddress, a2:EthAddress, p:IntSet)

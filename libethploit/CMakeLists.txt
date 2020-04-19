@@ -33,6 +33,8 @@ add_library(evmanalyser
     STATIC 
     EVMAnalyser.cpp
     EVMAnalyser.h
+    type.cpp
+    type.h
 )
 target_link_libraries(evmanalyser
     ethploit

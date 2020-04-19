@@ -1,14 +1,16 @@
 #include <set>
 #include <queue>
+#include <iostream>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 
+#include "type.h"
 #include "EVMAnalyser.h"
 #include "souffle/SouffleInterface.h"
 #ifndef EVMANALYSER_TEST
     #include "DetectionLogic.cpp"
 #endif
-#include <iostream>
+
 // #define EVMANALYSER_DEBUG
 // #define EVMANALYSER_RESULT
 
@@ -105,7 +107,7 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
         newTuple << executionTraceCount
                 << executionTrace->senderAddress
                 << executionTrace->receiveAddress
-                << (int) executionTrace->valueTransfer;
+                << dev::toString(executionTrace->valueTransfer);
         relDirectCall->insert(newTuple);
         executionTraceCount++;
     } else {
@@ -331,23 +333,25 @@ void EVMAnalyser::extractReentrancyAddresses() {
     for (auto &output : *rel ) {
         int id;
         std::string senderAddr, receiverAddr;
-        int ether1, ether2;
+        std::string ether1, ether2;
 
         count++;
         output >> id >> senderAddr >> receiverAddr >> ether1 >> ether2;
         idSet.insert(id);
     }
 
-    int totalEther = 0;
+    dev::u256 totalEther = 0;
     unsigned long i = 0;
     std::queue<std::string> chain;
     std::string receiverAddrPre = "Null";
     for (auto &output : *relDirectCall) {
         int idOriginal;
         std::string senderAddrOriginal, receiverAddrOriginal;
-        int etherOriginal;
+        std::string etherOriginalStr;  // Ether transferred is passed as u256 via executionTrace
+        dev::u256 etherOriginal;
 
-        output >> idOriginal >> senderAddrOriginal >> receiverAddrOriginal >> etherOriginal;
+        output >> idOriginal >> senderAddrOriginal >> receiverAddrOriginal >> etherOriginalStr;
+        etherOriginal = dev::toU256(etherOriginalStr);
 
         if (idSet.find(idOriginal) != idSet.end()) {
             i++;
@@ -389,7 +393,7 @@ void EVMAnalyser::extractReentrancyAddresses() {
 #endif
                 reentrancyChain += " => " + addrStart;
                 json["reentrancy_chain"] = reentrancyChain;
-                json["total_ether"] = totalEther;
+                json["total_ether_in_wei"] = dev::toString(totalEther);
 
                 // Reset
                 if (senderAddrOriginal != receiverAddrPre) {
@@ -506,7 +510,7 @@ void EVMAnalyser::cleanExecutionTrace() {
     Json::Value json(Json::objectValue);
     addJSONHeader(json);
     json["transaction_count"] = transactionCount;
-    json["ether_checked"] = dev::toString(totalTransfer);
+    json["ether_checked_in_wei"] = dev::toString(totalTransfer);
     logJSON << json << std::endl;
     logJSON.close();
 
