@@ -104,7 +104,8 @@ class EVMAnalyserTest : public EVMAnalyser {
     static EVMAnalyserTest* getInstance(std::string _account = "UNDEFINED", 
                                         std::string _transactionHash = "UNDEFINED", 
                                         dev::u256 senderBalance = -1, 
-                                        dev::u256 receiverBalance = -1);
+                                        dev::u256 receiverBalance = -1,
+                                        int64_t blockNum = -1);
     
     int getRelationSize(std::string relationName);
 };

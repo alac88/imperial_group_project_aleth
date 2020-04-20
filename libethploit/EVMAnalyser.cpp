@@ -33,12 +33,12 @@ EVMAnalyser::EVMAnalyser() {
     relIsOutput = prog->getRelation("is_output");
     relCallResult = prog->getRelation("call_result");
     relInCondition = prog->getRelation("in_condition");
+
+    logger = new JSONLogger();
 }
 
 EVMAnalyser::~EVMAnalyser() {
-    if (logger) {
-        delete logger;
-    }
+    delete logger;
 }
 
 EVMAnalyser* EVMAnalyser::getInstance(std::string account, 
@@ -68,14 +68,11 @@ void EVMAnalyser::setupTransaction(std::string account,
                                    int64_t blockNumber) {
     if (senderBalance != -1 && receiverBalance != -1) {
         if (transactionHash != _transactionHash) {// New transaction
-            // Create a new json logger
-            if (logger) { // If there was a previous transaction
-                delete logger;
-            }
-            logger = new JSONLogger(account, _transactionHash, blockNumber);
+            logger->setTransactionInfo(account, _transactionHash, blockNumber);
 
             // Update transaction information
             transactionCount++;
+            transactionHash = _transactionHash;
             initialSenderBalance = senderBalance;
             initialTotalBalance = senderBalance + receiverBalance;
         } else {// Same transaction
@@ -493,8 +490,13 @@ void EVMAnalyser::cleanExecutionTrace() {
 EVMAnalyserTest* EVMAnalyserTest::getInstance(std::string _account, 
                                               std::string _transactionHash,
                                               dev::u256 _senderBalance, 
-                                              dev::u256 _receiverBalance) {
-    return (EVMAnalyserTest *) EVMAnalyser::getInstance(_account, _transactionHash, _senderBalance, _receiverBalance); 
+                                              dev::u256 _receiverBalance,
+                                              int64_t _blockNumber) {
+    return (EVMAnalyserTest *) EVMAnalyser::getInstance(_account, 
+        _transactionHash, 
+        _senderBalance, 
+        _receiverBalance, 
+        _blockNumber); 
 }
 
 int EVMAnalyserTest::getRelationSize(std::string relationName) {

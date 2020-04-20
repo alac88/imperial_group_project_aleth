@@ -29,23 +29,27 @@ MOCK_BASE_CLASS(ExecutionTraceMock, dev::eth::ExecutionTrace) {
 struct F {
     std::string randAccount;
     std::string randTransaction;
+    int64_t randBlockNumber;
 
     F() {
         randAccount = std::to_string(rand());
         randTransaction = std::to_string(rand());
+        randBlockNumber = (int64_t) (rand());
 
         analyser = EVMAnalyserTest::getInstance(randAccount, 
             randTransaction,
-            rand(),
-            rand());
+            (dev::u256) rand(),
+            (dev::u256) rand(),
+            randBlockNumber);
         BOOST_TEST_MESSAGE("setup fixture");
     }
 
     ~F() {
         EVMAnalyserTest::getInstance(randAccount, 
             randTransaction,
-            rand(),
-            rand());
+            (dev::u256) rand(),
+            (dev::u256) rand(),
+            randBlockNumber);
         analyser->cleanExecutionTrace();
         BOOST_TEST_MESSAGE("teardown fixture"); 
     }

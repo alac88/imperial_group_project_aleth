@@ -13,11 +13,20 @@ class JSONLogger {
     std::string transactionHash;
     int64_t blockNumber;
 
+    std::fstream reentrancyJSON;
+    std::fstream lockedEtherJSON;
+    std::fstream unhandledExceptionJSON;
+    std::fstream logJSON;
+
+
     void addJSONHeader(Json::Value &json);
 
   public:
-    JSONLogger(std::string _account, std::string _transactionHash, int64_t _blockNumber);
+    JSONLogger();
+    ~JSONLogger();
     
+    void setTransactionInfo(std::string _account, std::string _transactionHash, int64_t _blockNumber);
+
     /**
      * Example JSON for re-entrancy:
      * 
