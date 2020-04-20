@@ -187,7 +187,7 @@ void LegacyVM::caseCall()
         if (EVMAnalyser::isEthploitModeEnabled()) {
             EVMAnalyser* analyser = EVMAnalyser::getInstance();
             if (m_OP == Instruction::DELEGATECALL) 
-                analyser->callExit((int)callParams->gas);
+                analyser->callExit(callParams->gas);
         }
 
         result.output.copyTo(output);
