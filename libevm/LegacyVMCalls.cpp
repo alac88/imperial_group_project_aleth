@@ -177,7 +177,7 @@ void LegacyVM::caseCall()
             } 
 
             if (m_OP == Instruction::DELEGATECALL) 
-                analyser->callEntry((int)callParams->gas, callParams->senderAddress.hex());
+                analyser->callEntry(callParams->gas, callParams->senderAddress.hex());
 
         }
 

@@ -111,11 +111,11 @@ bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrac
     return true;
 }
 
-void EVMAnalyser::callEntry(int gas, std::string contractAddress) {
+void EVMAnalyser::callEntry(dev::u256 gas, std::string contractAddress) {
     // Note that the DELEGATECALL relation has been populated now
     // So Minus 1 to refer back the DELEGATECALL
     souffle::tuple newTuple(relCallEntry); 
-    newTuple << executionTraceCount-1 << gas << contractAddress;
+    newTuple << executionTraceCount-1 << dev::toString(gas) << contractAddress;
     relCallEntry->insert(newTuple);
 
 #ifdef EVMANALYSER_DEBUG
@@ -125,9 +125,9 @@ void EVMAnalyser::callEntry(int gas, std::string contractAddress) {
 
 }
 
-void EVMAnalyser::callExit(int gas) {
+void EVMAnalyser::callExit(dev::u256 gas) {
     souffle::tuple newTuple(relCallExit);
-    newTuple << executionTraceCount-1 << gas; // Minus 1 to refer back the DELEGATECALL
+    newTuple << executionTraceCount-1 << dev::toString(gas); // Minus 1 to refer back the DELEGATECALL
     relCallExit->insert(newTuple); 
 
 #ifdef EVMANALYSER_DEBUG
@@ -422,7 +422,7 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                 for (auto &output : *rel) {
                     std::string contractAddress; 
                     int id;
-                    int gas;
+                    std::string gas;
 
                     count++;
                     output >> id >> gas >> contractAddress;

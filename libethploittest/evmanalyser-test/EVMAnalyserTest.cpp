@@ -69,7 +69,7 @@ struct F {
     }
 
     void addCallEntry() {
-        analyser->callEntry(1000, "0x60");
+        analyser->callEntry((dev::u256) 1000, "0x60");
     }
 
     void addDelegateCall() {
@@ -82,7 +82,7 @@ struct F {
     }
 
     void addCallExit() {
-        analyser->callExit(1000);
+        analyser->callExit((dev::u256) 1000);
     }
 
     void addSwap1Instr() {

@@ -76,9 +76,9 @@ class EVMAnalyser {
 
     void cleanExecutionTrace();
 
-    void callEntry(int gas, std::string contractAddress);
+    void callEntry(dev::u256 gas, std::string contractAddress);
 
-    void callExit(int gas);
+    void callExit(dev::u256 gas);
 
     void instruction(std::string const& opcode, int nArgs, int nRet);
 

@@ -47,7 +47,7 @@ reentrancy(C2, A1, A2, P, P2) :- call(C2, A1, A2, P), call(C1, A2, A1, P2), A1 !
 */
 
 //Additional types
-.number_type gas
+.type gas = symbol
 .number_type identifier
 
 .decl call_entry(id:identifier, g1:gas, a:EthAddress)
