@@ -130,7 +130,7 @@ All development goes in develop branch.
 
 ```
 NAME:
-   aleth 1.7.2
+   aleth 1.8.0-48+commit.e650c758.dirty
 USAGE:
    aleth [options]
 
@@ -147,26 +147,27 @@ CLIENT MODE (default):
   --test                                  Testing mode; disable PoW and provide test rpc interface
   --ethploit                              Ethploit mode; enables detection of potential exploitation (default: off)
   --config <file>                         Configure specialised blockchain using given JSON information
-
+                                          
   --ipc                                   Enable IPC server (default: on)
   --ipcpath <path>                        Set .ipc socket path (default: data directory)
   --no-ipc                                Disable IPC server
   --admin <password>                      Specify admin session key for JSON-RPC (default: auto-generated and printed at start-up)
-  -K [ --kill ]                           Kill the blockchain first
-  -R [ --rebuild ]                        Rebuild the blockchain from the existing database
+  -K [ --kill ]                           Kill the blockchain first. This will remove all blocks and state.
+  -R [ --rebuild ]                        Rebuild the blockchain from the existing database. This involves reimporting all blocks and will probably take a 
+                                          while.
   --rescue                                Attempt to rescue a corrupt database
-
+                                          
   --import-presale <file>                 Import a pre-sale key; you'll need to specify the password to this key
   -s [ --import-secret ] <secret>         Import a secret key into the key store
   -S [ --import-session-secret ] <secret> Import a secret session into the key store
   --master <password>                     Give the master password for the key store; use --master "" to show a prompt
   --password <password>                   Give a password for a private key
-
+                                          
 CLIENT TRANSACTING:
   --ask <wei>            Set the minimum ask gas price under which no transaction will be mined (default: 20000000000)
   --bid <wei>            Set the bid gas price to pay for transactions (default: 20000000000)
   --unsafe-transactions  Allow all transactions to proceed without verification; EXTREMELY UNSAFE
-
+                         
 CLIENT NETWORKING:
   -b [ --bootstrap ]              Connect to the default Ethereum peer servers (default unless --no-discovery used)
   --no-bootstrap                  Do not connect to the default Ethereum peer servers (default only when --no-discovery is used)
@@ -183,7 +184,7 @@ CLIENT NETWORKING:
                                           Types:
                                           default     Attempt connection when no other peers are available and pinning is disabled
                                           required    Keep connected at all times
-
+                                  
                                           Ports:
                                           The first port argument is the tcp port used for direct communication among peers. If the second port
                                           argument isn't supplied, the first port argument will also be the udp port used for node discovery.
@@ -191,12 +192,12 @@ CLIENT NETWORKING:
                                           both peer communication and node discovery.
   --no-discovery                  Disable node discovery; implies --no-bootstrap
   --pin                           Only accept or connect to trusted peers
-
+                                  
 CLIENT MINING:
   -a [ --address ] <addr>         Set the author (mining payout) address (default: auto)
   -m [ --mining ] <on/off/number> Enable mining; optionally for a specified number of blocks (default: off)
   --extra-data arg                Set extra data for the sealed blocks
-
+                                  
 BENCHMARKING MODE:
   -M [ --benchmark ]           Benchmark for mining and exit
   --benchmark-warmup <seconds> Set the duration of warmup for the benchmark tests (default: 3)
@@ -208,7 +209,7 @@ MINING CONFIGURATION:
   -t [ --mining-threads ] <n>  Limit number of CPU/GPU miners to n (default: use everything available on selected platform)
   --current-block <n>          Let the miner know the current block number at configuration time. Will help determine DAG size and required GPU memory
   --disable-submit-hashrate    When mining, don't submit hashrate to node
-
+                               
 IMPORT/EXPORT MODES:
   -I [ --import ] <file>      Import blocks from file
   -E [ --export ] <file>      Export blocks to file
@@ -219,26 +220,26 @@ IMPORT/EXPORT MODES:
   --dont-check                Prevent checking some block aspects. Faster importing, but to apply only when the data is known to be valid
   --download-snapshot <path>  Download Parity Warp Sync snapshot data to the specified path
   --import-snapshot <path>    Import blockchain and state data from the Parity Warp Sync snapshot
-
+                              
 DATABASE OPTIONS:
-  --db <name> (=leveldb)      Select database implementation. Available options are: leveldb, memorydb.
-  --db-path <path> (=$HOME/.ethereum) Database path (for non-memory database options)
-
+  --db <name> (=leveldb)                     Select database implementation. Available options are: leveldb, memorydb.
+  --db-path <path> (=/homes/zp619/.ethereum) Database path (for non-memory database options)
+                                             
 VM OPTIONS:
   --vm <name>|<path> (=legacy) Select VM implementation. Available options are: interpreter, legacy.
   --evmc  <option>=<value>     EVMC option
-
+                               
 LOGGING OPTIONS:
   -v [ --log-verbosity ] <0 - 4>        Set the log verbosity from 0 to 4 (default: 2).
   --log-channels <channel_list>         Space-separated list of the log channels to show (default: show all channels).
-                                        Channels: block blockhdr bq chain client debug discov error ethcap exec host impolite info net overlaydb p2pcap peer
+                                        Channels: block blockhdr bq chain client debug discov error ethcap exec host impolite info net overlaydb p2pcap peer 
                                         rlpx rpc snap statedb sync timer tq trace vmtrace warn warpcap watch
   --log-exclude-channels <channel_list> Space-separated list of the log channels to hide.
-
+                                        
   --log-vmtrace                         Enable VM trace log (requires log-verbosity 4).
-
+                                        
 GENERAL OPTIONS:
-  -d [ --data-dir ] <path> Load configuration files and keystore from path (default: $HOME/.ethereum)
+  -d [ --data-dir ] <path> Load configuration files and keystore from path (default: /homes/zp619/.ethereum)
   -V [ --version ]         Show the version and exit
   -h [ --help ]            Show this help message and exit
 ```
