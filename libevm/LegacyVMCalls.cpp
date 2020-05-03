@@ -172,9 +172,7 @@ void LegacyVM::caseCall()
             ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer);
 
             EVMAnalyser* analyser = EVMAnalyser::getInstance();
-            if(!analyser->populateExecutionTrace(&execTrace)) {
-                std::cout << "Failed to populate EVM Analyser\n";
-            } 
+            analyser->populateExecutionTrace(&execTrace);
 
             if (m_OP == Instruction::DELEGATECALL) 
                 analyser->callEntry(callParams->gas, callParams->senderAddress.hex());
