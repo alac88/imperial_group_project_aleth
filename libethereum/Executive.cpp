@@ -399,12 +399,14 @@ bool Executive::go(OnOpFunc const& _onOp)
         }
         catch (RevertInstruction& _e)
         {
+            std::cout << "Executive::go exception1\n";
             revert();
             m_output = _e.output();
             m_excepted = TransactionException::RevertInstruction;
         }
         catch (VMException const& _e)
         {
+            std::cout << "Executive::go exception2\n";
             LOG(m_detailsLogger) << "Safe VM Exception. " << diagnostic_information(_e);
             m_gas = 0;
             m_excepted = toTransactionException(_e);
@@ -412,6 +414,7 @@ bool Executive::go(OnOpFunc const& _onOp)
         }
         catch (InternalVMError const& _e)
         {
+            std::cout << "Executive::go exception3\n";
             cerror << "Internal VM Error (EVMC status code: "
                  << *boost::get_error_info<errinfo_evmcStatusCode>(_e) << ")";
             revert();
@@ -419,6 +422,7 @@ bool Executive::go(OnOpFunc const& _onOp)
         }
         catch (Exception const& _e)
         {
+            std::cout << "Executive::go exception4\n";
             // TODO: AUDIT: check that this can never reasonably happen. Consider what to do if it does.
             cerror << "Unexpected exception in VM. There may be a bug in this implementation. "
                  << diagnostic_information(_e);
@@ -428,6 +432,7 @@ bool Executive::go(OnOpFunc const& _onOp)
         }
         catch (std::exception const& _e)
         {
+            std::cout << "Executive::go exception5\n";
             // TODO: AUDIT: check that this can never reasonably happen. Consider what to do if it does.
             cerror << "Unexpected std::exception in VM. Not enough RAM? " << _e.what();
             exit(1);
