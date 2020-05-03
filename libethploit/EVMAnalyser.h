@@ -18,7 +18,7 @@ class EVMAnalyser {
     dev::u256 initialSenderBalance = 0;
     dev::u256 initialTotalBalance = 0;
     dev::u256 totalTransfer = 0;
-
+    int64_t blockNum = 0;
     // Json files
     JSONLogger * logger;
     
@@ -65,7 +65,7 @@ class EVMAnalyser {
                                     dev::u256 senderBalance = -1, 
                                     dev::u256 receiverBalance = -1,
                                     int64_t blockNum = -1);
-
+    int64_t getBlockNum();
     static void setEthploitMode();
     
     static bool isEthploitModeEnabled();

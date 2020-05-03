@@ -75,12 +75,17 @@ void EVMAnalyser::setupTransaction(std::string account,
             transactionHash = _transactionHash;
             initialSenderBalance = senderBalance;
             initialTotalBalance = senderBalance + receiverBalance;
+            blockNum = blockNumber;
         } else {// Same transaction
             dev::u256 totalDifference = initialTotalBalance - (senderBalance + receiverBalance);
             totalTransfer += initialSenderBalance - senderBalance + totalDifference;
         }
 
     }
+}
+
+int64_t EVMAnalyser::getBlockNum() {
+    return blockNum;
 }
 
 bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace) {

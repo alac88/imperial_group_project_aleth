@@ -166,26 +166,35 @@ void LegacyVM::caseCall()
 
     bytesRef output;
     if (caseCallSetup(callParams.get(), output))
-    {
-        if (EVMAnalyser::isEthploitModeEnabled()) {
-            
-            ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer);
+    {   
+        try {
+            if (EVMAnalyser::isEthploitModeEnabled()) {
+                
+                ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer);
 
+                EVMAnalyser* analyser = EVMAnalyser::getInstance();
+                analyser->populateExecutionTrace(&execTrace);
+
+                if (m_OP == Instruction::DELEGATECALL) 
+                    analyser->callEntry(callParams->gas, callParams->senderAddress.hex());
+
+            }
+        } catch (...) {
             EVMAnalyser* analyser = EVMAnalyser::getInstance();
-            analyser->populateExecutionTrace(&execTrace);
-
-            if (m_OP == Instruction::DELEGATECALL) 
-                analyser->callEntry(callParams->gas, callParams->senderAddress.hex());
-
+            std::cout << analyser->getBlockNum() << ": Exception thrown in caseCall #ethploit-1\n";
         }
-
         
         CallResult result = m_ext->call(*callParams);
-        
-        if (EVMAnalyser::isEthploitModeEnabled()) {
+        try {
+            if (EVMAnalyser::isEthploitModeEnabled()) {
+                EVMAnalyser* analyser = EVMAnalyser::getInstance();
+                if (m_OP == Instruction::DELEGATECALL) 
+                    analyser->callExit(callParams->gas);
+            }
+
+        } catch (...) {
             EVMAnalyser* analyser = EVMAnalyser::getInstance();
-            if (m_OP == Instruction::DELEGATECALL) 
-                analyser->callExit(callParams->gas);
+            std::cout << analyser->getBlockNum() << ": Exception thrown in caseCall #ethploit-2\n";
         }
 
         result.output.copyTo(output);
@@ -200,9 +209,14 @@ void LegacyVM::caseCall()
 
         m_SPP[0] = result.status == EVMC_SUCCESS ? 1 : 0;
 
-        if (EVMAnalyser::isEthploitModeEnabled()) {
+        try {
+            if (EVMAnalyser::isEthploitModeEnabled()) {
+                EVMAnalyser* analyser = EVMAnalyser::getInstance();
+                analyser->callResult((int)m_SPP[0]);
+            }
+        } catch (...) {
             EVMAnalyser* analyser = EVMAnalyser::getInstance();
-            analyser->callResult((int)m_SPP[0]);
+            std::cout << analyser->getBlockNum() << ": Exception thrown in caseCall #ethploit-3\n";
         }
     }
     else
