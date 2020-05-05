@@ -11,9 +11,6 @@
     #include "DetectionLogic.cpp"
 #endif
 
-// #define EVMANALYSER_DEBUG
-// #define EVMANALYSER_RESULT
-
 // Output related marcros
 #define FORERED "\x1B[31m"
 #define RESETTEXT "\x1B[0m"
@@ -174,7 +171,6 @@ void EVMAnalyser::storeCallArgs(int nArgs) {
 void EVMAnalyser::argsRet(int nArgs, int nRet) {
     if (nArgs > 0 && nRet == 1) {
         if (stackIDs.size() < (unsigned) nArgs) {
-            std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
             return;
         }
         // create new ID
@@ -182,9 +178,6 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
 
         // for each arg
         for (int i = 0; i < nArgs; i++) {
-#ifdef EVMANALYSER_DEBUG
-            OUTPUT << "insert to is_output: " << latestID << " " << stackIDs[i] << std::endl;
-#endif
             // insert tuple to is_output
             souffle::tuple newTuple(relIsOutput);
             newTuple << latestID << stackIDs[i];
@@ -197,7 +190,6 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
         stackIDs.insert(stackIDs.begin(), latestID);
     } else if (nArgs > 0) {
         if (stackIDs.size() < (unsigned) nArgs) {
-            std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
             return;
         }
 
@@ -211,7 +203,6 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
 
 void EVMAnalyser::callResult(int result) {
     if (callStack.size() < 1) {
-        std::cout << "Error: there is no pending call arguments on the call stack!\n";
         return;
     }
     // create new ID when call result is received
@@ -220,9 +211,6 @@ void EVMAnalyser::callResult(int result) {
     // take first callArgs in callStack
     auto callArgs = callStack[0];
     for (auto &arg : callArgs) {
-#ifdef EVMANALYSER_DEBUG
-        OUTPUT << "insert to is_output: " << latestID << " " << arg << std::endl;
-#endif
         // insert tuple to is_output
         souffle::tuple newTuple(relIsOutput);
         newTuple << latestID << arg;
@@ -233,9 +221,6 @@ void EVMAnalyser::callResult(int result) {
     callStack.erase(callStack.begin());
     
     // insert tuple to call_result
-#ifdef EVMANALYSER_DEBUG
-    OUTPUT << "insert to call_result: " << latestID << " " << result << std::endl;
-#endif
     souffle::tuple newTuple(relCallResult);
     newTuple << latestID << result;
     relCallResult->insert(newTuple); 
@@ -246,7 +231,6 @@ void EVMAnalyser::callResult(int result) {
 
 void EVMAnalyser::swap(int pos) {
     if (stackIDs.size() < (unsigned)(pos + 1)) {
-        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
         return;
     }
     // no tuple insertion
@@ -257,7 +241,6 @@ void EVMAnalyser::swap(int pos) {
 
 void EVMAnalyser::dup(int pos) {
     if (stackIDs.size() < (unsigned) pos) {
-        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
         return;
     }
     // create newID
@@ -265,9 +248,6 @@ void EVMAnalyser::dup(int pos) {
 
     // take ID of the original position
     // insert tuple to is_output
-#ifdef EVMANALYSER_DEBUG
-    OUTPUT << "insert to is_output: " << latestID << " " << stackIDs[pos - 1] << std::endl;
-#endif
     souffle::tuple newTuple(relIsOutput);
     newTuple << latestID << stackIDs[pos - 1];
     relIsOutput->insert(newTuple); 
@@ -278,14 +258,10 @@ void EVMAnalyser::dup(int pos) {
 
 void EVMAnalyser::jumpi() {
     if (stackIDs.size() < 2) {
-        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
         return;
     }
     // take second element on stack as condition 
     // insert tuple to in_condition
-#ifdef EVMANALYSER_DEBUG
-    OUTPUT << "insert to in_condition: " << stackIDs[1] << std::endl;
-#endif
     souffle::tuple newTuple(relInCondition);
     newTuple << stackIDs[1];
     relInCondition->insert(newTuple); 
