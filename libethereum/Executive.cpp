@@ -481,9 +481,10 @@ bool Executive::finalize()
                 analyser->queryExploit("unhandled_exception");
                 analyser->cleanExecutionTrace();
             }
-        } catch (...) {
+        } catch (std::exception& e) {
             EVMAnalyser* analyser = EVMAnalyser::getInstance();
             std::cout << analyser->getBlockNum() << ": Exception thrown in Executive::finalize #ethploit-5\n";
+            std::cout << e.what() << std::endl;
         }
         
     }
