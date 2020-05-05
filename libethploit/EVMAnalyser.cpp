@@ -58,6 +58,10 @@ bool EVMAnalyser::isEthploitModeEnabled() {
     return ethploitMode;
 }
 
+void EVMAnalyser::setBadTransaction() {
+    badTransaction = true;
+}
+
 void EVMAnalyser::setupTransaction(std::string account,
                                    std::string _transactionHash, 
                                    dev::u256 senderBalance, 
@@ -65,6 +69,7 @@ void EVMAnalyser::setupTransaction(std::string account,
                                    int64_t blockNumber) {
     if (senderBalance != -1 && receiverBalance != -1) {
         if (transactionHash != _transactionHash) {// New transaction
+            badTransaction = false;
             logger->setTransactionInfo(account, _transactionHash, blockNumber);
 
             // Update transaction information
@@ -353,7 +358,8 @@ void EVMAnalyser::extractReentrancyAddresses() {
                 reentrancyChain += " => " + addrStart;
 
                 // Save the new json tuple
-                logger->logReentrancy(reentrancyChain, dev::toString(totalEther));
+                if (!badTransaction)
+                    logger->logReentrancy(reentrancyChain, dev::toString(totalEther));
 
                 // Reset
                 if (senderAddrOriginal != receiverAddrPre) {
@@ -403,8 +409,8 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                     OUTPUT << FORERED << "Query Result: " << count << " Contract in address: " 
                         << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
 #endif
-
-                    logger->logLockedEther(contractAddress);
+                    if (!badTransaction)
+                        logger->logLockedEther(contractAddress);
                 }
                 return true; 
             } else {
@@ -432,7 +438,8 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                     OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " 
                         << "StackID: " << stackID << RESETTEXT << std::endl; 
 #endif
-                    logger->logUnhandledException(stackID);
+                    if (!badTransaction)
+                        logger->logUnhandledException(stackID);
                 }
                 return true; 
             } else {
@@ -454,8 +461,8 @@ void EVMAnalyser::cleanExecutionTrace() {
     prog->purgeInputRelations();
     prog->purgeInternalRelations(); // Remenber to clean the internal relations e.g. call in the re-entrancy
     prog->purgeOutputRelations();
-
-    logger->logTransaction(transactionCount, dev::toString(totalTransfer));
+    if (!badTransaction)
+        logger->logTransaction(transactionCount, dev::toString(totalTransfer));
 
     executionTraceCount = 1;
     latestID = 0;

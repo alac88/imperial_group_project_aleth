@@ -18,6 +18,7 @@ class EVMAnalyser {
     dev::u256 initialSenderBalance = 0;
     dev::u256 initialTotalBalance = 0;
     dev::u256 totalTransfer = 0;
+    bool badTransaction = false;
 
     // Json files
     JSONLogger * logger;
@@ -70,6 +71,8 @@ class EVMAnalyser {
     
     static bool isEthploitModeEnabled();
 
+    void setBadTransaction();
+    
     bool populateCallTrace(dev::eth::CallTrace* callTrace);
 
     bool queryExploit(std::string exploitName);
