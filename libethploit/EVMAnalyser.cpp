@@ -69,7 +69,7 @@ void EVMAnalyser::setupTransaction(std::string account,
     if (senderBalance != -1 && receiverBalance != -1) {
         if (transactionHash != _transactionHash) {// New transaction
             logger->setTransactionInfo(account, _transactionHash, blockNumber);
-
+            badTransaction = false;
             // Update transaction information
             transactionCount++;
             transactionHash = _transactionHash;
@@ -86,6 +86,14 @@ void EVMAnalyser::setupTransaction(std::string account,
 
 int64_t EVMAnalyser::getBlockNum() {
     return blockNum;
+}
+
+std::string EVMAnalyser::getTrxHash() {
+    return transactionHash;
+}
+
+void EVMAnalyser::setBadTransaction() {
+    badTransaction = true;
 }
 
 bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace) {
@@ -179,7 +187,6 @@ void EVMAnalyser::storeCallArgs(int nArgs) {
 void EVMAnalyser::argsRet(int nArgs, int nRet) {
     if (nArgs > 0 && nRet == 1) {
         if (stackIDs.size() < (unsigned) nArgs) {
-            std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
             return;
         }
         // create new ID
@@ -202,7 +209,6 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
         stackIDs.insert(stackIDs.begin(), latestID);
     } else if (nArgs > 0) {
         if (stackIDs.size() < (unsigned) nArgs) {
-            std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
             return;
         }
 
@@ -216,7 +222,6 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
 
 void EVMAnalyser::callResult(int result) {
     if (callStack.size() < 1) {
-        std::cout << "Error: there is no pending call arguments on the call stack!\n";
         return;
     }
     // create new ID when call result is received
@@ -251,7 +256,6 @@ void EVMAnalyser::callResult(int result) {
 
 void EVMAnalyser::swap(int pos) {
     if (stackIDs.size() < (unsigned)(pos + 1)) {
-        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
         return;
     }
     // no tuple insertion
@@ -262,7 +266,6 @@ void EVMAnalyser::swap(int pos) {
 
 void EVMAnalyser::dup(int pos) {
     if (stackIDs.size() < (unsigned) pos) {
-        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
         return;
     }
     // create newID
@@ -283,7 +286,6 @@ void EVMAnalyser::dup(int pos) {
 
 void EVMAnalyser::jumpi() {
     if (stackIDs.size() < 2) {
-        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
         return;
     }
     // take second element on stack as condition 
@@ -382,7 +384,8 @@ void EVMAnalyser::extractReentrancyAddresses() {
                 reentrancyChain += " => " + addrStart;
 
                 // Save the new json tuple
-                logger->logReentrancy(reentrancyChain, dev::toString(totalEther));
+                if (!badTransaction)
+                    logger->logReentrancy(reentrancyChain, dev::toString(totalEther));
 
                 // Reset
                 if (senderAddrOriginal != receiverAddrPre) {
@@ -432,8 +435,8 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                     OUTPUT << FORERED << "Query Result: " << count << " Contract in address: " 
                         << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
 #endif
-
-                    logger->logLockedEther(contractAddress);
+                    if (!badTransaction)
+                        logger->logLockedEther(contractAddress);
                 }
                 return true; 
             } else {
@@ -461,7 +464,8 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                     OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " 
                         << "StackID: " << stackID << RESETTEXT << std::endl; 
 #endif
-                    logger->logUnhandledException(stackID);
+                    if (!badTransaction)
+                        logger->logUnhandledException(stackID);
                 }
                 return true; 
             } else {
@@ -484,7 +488,8 @@ void EVMAnalyser::cleanExecutionTrace() {
     prog->purgeInternalRelations(); // Remenber to clean the internal relations e.g. call in the re-entrancy
     prog->purgeOutputRelations();
 
-    logger->logTransaction(transactionCount, dev::toString(totalTransfer));
+    if (!badTransaction)
+        logger->logTransaction(transactionCount, dev::toString(totalTransfer));
 
     executionTraceCount = 1;
     latestID = 0;

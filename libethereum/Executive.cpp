@@ -406,6 +406,8 @@ bool Executive::go(OnOpFunc const& _onOp)
         }
         catch (VMException const& _e)
         {
+            EVMAnalyser* analyser = EVMAnalyser::getInstance();
+            std::cout << analyser->getBlockNum() << ": " << analyser->getTrxHash() << std::endl;
             std::cout << "Executive::go exception2\n";
             LOG(m_detailsLogger) << "Safe VM Exception. " << diagnostic_information(_e);
             m_gas = 0;
@@ -516,4 +518,7 @@ void Executive::revert()
     // Set result address to the null one.
     m_newAddress = {};
     m_s.rollback(m_savepoint);
+    EVMAnalyser* analyser = EVMAnalyser::getInstance();
+    std::cout << "Reverted " << analyser->getBlockNum() << ": " << analyser->getTrxHash() << std::endl;
+    analyser->setBadTransaction();
 }
