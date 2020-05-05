@@ -11,9 +11,6 @@
     #include "DetectionLogic.cpp"
 #endif
 
-// #define EVMANALYSER_DEBUG
-// #define EVMANALYSER_RESULT
-
 // Output related marcros
 #define FORERED "\x1B[31m"
 #define RESETTEXT "\x1B[0m"
@@ -88,26 +85,22 @@ int64_t EVMAnalyser::getBlockNum() {
     return blockNum;
 }
 
-std::string EVMAnalyser::getTrxHash() {
-    return transactionHash;
-}
-
 void EVMAnalyser::setBadTransaction() {
     badTransaction = true;
 }
 
-bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace) {
-    if (executionTrace->instruction == "CALL" ||
-        executionTrace->instruction == "DELEGATECALL" ||
-        executionTrace->instruction == "STATICCALL") { // Treating three types of call as the same for now 
+bool EVMAnalyser::populateCallTrace(dev::eth::CallTrace* callTrace) {
+    if (callTrace->instruction == "CALL" ||
+        callTrace->instruction == "DELEGATECALL" ||
+        callTrace->instruction == "STATICCALL") { // Treating three types of call as the same for now 
         souffle::tuple newTuple(relDirectCall); // create tuple for the relation
 #ifdef EVMANALYSER_DEBUG
         OUTPUT << "The populated instruction has ID number " << executionTraceCount << std::endl;
 #endif
         newTuple << executionTraceCount
-                << executionTrace->senderAddress
-                << executionTrace->receiveAddress
-                << dev::toString(executionTrace->valueTransfer);
+                << callTrace->senderAddress
+                << callTrace->receiveAddress
+                << dev::toString(callTrace->valueTransfer);
         relDirectCall->insert(newTuple);
         executionTraceCount++;
     } else {
@@ -194,9 +187,6 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
 
         // for each arg
         for (int i = 0; i < nArgs; i++) {
-#ifdef EVMANALYSER_DEBUG
-            OUTPUT << "insert to is_output: " << latestID << " " << stackIDs[i] << std::endl;
-#endif
             // insert tuple to is_output
             souffle::tuple newTuple(relIsOutput);
             newTuple << latestID << stackIDs[i];
@@ -230,9 +220,6 @@ void EVMAnalyser::callResult(int result) {
     // take first callArgs in callStack
     auto callArgs = callStack[0];
     for (auto &arg : callArgs) {
-#ifdef EVMANALYSER_DEBUG
-        OUTPUT << "insert to is_output: " << latestID << " " << arg << std::endl;
-#endif
         // insert tuple to is_output
         souffle::tuple newTuple(relIsOutput);
         newTuple << latestID << arg;
@@ -243,9 +230,6 @@ void EVMAnalyser::callResult(int result) {
     callStack.erase(callStack.begin());
     
     // insert tuple to call_result
-#ifdef EVMANALYSER_DEBUG
-    OUTPUT << "insert to call_result: " << latestID << " " << result << std::endl;
-#endif
     souffle::tuple newTuple(relCallResult);
     newTuple << latestID << result;
     relCallResult->insert(newTuple); 
@@ -273,9 +257,6 @@ void EVMAnalyser::dup(int pos) {
 
     // take ID of the original position
     // insert tuple to is_output
-#ifdef EVMANALYSER_DEBUG
-    OUTPUT << "insert to is_output: " << latestID << " " << stackIDs[pos - 1] << std::endl;
-#endif
     souffle::tuple newTuple(relIsOutput);
     newTuple << latestID << stackIDs[pos - 1];
     relIsOutput->insert(newTuple); 
@@ -290,9 +271,6 @@ void EVMAnalyser::jumpi() {
     }
     // take second element on stack as condition 
     // insert tuple to in_condition
-#ifdef EVMANALYSER_DEBUG
-    OUTPUT << "insert to in_condition: " << stackIDs[1] << std::endl;
-#endif
     souffle::tuple newTuple(relInCondition);
     newTuple << stackIDs[1];
     relInCondition->insert(newTuple); 

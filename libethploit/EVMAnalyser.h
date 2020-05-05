@@ -67,8 +67,6 @@ class EVMAnalyser {
                                     dev::u256 receiverBalance = -1,
                                     int64_t blockNum = -1);
     int64_t getBlockNum();
-
-    std::string getTrxHash();
     
     static void setEthploitMode();
     
@@ -76,7 +74,7 @@ class EVMAnalyser {
 
     void setBadTransaction();
 
-    bool populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace);
+    bool populateCallTrace(dev::eth::CallTrace* callTrace);
 
     bool queryExploit(std::string exploitName);
 
