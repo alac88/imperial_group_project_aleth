@@ -70,7 +70,7 @@ class EVMAnalyser {
     
     static bool isEthploitModeEnabled();
 
-    bool populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace);
+    bool populateCallTrace(dev::eth::CallTrace* callTrace);
 
     bool queryExploit(std::string exploitName);
 

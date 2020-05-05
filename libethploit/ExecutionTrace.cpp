@@ -5,7 +5,7 @@ namespace dev
     namespace eth 
     {
 
-        ExecutionTrace::ExecutionTrace(Instruction _instruction, 
+        CallTrace::CallTrace(Instruction _instruction, 
                                         Address _senderAddress,
                                         Address _receiveAddress,
                                         u256 _valueTransfer)

@@ -169,10 +169,10 @@ void LegacyVM::caseCall()
     {
         if (EVMAnalyser::isEthploitModeEnabled()) {
             
-            ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer);
+            CallTrace callTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer);
 
             EVMAnalyser* analyser = EVMAnalyser::getInstance();
-            analyser->populateExecutionTrace(&execTrace);
+            analyser->populateCallTrace(&callTrace);
 
             if (m_OP == Instruction::DELEGATECALL) 
                 analyser->callEntry(callParams->gas, callParams->senderAddress.hex());

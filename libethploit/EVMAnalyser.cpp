@@ -80,18 +80,18 @@ void EVMAnalyser::setupTransaction(std::string account,
     }
 }
 
-bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace) {
-    if (executionTrace->instruction == "CALL" ||
-        executionTrace->instruction == "DELEGATECALL" ||
-        executionTrace->instruction == "STATICCALL") { // Treating three types of call as the same for now 
+bool EVMAnalyser::populateCallTrace(dev::eth::CallTrace* callTrace) {
+    if (callTrace->instruction == "CALL" ||
+        callTrace->instruction == "DELEGATECALL" ||
+        callTrace->instruction == "STATICCALL") { // Treating three types of call as the same for now 
         souffle::tuple newTuple(relDirectCall); // create tuple for the relation
 #ifdef EVMANALYSER_DEBUG
         OUTPUT << "The populated instruction has ID number " << executionTraceCount << std::endl;
 #endif
         newTuple << executionTraceCount
-                << executionTrace->senderAddress
-                << executionTrace->receiveAddress
-                << dev::toString(executionTrace->valueTransfer);
+                << callTrace->senderAddress
+                << callTrace->receiveAddress
+                << dev::toString(callTrace->valueTransfer);
         relDirectCall->insert(newTuple);
         executionTraceCount++;
     } else {
