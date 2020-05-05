@@ -71,7 +71,7 @@ void EVMAnalyser::setupTransaction(std::string account,
         if (transactionHash != _transactionHash) {// New transaction
             badTransaction = false;
             logger->setTransactionInfo(account, _transactionHash, blockNumber);
-
+            badTransaction = false;
             // Update transaction information
             transactionCount++;
             transactionHash = _transactionHash;
@@ -461,6 +461,7 @@ void EVMAnalyser::cleanExecutionTrace() {
     prog->purgeInputRelations();
     prog->purgeInternalRelations(); // Remenber to clean the internal relations e.g. call in the re-entrancy
     prog->purgeOutputRelations();
+
     if (!badTransaction)
         logger->logTransaction(transactionCount, dev::toString(totalTransfer));
 
