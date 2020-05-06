@@ -62,6 +62,10 @@ void EVMAnalyser::setBadTransaction() {
     badTransaction = true;
 }
 
+bool EVMAnalyser::isBadTransaction() {
+    return badTransaction;
+};
+
 void EVMAnalyser::setupTransaction(std::string account,
                                    std::string _transactionHash, 
                                    dev::u256 senderBalance, 

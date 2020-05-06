@@ -612,6 +612,15 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         BOOST_TEST(analyser->queryExploit("reentrancy") == false);        
     }
 
+    BOOST_AUTO_TEST_CASE(bad_transaction_is_false_on_instantiation) {
+        BOOST_TEST(analyser->isBadTransaction() == false);
+    }
+
+    BOOST_AUTO_TEST_CASE(set_bad_transaction_makes_bad_transaction_flag_true) {
+        analyser->setBadTransaction();
+        BOOST_TEST(analyser->isBadTransaction() == true);
+    }
+
     BOOST_AUTO_TEST_CASE(clean_execution_trace_resets_state) {
         addCall1();
         BOOST_TEST(analyser->getRelationSize("direct_call") == 1);

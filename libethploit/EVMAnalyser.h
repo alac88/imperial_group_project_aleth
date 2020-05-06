@@ -95,6 +95,8 @@ class EVMAnalyser {
 
     int getCallArgID(int callStackIndex, int argIndex);
 
+    bool isBadTransaction();
+
 };
 
 /**
