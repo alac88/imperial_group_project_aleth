@@ -1,6 +1,6 @@
 #define BOOST_TEST_MODULE CallTraceTest
 #include <boost/test/included/unit_test.hpp> 
-#include <libethploit/ExecutionTrace.h>
+#include <libethploit/CallTrace.h>
 
 using namespace std;
 using namespace dev;

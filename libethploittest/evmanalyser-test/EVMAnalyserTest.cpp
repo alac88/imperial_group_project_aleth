@@ -6,7 +6,7 @@
 #include "turtle/mock.hpp"
 #include "EVMAnalyser.h"
 
-// Mock class of ExecutionTrace
+// Mock class of CallTrace
 MOCK_BASE_CLASS(CallTraceMock, dev::eth::CallTrace) {
     CallTraceMock(std::string _instruction,
                          std::string _senderAddr, 

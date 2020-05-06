@@ -2,7 +2,7 @@
 // Copyright 2016-2019 Aleth Authors.
 // Licensed under the GNU General Public License, Version 3.
 #include "LegacyVM.h"
-#include "libethploit/ExecutionTrace.h"
+#include "libethploit/CallTrace.h"
 #include "libethploit/EVMAnalyser.h"
 
 using namespace std;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "souffle/SouffleInterface.h"
-#include "libethploit/ExecutionTrace.h"
+#include "libethploit/CallTrace.h"
 #include "JSONLogger.h"
 
 #include "libdevcore/Common.h"
