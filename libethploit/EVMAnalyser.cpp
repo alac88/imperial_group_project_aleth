@@ -75,7 +75,6 @@ void EVMAnalyser::setupTransaction(std::string account,
         if (transactionHash != _transactionHash) {// New transaction
             badTransaction = false;
             logger->setTransactionInfo(account, _transactionHash, blockNumber);
-            badTransaction = false;
             // Update transaction information
             transactionCount++;
             transactionHash = _transactionHash;
