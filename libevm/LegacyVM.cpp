@@ -65,11 +65,13 @@ void LegacyVM::onOperation(Instruction _instr)
         (m_onOp)(++m_nSteps, m_PC, _instr,
             m_newMemSize > m_mem.size() ? (m_newMemSize - m_mem.size()) / 32 : uint64_t(0),
             m_runGas, m_io_gas, this, m_ext);
-    
-    if (EVMAnalyser::isEthploitModeEnabled()) {
-        InstructionInfo iInfo = instructionInfo(_instr);
-        EVMAnalyser* analyser = EVMAnalyser::getInstance();
-        analyser->instruction(iInfo.name, iInfo.args, iInfo.ret);
+    try {
+        if (EVMAnalyser::isEthploitModeEnabled()) {
+            InstructionInfo iInfo = instructionInfo(_instr);
+            EVMAnalyser* analyser = EVMAnalyser::getInstance();
+            analyser->instruction(iInfo.name, iInfo.args, iInfo.ret);
+        }
+    } catch(...) {
     }
 }
 

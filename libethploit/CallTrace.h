@@ -17,7 +17,7 @@ namespace eth
 
 
 
-struct ExecutionTrace 
+struct CallTrace 
 {
 
     std::string instruction;
@@ -25,8 +25,8 @@ struct ExecutionTrace
     std::string receiveAddress;
     u256 valueTransfer;
 
-    ExecutionTrace() {}; // Add a default constructor for the convenience of test
-    ExecutionTrace(Instruction _instruction,
+    CallTrace() {}; // Add a default constructor for the convenience of test
+    CallTrace(Instruction _instruction,
                     Address _senderAddress,
                     Address _receiveAddres,
                     u256 _valueTransfer);

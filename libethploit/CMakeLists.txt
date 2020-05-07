@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.9)
 set(BOOST_INCLUDE_DIRS ${BOOST_ROOT}/include)
 
 ###############################################################################
-## Compile libevmanalyser
+## Compile evmanalyser
 ###############################################################################
 include_directories(
     ${CMAKE_SOURCE_DIR}
@@ -50,14 +50,14 @@ add_subdirectory(../libethploittest/evmanalyser-test
 )
 
 ###############################################################################
-## Compile executiontrace-test
+## Compile calltrace-test
 ###############################################################################
-add_subdirectory(../libethploittest/executiontrace-test
-    ${CMAKE_CURRENT_BINARY_DIR}/../libethploittest/executiontrace-test
+add_subdirectory(../libethploittest/calltrace-test
+    ${CMAKE_CURRENT_BINARY_DIR}/../libethploittest/calltrace-test
 )
 
 ###############################################################################
-## Create the gcov target. Run coverage tests with 'make gcov'
+## Create the gcov target. Run coverage tests with 'make evmanalyser_gcov'
 ###############################################################################
 set(OBJECT_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/evmanalyser.dir)
 message("-- Object files will be output to: ${OBJECT_DIR}")
@@ -79,7 +79,7 @@ add_dependencies(evmanalyser_gcov libevmanalyser_test)
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES coverage)
 
 ###############################################################################
-## Create the lcov target. Create html coverage report with 'make lcov'
+## Create the lcov target. Create html coverage report with 'make evmanalyser_lcov'
 ###############################################################################
 add_custom_target(evmanalyser_lcov
     COMMAND lcov -c -d --rc lcov_branch_coverage=1 . -o evmanalyser_coverage.info 
@@ -88,8 +88,7 @@ add_custom_target(evmanalyser_lcov
 )
 
 ###############################################################################
-## Create the gcov-clean target. This cleans the build as well as generated 
-## .gcda and .gcno files.
+## Create the gcov-clean target with 'make evmanalyser_scrub'. This cleans the build as well as generated .gcda and .gcno files.
 ###############################################################################
 add_custom_target(evmanalyser_scrub
     COMMAND ${CMAKE_MAKE_PROGRAM} clean
@@ -103,12 +102,12 @@ add_dependencies(evmanalyser_scrub
 
 
 ###############################################################################
-## The original CMakeLists for libethploit
+## Compile calltrace
 ###############################################################################
 
 add_library(ethploit
-    ExecutionTrace.cpp
-    ExecutionTrace.h
+    CallTrace.cpp
+    CallTrace.h
 )
 add_compile_options(
     -Wno-error=unused-but-set-variable 
@@ -121,31 +120,39 @@ target_link_libraries(ethploit
     devcore
 )
 
+###############################################################################
+## Generate coverage report for CallTrace
+###############################################################################
 # sequence (clean up coverage folder -> run coverage test -> generate coverage report):
 # make scrub (if this is not the first run of gcov)
 # make gcov
 # make lcov
 
+###############################################################################
+## Create the gcov target. Run coverage tests with 'make gcov'
+###############################################################################
 set(OBJECT_DIR ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/ethploit.dir)
 message("-- Object files will be output to: ${OBJECT_DIR}")
 
 # Create the gcov target. Run coverage tests with 'make gcov'
 add_custom_target(gcov
     COMMAND mkdir coverage
-    COMMAND ../libethploittest/executiontrace-test/executiontrace-test
+    COMMAND ../libethploittest/calltrace-test/calltrace-test
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 add_custom_command(TARGET gcov
     COMMAND echo "=================== GCOV ===================="
-    COMMAND gcov -abcfu ${CMAKE_SOURCE_DIR}/libethploit/ExecutionTrace.cpp -o ${OBJECT_DIR}
-    | grep -A 5 "ExecutionTrace.cpp" > CoverageSummary.tmp
+    COMMAND gcov -abcfu ${CMAKE_SOURCE_DIR}/libethploit/CallTrace.cpp -o ${OBJECT_DIR}
+    | grep -A 5 "CallTrace.cpp" > CoverageSummary.tmp
     COMMAND cat CoverageSummary.tmp
     COMMAND echo "-- Coverage files have been output to ${CMAKE_CURRENT_BINARY_DIR}/coverage"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/coverage
 )
-add_dependencies(gcov executiontrace-test)
+add_dependencies(gcov calltrace-test)
 
-# Create the lcov target. Create html coverage report with 'make lcov'
+###############################################################################
+## Create the lcov target. Create html coverage report with 'make lcov'
+###############################################################################
 add_custom_target(lcov
     COMMAND lcov -c -d . -o coverage.info --rc lcov_branch_coverage=1
     COMMAND genhtml coverage.info --branch-coverage --output-directory out 
@@ -155,8 +162,9 @@ add_custom_target(lcov
 # Make sure to clean up the coverage folder
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES coverage)
 
-# Create the gcov-clean target. This cleans the build as well as generated 
-# .gcda and .gcno files.
+###############################################################################
+## Create the gcov-clean target with 'make scrub'. This cleans the build as well as generated .gcda and .gcno files.
+###############################################################################
 add_custom_target(scrub
 COMMAND ${CMAKE_MAKE_PROGRAM} clean
 COMMAND rm -f ${OBJECT_DIR}/*.gcno

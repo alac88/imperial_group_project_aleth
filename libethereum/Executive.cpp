@@ -136,8 +136,12 @@ void Executive::initialize(Transaction const& _transaction)
         m_gasCost = (u256)gasCost;  // Convert back to 256-bit, safe now.
     }
 
-    if(EVMAnalyser::isEthploitModeEnabled())
-        EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()), m_envInfo.number());
+    try {
+        if(EVMAnalyser::isEthploitModeEnabled())
+            EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()), m_envInfo.number());
+    } catch (...) {
+    }
+
 }
 
 bool Executive::execute()
@@ -164,13 +168,6 @@ bool Executive::call(Address const& _receiveAddress, Address const& _senderAddre
 
 bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address const& _origin)
 {
-
-    // DELETE   
-    // std::cout << "Executive::call()" << " ";
-    // std::cout << "Sender " << _p.senderAddress << " ";
-    // std::cout << "Receive Address" << _p.receiveAddress << " "; 
-    // std::cout << "Code Address " << _p.codeAddress << std::endl;
-
     // If external transaction.
     if (m_t)
     {
@@ -186,9 +183,6 @@ bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address co
 
     if (m_sealEngine.isPrecompiled(_p.codeAddress, m_envInfo.number()))
     {
-        // DELETE?   
-        // std::cout << "if(m_sealEngine.isPrecompiled)\n";
-        
         // Empty RIPEMD contract needs to be deleted even in case of OOG
         // because of the anomaly on the main net caused by buggy behavior by both Geth and Parity
         // https://github.com/ethereum/go-ethereum/pull/3341/files#diff-2433aa143ee4772026454b8abd76b9dd
@@ -460,14 +454,17 @@ bool Executive::finalize()
 
         u256 feesEarned = (m_t.gas() - m_gas) * m_t.gasPrice();
         m_s.addBalance(m_envInfo.author(), feesEarned);
+        
+        try {
+            if (EVMAnalyser::isEthploitModeEnabled()) {
+                EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()));
 
-        if (EVMAnalyser::isEthploitModeEnabled()) {
-            EVMAnalyser* analyser = EVMAnalyser::getInstance(m_t.from().hex(), toString(m_t.sha3()), m_s.balance(m_t.from()), m_s.balance(m_t.to()));
-
-            analyser->queryExploit("reentrancy");
-            analyser->queryExploit("locked_ether");
-            analyser->queryExploit("unhandled_exception");
-            analyser->cleanExecutionTrace();
+                analyser->queryExploit("reentrancy");
+                analyser->queryExploit("locked_ether");
+                analyser->queryExploit("unhandled_exception");
+                analyser->cleanExecutionTrace();
+            }
+        } catch (...) {
         }
         
     }
@@ -499,4 +496,13 @@ void Executive::revert()
     // Set result address to the null one.
     m_newAddress = {};
     m_s.rollback(m_savepoint);
+    try {
+        if (EVMAnalyser::isEthploitModeEnabled()) {
+            EVMAnalyser* analyser = EVMAnalyser::getInstance();
+            analyser->setBadTransaction();
+
+        }
+    }
+    catch (...) {
+    }
 }

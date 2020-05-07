@@ -2,7 +2,7 @@
 // Copyright 2016-2019 Aleth Authors.
 // Licensed under the GNU General Public License, Version 3.
 #include "LegacyVM.h"
-#include "libethploit/ExecutionTrace.h"
+#include "libethploit/CallTrace.h"
 #include "libethploit/EVMAnalyser.h"
 
 using namespace std;
@@ -166,26 +166,30 @@ void LegacyVM::caseCall()
 
     bytesRef output;
     if (caseCallSetup(callParams.get(), output))
-    {
-        if (EVMAnalyser::isEthploitModeEnabled()) {
+    {   
+        try {
+            if (EVMAnalyser::isEthploitModeEnabled()) {
             
-            ExecutionTrace execTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer);
+            CallTrace callTrace(m_OP, callParams->senderAddress, callParams->receiveAddress, callParams->valueTransfer);
 
             EVMAnalyser* analyser = EVMAnalyser::getInstance();
-            analyser->populateExecutionTrace(&execTrace);
+            analyser->populateCallTrace(&callTrace);
 
-            if (m_OP == Instruction::DELEGATECALL) 
-                analyser->callEntry(callParams->gas, callParams->senderAddress.hex());
-
+                if (m_OP == Instruction::DELEGATECALL) 
+                    analyser->callEntry(callParams->gas, callParams->senderAddress.hex());
+            }
+        } catch (...) {
         }
-
         
         CallResult result = m_ext->call(*callParams);
-        
-        if (EVMAnalyser::isEthploitModeEnabled()) {
-            EVMAnalyser* analyser = EVMAnalyser::getInstance();
-            if (m_OP == Instruction::DELEGATECALL) 
-                analyser->callExit(callParams->gas);
+        try {
+            if (EVMAnalyser::isEthploitModeEnabled()) {
+                EVMAnalyser* analyser = EVMAnalyser::getInstance();
+                if (m_OP == Instruction::DELEGATECALL) 
+                    analyser->callExit(callParams->gas);
+            }
+
+        } catch (...) {
         }
 
         result.output.copyTo(output);
@@ -200,9 +204,12 @@ void LegacyVM::caseCall()
 
         m_SPP[0] = result.status == EVMC_SUCCESS ? 1 : 0;
 
-        if (EVMAnalyser::isEthploitModeEnabled()) {
-            EVMAnalyser* analyser = EVMAnalyser::getInstance();
-            analyser->callResult((int)m_SPP[0]);
+        try {
+            if (EVMAnalyser::isEthploitModeEnabled()) {
+                EVMAnalyser* analyser = EVMAnalyser::getInstance();
+                analyser->callResult((int)m_SPP[0]);
+            }
+        } catch (...) {
         }
     }
     else

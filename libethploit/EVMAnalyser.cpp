@@ -11,9 +11,6 @@
     #include "DetectionLogic.cpp"
 #endif
 
-// #define EVMANALYSER_DEBUG
-// #define EVMANALYSER_RESULT
-
 // Output related marcros
 #define FORERED "\x1B[31m"
 #define RESETTEXT "\x1B[0m"
@@ -61,6 +58,14 @@ bool EVMAnalyser::isEthploitModeEnabled() {
     return ethploitMode;
 }
 
+void EVMAnalyser::setBadTransaction() {
+    badTransaction = true;
+}
+
+bool EVMAnalyser::isBadTransaction() {
+    return badTransaction;
+};
+
 void EVMAnalyser::setupTransaction(std::string account,
                                    std::string _transactionHash, 
                                    dev::u256 senderBalance, 
@@ -68,8 +73,8 @@ void EVMAnalyser::setupTransaction(std::string account,
                                    int64_t blockNumber) {
     if (senderBalance != -1 && receiverBalance != -1) {
         if (transactionHash != _transactionHash) {// New transaction
+            badTransaction = false;
             logger->setTransactionInfo(account, _transactionHash, blockNumber);
-
             // Update transaction information
             transactionCount++;
             transactionHash = _transactionHash;
@@ -83,18 +88,18 @@ void EVMAnalyser::setupTransaction(std::string account,
     }
 }
 
-bool EVMAnalyser::populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace) {
-    if (executionTrace->instruction == "CALL" ||
-        executionTrace->instruction == "DELEGATECALL" ||
-        executionTrace->instruction == "STATICCALL") { // Treating three types of call as the same for now 
+bool EVMAnalyser::populateCallTrace(dev::eth::CallTrace* callTrace) {
+    if (callTrace->instruction == "CALL" ||
+        callTrace->instruction == "DELEGATECALL" ||
+        callTrace->instruction == "STATICCALL") { // Treating three types of call as the same for now 
         souffle::tuple newTuple(relDirectCall); // create tuple for the relation
 #ifdef EVMANALYSER_DEBUG
         OUTPUT << "The populated instruction has ID number " << executionTraceCount << std::endl;
 #endif
         newTuple << executionTraceCount
-                << executionTrace->senderAddress
-                << executionTrace->receiveAddress
-                << dev::toString(executionTrace->valueTransfer);
+                << callTrace->senderAddress
+                << callTrace->receiveAddress
+                << dev::toString(callTrace->valueTransfer);
         relDirectCall->insert(newTuple);
         executionTraceCount++;
     } else {
@@ -174,7 +179,6 @@ void EVMAnalyser::storeCallArgs(int nArgs) {
 void EVMAnalyser::argsRet(int nArgs, int nRet) {
     if (nArgs > 0 && nRet == 1) {
         if (stackIDs.size() < (unsigned) nArgs) {
-            std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
             return;
         }
         // create new ID
@@ -182,9 +186,6 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
 
         // for each arg
         for (int i = 0; i < nArgs; i++) {
-#ifdef EVMANALYSER_DEBUG
-            OUTPUT << "insert to is_output: " << latestID << " " << stackIDs[i] << std::endl;
-#endif
             // insert tuple to is_output
             souffle::tuple newTuple(relIsOutput);
             newTuple << latestID << stackIDs[i];
@@ -197,7 +198,6 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
         stackIDs.insert(stackIDs.begin(), latestID);
     } else if (nArgs > 0) {
         if (stackIDs.size() < (unsigned) nArgs) {
-            std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
             return;
         }
 
@@ -211,7 +211,6 @@ void EVMAnalyser::argsRet(int nArgs, int nRet) {
 
 void EVMAnalyser::callResult(int result) {
     if (callStack.size() < 1) {
-        std::cout << "Error: there is no pending call arguments on the call stack!\n";
         return;
     }
     // create new ID when call result is received
@@ -220,9 +219,6 @@ void EVMAnalyser::callResult(int result) {
     // take first callArgs in callStack
     auto callArgs = callStack[0];
     for (auto &arg : callArgs) {
-#ifdef EVMANALYSER_DEBUG
-        OUTPUT << "insert to is_output: " << latestID << " " << arg << std::endl;
-#endif
         // insert tuple to is_output
         souffle::tuple newTuple(relIsOutput);
         newTuple << latestID << arg;
@@ -233,9 +229,6 @@ void EVMAnalyser::callResult(int result) {
     callStack.erase(callStack.begin());
     
     // insert tuple to call_result
-#ifdef EVMANALYSER_DEBUG
-    OUTPUT << "insert to call_result: " << latestID << " " << result << std::endl;
-#endif
     souffle::tuple newTuple(relCallResult);
     newTuple << latestID << result;
     relCallResult->insert(newTuple); 
@@ -246,7 +239,6 @@ void EVMAnalyser::callResult(int result) {
 
 void EVMAnalyser::swap(int pos) {
     if (stackIDs.size() < (unsigned)(pos + 1)) {
-        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
         return;
     }
     // no tuple insertion
@@ -257,7 +249,6 @@ void EVMAnalyser::swap(int pos) {
 
 void EVMAnalyser::dup(int pos) {
     if (stackIDs.size() < (unsigned) pos) {
-        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
         return;
     }
     // create newID
@@ -265,9 +256,6 @@ void EVMAnalyser::dup(int pos) {
 
     // take ID of the original position
     // insert tuple to is_output
-#ifdef EVMANALYSER_DEBUG
-    OUTPUT << "insert to is_output: " << latestID << " " << stackIDs[pos - 1] << std::endl;
-#endif
     souffle::tuple newTuple(relIsOutput);
     newTuple << latestID << stackIDs[pos - 1];
     relIsOutput->insert(newTuple); 
@@ -278,14 +266,10 @@ void EVMAnalyser::dup(int pos) {
 
 void EVMAnalyser::jumpi() {
     if (stackIDs.size() < 2) {
-        std::cout << "Error: the number of arguments required does not match with the available arguments on the stack!\n";
         return;
     }
     // take second element on stack as condition 
     // insert tuple to in_condition
-#ifdef EVMANALYSER_DEBUG
-    OUTPUT << "insert to in_condition: " << stackIDs[1] << std::endl;
-#endif
     souffle::tuple newTuple(relInCondition);
     newTuple << stackIDs[1];
     relInCondition->insert(newTuple); 
@@ -377,7 +361,8 @@ void EVMAnalyser::extractReentrancyAddresses() {
                 reentrancyChain += " => " + addrStart;
 
                 // Save the new json tuple
-                logger->logReentrancy(reentrancyChain, dev::toString(totalEther));
+                if (!badTransaction)
+                    logger->logReentrancy(reentrancyChain, dev::toString(totalEther));
 
                 // Reset
                 if (senderAddrOriginal != receiverAddrPre) {
@@ -427,8 +412,8 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                     OUTPUT << FORERED << "Query Result: " << count << " Contract in address: " 
                         << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
 #endif
-
-                    logger->logLockedEther(contractAddress);
+                    if (!badTransaction)
+                        logger->logLockedEther(contractAddress);
                 }
                 return true; 
             } else {
@@ -456,7 +441,8 @@ bool EVMAnalyser::queryExploit(std::string exploitName) {
                     OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " 
                         << "StackID: " << stackID << RESETTEXT << std::endl; 
 #endif
-                    logger->logUnhandledException(stackID);
+                    if (!badTransaction)
+                        logger->logUnhandledException(stackID);
                 }
                 return true; 
             } else {
@@ -479,7 +465,8 @@ void EVMAnalyser::cleanExecutionTrace() {
     prog->purgeInternalRelations(); // Remenber to clean the internal relations e.g. call in the re-entrancy
     prog->purgeOutputRelations();
 
-    logger->logTransaction(transactionCount, dev::toString(totalTransfer));
+    if (!badTransaction)
+        logger->logTransaction(transactionCount, dev::toString(totalTransfer));
 
     executionTraceCount = 1;
     latestID = 0;

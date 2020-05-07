@@ -1,7 +1,7 @@
 #pragma once
 
 #include "souffle/SouffleInterface.h"
-#include "libethploit/ExecutionTrace.h"
+#include "libethploit/CallTrace.h"
 #include "JSONLogger.h"
 
 #include "libdevcore/Common.h"
@@ -18,6 +18,7 @@ class EVMAnalyser {
     dev::u256 initialSenderBalance = 0;
     dev::u256 initialTotalBalance = 0;
     dev::u256 totalTransfer = 0;
+    bool badTransaction = false;
 
     // Json files
     JSONLogger * logger;
@@ -70,7 +71,9 @@ class EVMAnalyser {
     
     static bool isEthploitModeEnabled();
 
-    bool populateExecutionTrace(dev::eth::ExecutionTrace* executionTrace);
+    void setBadTransaction();
+    
+    bool populateCallTrace(dev::eth::CallTrace* callTrace);
 
     bool queryExploit(std::string exploitName);
 
@@ -91,6 +94,8 @@ class EVMAnalyser {
     int getCallStackSize();
 
     int getCallArgID(int callStackIndex, int argIndex);
+
+    bool isBadTransaction();
 
 };
 
