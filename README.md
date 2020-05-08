@@ -130,7 +130,7 @@ All development goes in develop branch.
 
 ```
 NAME:
-   aleth 1.8.0-52+commit.22b1f962.dirty
+   aleth 1.8.0
 USAGE:
    aleth [options]
 
@@ -145,7 +145,7 @@ CLIENT MODE (default):
   --mainnet                               Use the main network protocol
   --ropsten                               Use the Ropsten testnet
   --test                                  Testing mode; disable PoW and provide test rpc interface
-  --ethploit                              Ethploit mode; enables detection of potential exploitation (default: off)
+  --ethploit                              Ethploit mode; enable detection of potential exploitation (default: off)
   --config <file>                         Configure specialised blockchain using given JSON information
                                           
   --ipc                                   Enable IPC server (default: on)
@@ -223,7 +223,7 @@ IMPORT/EXPORT MODES:
                               
 DATABASE OPTIONS:
   --db <name> (=leveldb)                     Select database implementation. Available options are: leveldb, memorydb.
-  --db-path <path> (=/homes/zp619/.ethereum) Database path (for non-memory database options)
+  --db-path <path> (=$HOME/.ethereum) Database path (for non-memory database options)
                                              
 VM OPTIONS:
   --vm <name>|<path> (=legacy) Select VM implementation. Available options are: interpreter, legacy.
@@ -239,7 +239,7 @@ LOGGING OPTIONS:
   --log-vmtrace                         Enable VM trace log (requires log-verbosity 4).
                                         
 GENERAL OPTIONS:
-  -d [ --data-dir ] <path> Load configuration files and keystore from path (default: /homes/zp619/.ethereum)
+  -d [ --data-dir ] <path> Load configuration files and keystore from path (default: $HOME/.ethereum)
   -V [ --version ]         Show the version and exit
   -h [ --help ]            Show this help message and exit
 ```
