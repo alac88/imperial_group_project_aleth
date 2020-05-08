@@ -130,7 +130,7 @@ All development goes in develop branch.
 
 ```
 NAME:
-   aleth 1.8.0-48+commit.e650c758.dirty
+   aleth 1.8.0-52+commit.22b1f962.dirty
 USAGE:
    aleth [options]
 
