@@ -1,5 +1,5 @@
 #include <set>
-#include <queue>
+#include <deque>
 #include <iostream>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
@@ -313,7 +313,7 @@ void EVMAnalyser::extractReentrancyAddresses() {
 
     dev::u256 totalEther = 0;
     unsigned long i = 0;
-    std::queue<std::string> chain;
+    std::deque<std::string> chain;
     std::string receiverAddrPre = "Null";
     for (auto &output : *relDirectCall) {
         int idOriginal;
@@ -324,139 +324,147 @@ void EVMAnalyser::extractReentrancyAddresses() {
         output >> idOriginal >> senderAddrOriginal >> receiverAddrOriginal >> etherOriginalStr;
         etherOriginal = dev::toU256(etherOriginalStr);
 
+        // Is a transaction id in the re-entrancy chain
         if (idSet.find(idOriginal) != idSet.end()) {
             i++;
-            chain.push(senderAddrOriginal);
+            chain.push_back(senderAddrOriginal);
             totalEther += etherOriginal;
 
-            if ((senderAddrOriginal != receiverAddrPre && receiverAddrPre != "Null") || i == idSet.size()) {
+            // If the current sender is not previous sender, re-entrancy chain ends
+            // The previous sender is Null means this is the first node in the re-entrancy chain
+            // i reachs the number of idSet means all nodes in the re-entrancy chain has been found
+            if ((senderAddrOriginal != receiverAddrPre && chain.size() != 1) || i == idSet.size()) {
                 // Output the address chain
-                if (senderAddrOriginal != receiverAddrPre) {
-                    chain.pop();
+                if (senderAddrOriginal != receiverAddrPre) { // If this is not the last address, temporarily pop out
+                    if (!chain.empty())
+                        chain.pop_back();
                     totalEther -= etherOriginal;
                 }
 
-#ifdef EVMANALYSER_RESULT
+                #ifdef EVMANALYSER_RESULT
                 OUTPUT << FORERED <<"Query Result: " << " Re-entrancy: ";
-#endif
+                #endif
 
-                std::string reentrancyChain = chain.front();
-                std::string addrStart = chain.front();
-#ifdef EVMANALYSER_RESULT
+                std::string reentrancyChain = chain.empty() ? "" : chain.front();
+                std::string addrStart = chain.empty() ? "" : chain.front();
+                #ifdef EVMANALYSER_RESULT
                 std::cout << addrStart;
-#endif                
-                chain.pop();
+                #endif        
+                if(!chain.empty())        
+                    chain.pop_front();
+
                 while (!chain.empty()) {
-#ifdef EVMANALYSER_RESULT
+                    #ifdef EVMANALYSER_RESULT
                     std::cout << " => " << chain.front();
-#endif              
+                    #endif              
                     reentrancyChain += " => " + chain.front();
-                    chain.pop();
+                    chain.pop_front();
                 }
-#ifdef EVMANALYSER_RESULT        
+                #ifdef EVMANALYSER_RESULT        
                 std::cout << " => " << addrStart << " has been detected with " << totalEther 
                     << " value transferred in total." << RESETTEXT
                     << std::endl;
-#endif
+                #endif
                 reentrancyChain += " => " + addrStart;
 
                 // Save the new json tuple
-                if (!badTransaction)
-                    logger->logReentrancy(reentrancyChain, dev::toString(totalEther));
+                logger->logReentrancy(reentrancyChain, dev::toString(totalEther));
 
                 // Reset
                 if (senderAddrOriginal != receiverAddrPre) {
-                    chain.push(senderAddrOriginal);
+                    chain.push_back(senderAddrOriginal);
                     totalEther = etherOriginal;
                 } else {
                     totalEther = 0;
                 }
             }
+
+            receiverAddrPre = receiverAddrOriginal;
         }
 
-        receiverAddrPre = receiverAddrOriginal;
     }
 
 }
 
 bool EVMAnalyser::queryExploit(std::string exploitName) {
-    prog->run();
+    if (!badTransaction) {
+        prog->run();
 
-    if (souffle::Relation *rel = prog->getRelation(exploitName)) {
-        // Re-entrancy 
-        if (exploitName == "reentrancy") {
-            if (rel->size() != 0) {
-                extractReentrancyAddresses();
-                return true;
-            } else {
+        if (souffle::Relation *rel = prog->getRelation(exploitName)) {
+            // Re-entrancy 
+            if (exploitName == "reentrancy") {
+                if (rel->size() != 0) {
+                    extractReentrancyAddresses();
+                    return true;
+                } else {
 #ifdef EVMANALYSER_RESULT
-                OUTPUT << "No re-entrancy has been detected." << std::endl;
+                    OUTPUT << "No re-entrancy has been detected." << std::endl;
 #endif
-                return false;
+                    return false;
+                }
             }
-        }
-    
-        // Locked ethers
-        if (exploitName == "locked_ether") {
-            if (rel->size() != 0) {
-                int count = 0;
+        
+            // Locked ethers
+            if (exploitName == "locked_ether") {
+                if (rel->size() != 0) {
+                    int count = 0;
 
-                for (auto &output : *rel) {
-                    std::string contractAddress; 
-                    int id;
-                    std::string gas;
+                    for (auto &output : *rel) {
+                        std::string contractAddress; 
+                        int id;
+                        std::string gas;
 
-                    count++;
-                    output >> id >> gas >> contractAddress;
+                        count++;
+                        output >> id >> gas >> contractAddress;
 #ifdef EVMANALYSER_RESULT
-                    OUTPUT << FORERED << "Query Result: " << count << " Contract in address: " 
-                        << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
+                        OUTPUT << FORERED << "Query Result: " << count << " Contract in address: " 
+                            << contractAddress << " has been locked"  << RESETTEXT << std::endl; 
 #endif
-                    if (!badTransaction)
                         logger->logLockedEther(contractAddress);
+                    }
+                    return true; 
+                } else {
+#ifdef EVMANALYSER_RESULT
+                    OUTPUT << "No locked ether has been detected." << std::endl;
+#endif
+                    return false; 
                 }
-                return true; 
-            } else {
-#ifdef EVMANALYSER_RESULT
-                OUTPUT << "No locked ether has been detected." << std::endl;
-#endif
-                return false; 
             }
-        }
 
-        // Unhandled exception
-        if (exploitName == "unhandled_exception") {
-            if (rel->size() != 0) {
-                int stackID;
-                int count = 0;
+            // Unhandled exception
+            if (exploitName == "unhandled_exception") {
+                if (rel->size() != 0) {
+                    int stackID;
+                    int count = 0;
 
-                for (auto &output : *rel) {
-                    std::string contractAddress; 
-                    int id;
-                    int gas;
+                    for (auto &output : *rel) {
+                        std::string contractAddress; 
+                        int id;
+                        int gas;
 
-                    count++;
-                    output >> stackID;
+                        count++;
+                        output >> stackID;
 #ifdef EVMANALYSER_RESULT
-                    OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " 
-                        << "StackID: " << stackID << RESETTEXT << std::endl; 
+                        OUTPUT << FORERED << "Query Result: " << count << " Unhandled exception detected. " 
+                            << "StackID: " << stackID << RESETTEXT << std::endl; 
 #endif
-                    if (!badTransaction)
                         logger->logUnhandledException(stackID);
-                }
-                return true; 
-            } else {
+                    }
+                    return true; 
+                } else {
 #ifdef EVMANALYSER_RESULT
-                OUTPUT << "No unhandled exception has been detected." << std::endl;
+                    OUTPUT << "No unhandled exception has been detected." << std::endl;
 #endif
-                return false;
+                    return false;
+                }
             }
         }
-    }
 
 #ifdef EVMANALYSER_RESULT
     OUTPUT << "Wrong exploit name!" << std::endl;
 #endif
+    }
+    
     return false;
 }
 
