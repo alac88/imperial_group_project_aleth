@@ -332,20 +332,21 @@ void EVMAnalyser::extractReentrancyAddresses() {
             if ((senderAddrOriginal != receiverAddrPre && receiverAddrPre != "Null") || i == idSet.size()) {
                 // Output the address chain
                 if (senderAddrOriginal != receiverAddrPre) {
-                    chain.pop();
+                    if (!chain.empty())
+                        chain.pop();
                     totalEther -= etherOriginal;
                 }
 
 #ifdef EVMANALYSER_RESULT
                 OUTPUT << FORERED <<"Query Result: " << " Re-entrancy: ";
-#endif
-
-                std::string reentrancyChain = chain.front();
-                std::string addrStart = chain.front();
+#endif  
+                std::string reentrancyChain = chain.empty() ? "" : chain.front();
+                std::string addrStart = chain.empty() ? "" : chain.front();
 #ifdef EVMANALYSER_RESULT
                 std::cout << addrStart;
 #endif                
-                chain.pop();
+                if(!chain.empty())
+                    chain.pop();
                 while (!chain.empty()) {
 #ifdef EVMANALYSER_RESULT
                     std::cout << " => " << chain.front();
