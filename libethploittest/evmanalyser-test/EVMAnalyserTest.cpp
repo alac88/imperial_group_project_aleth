@@ -197,6 +197,11 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
     }
 
     BOOST_AUTO_TEST_CASE(query_multiple_reentrancy) {
+        // Gap tuple
+        CallTraceMock et0("CALL", "0x10", "0x20", 5);
+        analyser->populateCallTrace(&et0);
+
+        // First chain should be 60->70->80->90->60
         CallTraceMock et1("CALL", "0x60", "0x70", 5);
         analyser->populateCallTrace(&et1);
 
@@ -208,7 +213,12 @@ BOOST_FIXTURE_TEST_SUITE(libevmanalyser_test, F)
         
         CallTraceMock et4("CALL", "0x90", "0x60", 5);
         analyser->populateCallTrace(&et4);
+
+        // Gap tuple
+        CallTraceMock et4_5("CALL", "0x10", "0x20", 5);
+        analyser->populateCallTrace(&et4_5);
         
+        // Second chain should be 90->100->110->120->130->140->150->160->170->180->90
         CallTraceMock et5("CALL", "0x90", "0x100", 5);
         analyser->populateCallTrace(&et5);
 
