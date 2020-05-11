@@ -209,7 +209,7 @@ int main(int argc, char** argv)
     addClientOption("mainnet", "Use the main network protocol");
     addClientOption("ropsten", "Use the Ropsten testnet");
     addClientOption("test", "Testing mode; disable PoW and provide test rpc interface");
-    addClientOption("ethploit", "Ethploit mode; enables detection of potential exploitation (default: off)");
+    addClientOption("ethploit", "Ethploit mode; enables detection of potential exploitation (default: off); The detection results can be found in 'reentrancy.json', 'locked_ether.json' and 'unhandled_exception.json' under aleth build directory");
     addClientOption("config", po::value<string>()->value_name("<file>"),
         "Configure specialised blockchain using given JSON information\n");
     addClientOption("ipc", "Enable IPC server (default: on)");
