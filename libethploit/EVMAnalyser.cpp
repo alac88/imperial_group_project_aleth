@@ -35,35 +35,7 @@ EVMAnalyser::EVMAnalyser() {
 }
 
 EVMAnalyser::~EVMAnalyser() {
-    if (logger)
-        delete logger;
-    if (prog)
-        delete prog;
-    if (relDirectCall)
-        delete relDirectCall;
-    if (relCallEntry)
-        delete relCallEntry;
-    if (relCallExit)
-        delete relCallExit;
-    if (queReentrancy)
-        delete queReentrancy;
-    if (relIsOutput)
-        delete relIsOutput;
-    if (relCallResult)
-        delete relCallResult;
-    if (relInCondition)
-        delete relInCondition;
-
-
-    prog = nullptr;
-
-    relDirectCall = nullptr;
-    relCallEntry = nullptr;
-    relCallExit = nullptr;
-    queReentrancy = nullptr;
-    relIsOutput = nullptr;
-    relCallResult = nullptr;
-    relInCondition = nullptr;
+    delete logger;
 }
 
 EVMAnalyser* EVMAnalyser::getInstance(std::string account, 
